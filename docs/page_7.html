@@ -1,0 +1,275 @@
+<!--Actual display size of this page: width=1280, height=822, aspect ratio=16:10.3--><!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>사용자 시나리오 - 함께키즈</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script><style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {width: 1280px; min-height: 822px; font-family: 'Noto Sans KR', sans-serif;}
+        .slide {
+            width: 1280px;
+            min-height: 822px;
+
+            position: relative;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        }
+        .step-container {
+            position: relative;
+        }
+        .step-container::before {
+            content: '';
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            width: calc(100% - 70px);
+            height: 4px;
+            background-color: rgba(245, 158, 11, 0.5);
+            z-index: 0;
+        }
+        .step {
+            position: relative;
+            z-index: 1;
+        }
+        .step-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(245, 158, 11, 0.2);
+            border: 3px solid #f59e0b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .phone-mockup {
+            background: #fff;
+            border-radius: 24px;
+            padding: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            position: relative;
+
+        }
+        .phone-screen {
+            background: #f0f2f5;
+            border-radius: 12px;
+
+        }
+        .chat-bubble {
+            border-radius: 18px;
+            padding: 8px 12px;
+            max-width: 80%;
+            margin-bottom: 8px;
+        }
+        .chat-bubble.sent {
+            background-color: #2563eb;
+            color: white;
+            margin-left: auto;
+        }
+        .chat-bubble.received {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+<div class="slide gradient-bg flex flex-col">
+<!-- Header Section -->
+<div class="pt-12 px-16">
+<h1 class="text-4xl font-bold text-white mb-2">사용자 시나리오</h1>
+<div class="h-1 w-24 bg-yellow-500 mb-8"></div>
+<p class="text-white text-xl mb-8">흥민엄마, 민수엄마, 영희엄마의 함께키즈 활용 과정</p>
+</div>
+<!-- Main Content: Scenario Steps -->
+<div class="flex-grow px-16 flex flex-col">
+<div class="step-container flex justify-between mb-6">
+<!-- Step 1 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">1</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">등원 담당 신청</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="bg-white p-2 rounded-lg mb-2">
+<p class="text-xs font-medium text-gray-800">함께키즈</p>
+<p class="text-xs text-gray-600">공유 캘린더</p>
+</div>
+<div class="bg-yellow-100 p-2 rounded-lg">
+<p class="text-xs font-medium text-yellow-800">흥민엄마</p>
+<p class="text-xs text-gray-700">월요일 등원 담당 가능</p>
+<button class="bg-yellow-500 text-white text-xs rounded px-2 py-1 mt-1">신청하기</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">2</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">AI 챗봇 자동 제안</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="chat-bubble received">
+<p class="text-xs">안녕하세요! 흥민엄마가 월요일 등원을 담당합니다. 함께하시겠어요?</p>
+</div>
+<div class="flex justify-end space-x-2">
+<button class="bg-gray-300 text-xs rounded px-2 py-1">거절</button>
+<button class="bg-blue-500 text-white text-xs rounded px-2 py-1">승인</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">3</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">로테이션 확정</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="bg-green-100 p-2 rounded-lg mb-2">
+<p class="text-xs font-medium text-green-800">일정 확정</p>
+<p class="text-xs text-gray-700">월요일 등원 로테이션이 확정되었습니다.</p>
+</div>
+<div class="bg-white p-2 rounded-lg">
+<p class="text-xs font-medium">참여자</p>
+<p class="text-xs text-gray-600">흥민엄마 (담당)</p>
+<p class="text-xs text-gray-600">민수엄마</p>
+<p class="text-xs text-gray-600">영희엄마</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">4</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">안전한 공동 등원</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="bg-blue-100 p-2 rounded-lg mb-2">
+<p class="text-xs font-medium text-blue-800">실시간 GPS 추적</p>
+</div>
+<div class="bg-gray-200 rounded-lg h-24 flex items-center justify-center">
+<i class="fas fa-map-marker-alt text-red-500 text-lg"></i>
+</div>
+<p class="text-xs text-center mt-1">이동 중: 3분 후 도착 예정</p>
+</div>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">5</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">자동 도착 알림</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="bg-green-100 p-2 rounded-lg mb-2 flex items-center">
+<i class="fas fa-check-circle text-green-600 mr-2"></i>
+<div>
+<p class="text-xs font-medium text-green-800">안전 도착</p>
+<p class="text-xs text-gray-700">아이들이 어린이집에 안전하게 도착했습니다.</p>
+</div>
+</div>
+<div class="flex justify-center mt-2">
+<button class="bg-blue-500 text-white text-xs rounded px-2 py-1">확인</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 6 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">6</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">자동 접근 알림</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="bg-blue-100 p-2 rounded-lg mb-2 flex items-center">
+<i class="fas fa-location-arrow text-blue-600 mr-2"></i>
+<div>
+<p class="text-xs font-medium text-blue-800">Spell Script 자동 감지</p>
+<p class="text-xs text-gray-700">어린이집 100m 전방</p>
+</div>
+</div>
+<div class="bg-gray-200 rounded-lg h-16 flex items-center justify-center">
+<i class="fas fa-map-marker-alt text-red-500 text-lg"></i>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 7 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">7</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">자동 메시지 전송</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="bg-purple-100 p-2 rounded-lg mb-2 flex items-center">
+<i class="fas fa-magic text-purple-600 mr-2"></i>
+<div>
+<p class="text-xs font-medium text-purple-800">Spell Script 자동 전송</p>
+<p class="text-xs text-gray-700">안전 도착 메시지가 자동으로 전송되었습니다</p>
+</div>
+</div>
+<div class="chat-bubble sent">
+<p class="text-xs">아이들이 어린이집에 안전하게 도착했습니다.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 8 -->
+<div class="step flex flex-col items-center w-1/8">
+<div class="step-circle mb-4">
+<span class="text-2xl font-bold text-yellow-500">8</span>
+</div>
+<h3 class="text-lg font-bold text-white text-center mb-2">지연 시 자동 연락</h3>
+<div class="phone-mockup w-full">
+<div class="phone-screen p-3">
+<div class="bg-red-100 p-2 rounded-lg mb-2 flex items-center">
+<i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+<div>
+<p class="text-xs font-medium text-red-800">예상 시간 초과</p>
+<p class="text-xs text-gray-700">담당 부모에게 자동 연락</p>
+</div>
+</div>
+<div class="bg-white p-2 rounded-lg flex items-center justify-center">
+<i class="fas fa-phone-alt text-green-500 mr-2"></i>
+<p class="text-xs font-medium">흥민엄마 연결 중...</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Image and Description -->
+<div class="mt-4 flex items-center justify-center">
+<div class="w-1/3 mr-8">
+<img alt="아이들과 함께 걷는 모습" class="rounded-lg shadow-lg w-full h-auto object-cover" src="https://picture-search.skywork.ai/aippt/image/sheet/555f90a22e2ab1c5416576654ee83ad6.jpg" style="max-height: 200px;"/>
+</div>
+<div class="w-1/2 bg-white/10 p-6 rounded-lg">
+<p class="text-white text-lg">
+<i class="fas fa-quote-left text-yellow-500 mr-2 opacity-70"></i>
+                        함께키즈는 부모의 시간을 절약하고 아이들에게 사회적 경험을 제공하는 동시에, 
+                        실시간 위치 추적과 알림으로 안전한 등하원을 보장합니다.
+                        <i class="fas fa-quote-right text-yellow-500 ml-2 opacity-70"></i>
+</p>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="h-16 px-16 flex justify-between items-center text-white/70">
+<div>
+<p>함께키즈 - 맞벌이 부모를 위한 공동육아 플랫폼</p>
+</div>
+<div>
+<p>7 / 11</p>
+</div>
+</div>
+</div>
+
+</body></html>

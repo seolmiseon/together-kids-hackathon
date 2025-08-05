@@ -1,0 +1,81 @@
+# 환경 파일들
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Database
+*.db
+*.sqlite3
+together_kids.db
+
+# 로그 파일들
+*.log
+logs/
+
+# IDE 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Docker
+.dockerignore
+
+# Redis dumps
+dump.rdb
+
+# 업로드된 파일들
+uploads/
+static/media/
+
+# Node.js (프론트엔드용)
+node_modules/
+.next/
+out/
+.npm
+.yarn/
+yarn-error.log
+
+# 임시 파일들
+tmp/
+temp/
+*.tmp
+*.temp

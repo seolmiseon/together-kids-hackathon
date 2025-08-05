@@ -1,0 +1,236 @@
+<!--Actual display size of this page: width=1280, height=856, aspect ratio=16:10.7--><!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>시장 분석 및 전망 - 함께키즈</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script><style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {width: 1280px; min-height: 856px; font-family: 'Noto Sans KR', sans-serif;}
+        .slide {
+            width: 1280px;
+            min-height: 856px;
+            
+            position: relative;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        }
+        .market-card {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+        }
+        .chart-container {
+            height: 220px;
+            width: 100%;
+        }
+        .highlight-box {
+            background: rgba(245, 158, 11, 0.15);
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+<body>
+<div class="slide gradient-bg flex flex-col">
+<!-- Header Section -->
+<div class="pt-12 px-16">
+<h1 class="text-4xl font-bold text-white mb-2">시장 분석 및 전망</h1>
+<div class="h-1 w-24 bg-yellow-500 mb-6"></div>
+<p class="text-white text-xl mb-8">맞벌이 부모 시장과 공동육아 앱 시장의 성장 잠재력</p>
+</div>
+<!-- Main Content -->
+<div class="flex-grow px-16 grid grid-cols-2 gap-8">
+<!-- Left Column: Target Market -->
+<div class="flex flex-col">
+<div class="market-card p-8 mb-6">
+<div class="flex items-center mb-4">
+<i class="fas fa-users text-3xl text-yellow-500 mr-4"></i>
+<h3 class="text-2xl font-bold text-white">목표 시장 규모</h3>
+</div>
+<div class="highlight-box p-5 rounded-lg mb-4">
+<div class="flex justify-between items-center">
+<p class="text-white text-lg">국내 맞벌이 부모 시장</p>
+<p class="text-3xl font-bold text-yellow-500">연간 1,000만 가구</p>
+</div>
+</div>
+<ul class="text-white/90 space-y-3">
+<li class="flex items-start">
+<i class="fas fa-check-circle text-green-400 mt-1 mr-2"></i>
+<span>30-40대 맞벌이 부모</span>
+</li>
+<li class="flex items-start">
+<i class="fas fa-check-circle text-green-400 mt-1 mr-2"></i>
+<span>어린이집 이용 영유아 자녀를 둠</span>
+</li>
+<li class="flex items-start">
+<i class="fas fa-check-circle text-green-400 mt-1 mr-2"></i>
+<span>아파트 단지 거주 환경</span>
+</li>
+</ul>
+</div>
+<div class="market-card p-8">
+<div class="flex items-center mb-4">
+<i class="fas fa-chart-line text-3xl text-yellow-500 mr-4"></i>
+<h3 class="text-2xl font-bold text-white">성장 동인</h3>
+</div>
+<ul class="text-white/90 space-y-4">
+<li class="flex items-start">
+<div class="bg-blue-400/20 p-2 rounded-full mr-3">
+<i class="fas fa-briefcase text-blue-300"></i>
+</div>
+<div>
+<p class="font-medium">맞벌이 가정 증가</p>
+<p class="text-sm text-white/70">자녀 등하원 문제가 심화되는 사회적 배경</p>
+</div>
+</li>
+<li class="flex items-start">
+<div class="bg-blue-400/20 p-2 rounded-full mr-3">
+<i class="fas fa-child text-blue-300"></i>
+</div>
+<div>
+<p class="font-medium">효과적 양육에 대한 인식 변화</p>
+<p class="text-sm text-white/70">공동육아의 사회적 가치에 대한 긍정적 평가</p>
+</div>
+</li>
+<li class="flex items-start">
+<div class="bg-blue-400/20 p-2 rounded-full mr-3">
+<i class="fas fa-mobile-alt text-blue-300"></i>
+</div>
+<div>
+<p class="font-medium">디지털 솔루션 수용도 증가</p>
+<p class="text-sm text-white/70">앱 기반 육아 솔루션의 일상화</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<!-- Right Column: Market Growth -->
+<div class="market-card p-8">
+<div class="flex items-center mb-6">
+<i class="fas fa-chart-pie text-3xl text-yellow-500 mr-4"></i>
+<h3 class="text-2xl font-bold text-white">글로벌 공동육아 앱 시장 전망</h3>
+</div>
+<div class="highlight-box p-4 rounded-lg mb-6 flex justify-between items-center">
+<div>
+<p class="text-sm text-white/80">연평균 성장률</p>
+<p class="text-3xl font-bold text-yellow-500">12.5%</p>
+</div>
+<div>
+<p class="text-sm text-white/80">2023년</p>
+<p class="text-2xl font-bold text-white">$1.2억</p>
+</div>
+<div>
+<p class="text-sm text-white/80">2032년</p>
+<p class="text-2xl font-bold text-white">$3.4억</p>
+</div>
+</div>
+<!-- D3.js Chart -->
+<div class="chart-container" id="market-chart"></div>
+<div class="mt-6 bg-white/10 p-4 rounded-lg">
+<p class="text-white/90 text-lg">
+<i class="fas fa-quote-left text-yellow-500 opacity-50 mr-2"></i>
+                        함께키즈는 등하원 시간 조율의 비효율성, 안전 문제, 아이들의 사회성 발달 기회 부족이라는 명확한 문제점을 해결함으로써 성장하는 시장에서 경쟁 우위를 확보할 수 있습니다.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="h-16 px-16 flex justify-between items-center text-white/70">
+<div>
+<p>함께키즈 - 맞벌이 부모를 위한 공동육아 플랫폼</p>
+</div>
+<div>
+<p>10 / 11</p>
+</div>
+</div>
+</div>
+<script>
+        // D3.js Chart for Market Growth
+        document.addEventListener('DOMContentLoaded', function() {
+            const data = [
+                {year: 2023, value: 120},
+                {year: 2026, value: 172},
+                {year: 2029, value: 247},
+                {year: 2032, value: 340}
+            ];
+
+            const width = document.getElementById('market-chart').clientWidth;
+            const height = document.getElementById('market-chart').clientHeight;
+            const margin = {top: 20, right: 30, bottom: 40, left: 60};
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+
+            const svg = d3.select('#market-chart')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Scales
+            const x = d3.scaleLinear()
+                .domain([2023, 2032])
+                .range([0, innerWidth]);
+
+            const y = d3.scaleLinear()
+                .domain([0, 400])
+                .range([innerHeight, 0]);
+
+            // Line generator
+            const line = d3.line()
+                .x(d => x(d.year))
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            // Add the line path
+            g.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', '#f59e0b')
+                .attr('stroke-width', 3)
+                .attr('d', line);
+
+            // Add circles for data points
+            g.selectAll('circle')
+                .data(data)
+                .enter()
+                .append('circle')
+                .attr('cx', d => x(d.year))
+                .attr('cy', d => y(d.value))
+                .attr('r', 6)
+                .attr('fill', '#f59e0b');
+
+            // Add data labels
+            g.selectAll('.label')
+                .data(data)
+                .enter()
+                .append('text')
+                .attr('class', 'label')
+                .attr('x', d => x(d.year))
+                .attr('y', d => y(d.value) - 15)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'white')
+                .text(d => `$${d.value}M`);
+
+            // Add axes
+            g.append('g')
+                .attr('transform', `translate(0,${innerHeight})`)
+                .call(d3.axisBottom(x).tickFormat(d => d).ticks(4))
+                .selectAll('text')
+                .attr('fill', 'white');
+
+            g.append('g')
+                .call(d3.axisLeft(y).tickFormat(d => `$${d}M`))
+                .selectAll('text')
+                .attr('fill', 'white');
+
+            // Style axes lines
+            g.selectAll('.domain')
+                .attr('stroke', 'white');
+            g.selectAll('line')
+                .attr('stroke', 'white');
+        });
+    </script>
+
+</body></html>
