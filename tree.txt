@@ -1,0 +1,44 @@
+/home/seolmiseon/hackathon
+├── README.md
+├── backend
+│   ├── Dockerfile
+│   ├── GCP_CLOUD_SQL.md
+│   ├── MySQL_SETUP.md
+│   ├── database.py
+│   ├── encoding.py
+│   ├── main.py
+│   ├── models
+│   │   └── __init__.py
+│   ├── requirements.txt
+│   ├── routers
+│   │   ├── __init__.py
+│   │   ├── ai.py
+│   │   ├── auth.py
+│   │   ├── children.py
+│   │   └── users.py
+│   └── schemas
+│       └── __init__.py
+├── docker-compose.yml
+├── frontend
+├── llm-service
+│   ├── config
+│   │   └── prompts.py
+│   ├── main.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── chat_models.py
+│   │   └── community_models.py
+│   ├── requirements.txt
+│   ├── routers
+│   │   ├── chat.py
+│   │   └── schedule.py
+│   └── services
+│       ├── __init__.py
+│       ├── openai_service.py
+│       ├── prompt_service.py
+│       ├── session_manager.py
+│       ├── unified_chat_service.py
+│       └── vector_service.py
+└── tree.txt
+
+10 directories, 31 files

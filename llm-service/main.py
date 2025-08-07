@@ -27,3 +27,12 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "함께키즈 AI"}
+
+@app.get("/env-test")
+async def env_test():
+    database_url = os.getenv("DATABASE_URL")
+    secret_key = os.getenv("SECRET_KEY")
+    return {
+        "DATABASE_URL": database_url,
+        "SECRET_KEY": "****" if secret_key else None 
+    }
