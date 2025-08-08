@@ -4,7 +4,7 @@ import os
 
 from routers import chat, schedule
 
-# 환경 변수 로드
+# 환경 변수 로드P
 load_dotenv()
 
 # FastAPI 앱 초기화

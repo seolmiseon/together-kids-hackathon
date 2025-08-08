@@ -3,6 +3,12 @@ uvicorn==0.24.0
 openai==1.3.7
 pydantic==2.5.0
 python-dotenv==1.0.0
+numpy
+httpx
+fastapi
+redis
+
+
 
 # RAG 기능용 (나중에 추가)
 # faiss-cpu

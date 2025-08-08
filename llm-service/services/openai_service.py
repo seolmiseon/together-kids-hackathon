@@ -5,12 +5,11 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
+client = OpenAI()
 
 class OpenAIService:
     def __init__(self):
-        self.client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY")
-        )
+        self.client = OpenAI()
         self.chat_model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
         self.embedding_model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
     
