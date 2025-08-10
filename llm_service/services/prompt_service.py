@@ -26,29 +26,30 @@ class PromptService:
             }
         }
     
-    def _build_prompt(self, intent: str = "default") -> str:
+    def _build_prompt(self, intent: str = "default", extra_instructions: Optional[str] = None) -> str:
         
         config = self.intent_config.get(intent, self.intent_config["default"])
-        
         # 역할 목록을 문자열로 변환
         roles_text = "\n".join([f"- {role}" for role in config["roles"]])
-        
-        return PROMPT_TEMPLATE.format(
+        prompt = PROMPT_TEMPLATE.format(
             role=BASE_ROLE,
             context=BASE_CONTEXT,
             role_type=config["role_type"],
             roles=roles_text,
             speaking_style=config["speaking_style"]
         )
+        
+        if extra_instructions:
+            prompt += f"\n\n{extra_instructions}"
+        
+        return prompt
+        
     
     def get_system_prompt(self, intent: str = "default", context_info: Optional[str] = None) -> Dict[str, str]:
         
         base_prompt = self._build_prompt(intent)
-        
-        # 컨텍스트 정보가 있으면 추가
         if context_info:
             base_prompt += context_info
-        
         return {
             "role": "system",
             "content": base_prompt
@@ -60,7 +61,6 @@ class PromptService:
     def add_role_for_intent(self, intent: str, new_roles: List[str]):
         if intent not in self.intent_config:
             self.intent_config[intent] = self.intent_config["default"].copy()
-        
         self.intent_config[intent]["roles"].extend(new_roles)
     
     def get_available_intents(self) -> List[str]:
