@@ -4,6 +4,10 @@
 !.env.example
 encoding.py
 
+*.secret.yaml
+*.yaml
+
+
 # Python
 __pycache__/
 *.py[cod]
@@ -29,6 +33,7 @@ MANIFEST
 
 # Virtual Environment
 venv_hackathon/
+llm_service_venv/
 env/
 ENV/
 env.bak/

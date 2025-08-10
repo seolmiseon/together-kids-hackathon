@@ -1,4 +1,4 @@
-/home/seolmiseon/hackathon
+.
 ├── README.md
 ├── backend
 │   ├── Dockerfile
@@ -18,9 +18,10 @@
 │   │   └── users.py
 │   └── schemas
 │       └── __init__.py
-├── docker-compose.yml
+├── docker-compose.yaml
 ├── frontend
 ├── llm-service
+│   ├── Dockerfile
 │   ├── config
 │   │   └── prompts.py
 │   ├── main.py
@@ -41,4 +42,4 @@
 │       └── vector_service.py
 └── tree.txt
 
-10 directories, 31 files
+10 directories, 32 files

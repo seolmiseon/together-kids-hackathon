@@ -9,6 +9,8 @@ from routers.auth import router as auth_router
 from routers.users import router as users_router
 from routers.children import router as children_router
 from routers.ai import router as ai_router
+from llm_service.routers.chat import router as chat_router
+from llm_service.routers.schedule import router as schedule_router  
 
 # 환경 변수 로드
 load_dotenv()
@@ -46,6 +48,8 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(children_router)
 app.include_router(ai_router)
+app.include_router(chat_router, prefix="/chat")
+app.include_router(schedule_router, prefix="/schedule")
 
 
 @app.get("/")
@@ -62,7 +66,7 @@ async def health_check():
     return {
         "status": "healthy", 
         "service": "함께키즈 메인 백엔드",
-        "llm_service_url": os.getenv("LLM_SERVICE_URL", "http://localhost:8001")
+        "llm_service_url": os.getenv("LLM_SERVICE_URL", "http://localhost:8000")
     }
 
 

@@ -1,26 +1,19 @@
-
-import json
-import numpy as np
+from langchain.embeddings import OpenAIEmbeddings 
+from langchain.vectorstores import Chroma      
 from typing import List, Dict, Any
-from services.openai_service import OpenAIService
+
 
 class VectorService:
-    def __init__(self):
-        self.openai_service = OpenAIService()
-        self.vector_store = []
-        self.documents = []
+    def __init__(self, persist_directory: str = "chroma_db"):
+        self.embeddings = OpenAIEmbeddings()
+        self.persist_directory = persist_directory
+        self.vector_store = Chroma(persist_directory=self.persist_directory, embedding_function=self.embeddings)
     
     async def add_schedule_info(self, user_id: str, schedule_text: str):
-        """스케줄 정보를 벡터DB에 추가"""
-        embedding = await self.openai_service.generate_single_embedding(schedule_text)
-        
-        self.vector_store.append(embedding)
-        self.documents.append({
-            "user_id": user_id,
-            "text": schedule_text,
-            "type": "schedule"
-        })
-        
+        # 메타데이터에 user_id 포함
+        metadata = {"user_id": user_id, "type": "schedule"}
+        self.vector_store.add_texts([schedule_text], metadatas=[metadata])
+        self.vector_store.persist()
         print(f"스케줄 저장됨: {user_id} - {schedule_text}")
     
     async def search_similar_schedules(self, query_text: str, top_k: int = 3):
@@ -44,15 +37,7 @@ class VectorService:
         
         return results
     
-    def _calculate_cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
-        vec1 = np.array(vec1)
-        vec2 = np.array(vec2)
-        
-        dot_product = np.dot(vec1, vec2)
-        norm1 = np.linalg.norm(vec1)
-        norm2 = np.linalg.norm(vec2)
-        
-        if norm1 == 0 or norm2 == 0:
-            return 0.0
-        
-        return dot_product / (norm1 * norm2)
+async def search_similar_schedules(self, query_text: str, top_k: int = 3) -> List[Dict[str, Any]]:
+        results = self.vector_store.similarity_search_with_score(query_text, k=top_k)
+        # 결과를 문서와 유사도 점수 형태로 반환
+        return [{"text": doc.page_content, "metadata": doc.metadata, "similarity": score} for doc, score in results]

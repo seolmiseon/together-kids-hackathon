@@ -11,7 +11,7 @@ from routers.auth import get_current_active_user
 router = APIRouter(prefix="/ai", tags=["ai-integration"])
 
 # LLM 서비스 설정
-LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8001")
+LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8100")
 LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY", "")
 
 async def get_user_context(user: UserModel, db: Session) -> dict:
