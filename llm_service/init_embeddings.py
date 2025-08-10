@@ -4,9 +4,12 @@ from services.vector_service import VectorService
 from database import get_all_schedules, get_all_prompts  
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-DATABASE_URL = "mysql+pymysql://root:%60N2%28l%40-F-4z%3FV%5E%60r@104.197.64.41:3306/my-sql"
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
