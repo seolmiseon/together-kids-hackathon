@@ -1,11 +1,11 @@
 from typing import List, Dict, Any, Optional
 import uuid
 from datetime import datetime
-from services.vector_service import VectorService
-from services.openai_service import OpenAIService
-from services.prompt_service import PromptService
-from services.session_manager import SessionManager
-from models.community_models import HelpRequest, CommunityResponse, HelpRequestCreate
+from llm_service.services.vector_service import VectorService
+from llm_service.services.openai_service import OpenAIService
+from llm_service.services.prompt_service import PromptService
+from llm_service.services.session_manager import SessionManager
+from llm_service.models.community_models import HelpRequest, CommunityResponse, HelpRequestCreate
 
 
 class UnifiedChatService:

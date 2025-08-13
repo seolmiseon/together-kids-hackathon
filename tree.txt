@@ -1,45 +1,35 @@
 .
 ├── README.md
-├── backend
-│   ├── Dockerfile
-│   ├── GCP_CLOUD_SQL.md
-│   ├── MySQL_SETUP.md
-│   ├── database.py
-│   ├── encoding.py
-│   ├── main.py
-│   ├── models
-│   │   └── __init__.py
-│   ├── requirements.txt
-│   ├── routers
-│   │   ├── __init__.py
-│   │   ├── ai.py
-│   │   ├── auth.py
-│   │   ├── children.py
-│   │   └── users.py
-│   └── schemas
-│       └── __init__.py
-├── docker-compose.yaml
+├── docker-compose.dev.yaml
+├── docker-compose.prod.yaml
 ├── frontend
-├── llm-service
-│   ├── Dockerfile
-│   ├── config
-│   │   └── prompts.py
-│   ├── main.py
-│   ├── models
-│   │   ├── __init__.py
-│   │   ├── chat_models.py
-│   │   └── community_models.py
-│   ├── requirements.txt
-│   ├── routers
-│   │   ├── chat.py
-│   │   └── schedule.py
-│   └── services
-│       ├── __init__.py
-│       ├── openai_service.py
-│       ├── prompt_service.py
-│       ├── session_manager.py
-│       ├── unified_chat_service.py
-│       └── vector_service.py
-└── tree.txt
+├── main.py
+├── server
+│   ├── backend
+│   │   ├── Dockerfile
+│   │   ├── GCP_CLOUD_SQL.md
+│   │   ├── MySQL_SETUP.md
+│   │   ├── database.py
+│   │   ├── encoding.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   ├── redis_client.py
+│   │   ├── routers
+│   │   └── schemas
+│   ├── llm_service
+│   │   ├── Dockerfile
+│   │   ├── chroma_db
+│   │   ├── config
+│   │   ├── database
+│   │   ├── init_embeddings.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   ├── routers
+│   │   ├── services
+│   │   └── utils
+│   └── requirements.txt
+├── tests
+├── tree.txt
+└── update_tree.sh
 
-10 directories, 32 files
+15 directories, 17 files

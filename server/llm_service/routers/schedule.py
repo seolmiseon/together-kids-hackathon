@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, HTTPException
-from services.vector_service import VectorService
+from llm_service.services.vector_service import VectorService
 
 router = APIRouter(prefix="/schedule", tags=["schedule"])
 

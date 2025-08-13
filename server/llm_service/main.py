@@ -3,13 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exception_handlers import RequestValidationError
 from fastapi.exceptions import HTTPException
-from utils.chunk_utils import split_text_by_meaning
-from services.vector_service import VectorService
+from llm_service.utils.chunk_utils import split_text_by_meaning
+from llm_service.services.vector_service import VectorService
 import asyncio
 from dotenv import load_dotenv
 import os
 import logging
-from routers import chat, schedule
+from llm_service.routers import chat, schedule
 import pandas as pd
 
 # 환경 변수 로드

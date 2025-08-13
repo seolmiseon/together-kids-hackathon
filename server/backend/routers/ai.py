@@ -1,17 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
 import httpx
 import os
+import datetime
+import json
 
 from database import get_db
 from models import User as UserModel, UserApartment
+from models import Child
+from schemas import User
 from routers.auth import get_current_active_user
+from backend.redis_client import set_cache, get_cache
 
 router = APIRouter(prefix="/ai", tags=["ai-integration"])
 
 # LLM 서비스 설정
-LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8100")
+LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8000")
 LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY", "")
 
 async def get_user_context(user: UserModel, db: Session) -> dict:
@@ -20,7 +24,9 @@ async def get_user_context(user: UserModel, db: Session) -> dict:
     user_apartments = db.query(UserApartment).filter(
         UserApartment.user_id == user.id
     ).all()
-    
+    user = db.query(User).filter(User.id == user.id).first()
+    children = db.query(Child).filter(Child.user_id == user.id).all()
+
     apartments = []
     for ua in user_apartments:
         apartments.append({
@@ -30,43 +36,47 @@ async def get_user_context(user: UserModel, db: Session) -> dict:
             "role": ua.role
         })
     
-    # 아이 정보 (간단한 정보만)
-    from models import Child
-    children = db.query(Child).filter(Child.parent_id == user.id).all()
+
+    user_context = {}  
     children_info = []
     for child in children:
+        today = datetime.today().date()
+        birth_date = child.birth_date
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
         children_info.append({
             "id": child.id,
             "name": child.name,
-            "age": (child.birth_date - child.birth_date).days // 365 if child.birth_date else None
+            "age": age
         })
-    
-    return {
+
+    user_context = {
         "user_id": user.id,
         "username": user.username,
         "full_name": user.full_name,
         "apartments": apartments,
         "children": children_info
     }
-
+    return user_context
 @router.post("/chat")
 async def chat_with_ai(
     message: str = Query(..., description="채팅 메시지"),
-    mode: str = Query("auto", description="채팅 모드 (auto, ai_only, community_only)"),
+    mode: str = Query("auto", description="채팅 모드"),
     current_user: UserModel = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """AI 채팅 (LLM 서비스 연동)"""
+    cache_key = f"chat_response:{current_user.id}:{message}:{mode}"
+    cached_response = get_cache(cache_key)
+    if cached_response:
+        return json.loads(cached_response)
+    
     try:
         # 사용자 컨텍스트 생성
         user_context = await get_user_context(current_user, db)
-        
         # LLM 서비스 호출
         async with httpx.AsyncClient() as client:
             headers = {}
             if LLM_SERVICE_API_KEY:
                 headers["Authorization"] = f"Bearer {LLM_SERVICE_API_KEY}"
-            
             response = await client.post(
                 f"{LLM_SERVICE_URL}/chat/unified",
                 params={
@@ -80,7 +90,9 @@ async def chat_with_ai(
             )
             
             if response.status_code == 200:
-                return response.json()
+                result = response.json()
+                set_cache(cache_key, json.dumps(result), expire_seconds=300)
+                return result
             else:
                 raise HTTPException(
                     status_code=response.status_code,

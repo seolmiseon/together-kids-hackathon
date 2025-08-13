@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import json
 
 from database import get_db
 from models import User as UserModel, UserApartment, Apartment
 from schemas import User, UserUpdate, UserApartment as UserApartmentSchema, MessageResponse
 from routers.auth import get_current_active_user
+from backend.redis_client import set_cache, get_cache, redis_client
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -22,12 +24,13 @@ async def update_profile(
 ):
     """사용자 프로필 수정"""
     update_data = user_update.dict(exclude_unset=True)
-    
     for field, value in update_data.items():
         setattr(current_user, field, value)
-    
     db.commit()
     db.refresh(current_user)
+    # 프로필 캐시 갱신
+    cache_key = f"user_profile:{current_user.id}"
+    set_cache(cache_key, current_user.json(), expire_seconds=3600)
     return current_user
 
 @router.get("/apartments", response_model=List[UserApartmentSchema])
@@ -35,11 +38,12 @@ async def get_user_apartments(
     current_user: UserModel = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """사용자가 속한 아파트 목록 조회"""
-    user_apartments = db.query(UserApartment).filter(
-        UserApartment.user_id == current_user.id
-    ).all()
-    
+    cache_key = f"user_apartments:{current_user.id}"
+    cached = get_cache(cache_key)
+    if cached:
+        return json.loads(cached)
+    user_apartments = db.query(UserApartment).filter(UserApartment.user_id == current_user.id).all()
+    set_cache(cache_key, json.dumps([ua.__dict__ for ua in user_apartments]), expire_seconds=300)
     return user_apartments
 
 @router.post("/apartments/{apartment_id}/join", response_model=MessageResponse)
@@ -73,7 +77,9 @@ async def join_apartment(
     
     db.add(user_apartment)
     db.commit()
-    
+    # 캐시 무효화
+    cache_key = f"user_apartments:{current_user.id}"
+    redis_client.delete(cache_key)
     return {"message": f"{apartment.name} 커뮤니티에 가입되었습니다"}
 
 @router.delete("/apartments/{apartment_id}/leave", response_model=MessageResponse)
@@ -93,7 +99,8 @@ async def leave_apartment(
     
     db.delete(user_apartment)
     db.commit()
-    
+    cache_key = f"user_apartments:{current_user.id}"
+    redis_client.delete(cache_key)
     return {"message": "아파트 커뮤니티에서 탈퇴되었습니다"}
 
 @router.get("/search", response_model=List[User])

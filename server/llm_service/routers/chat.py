@@ -1,7 +1,7 @@
 
 from fastapi import APIRouter, HTTPException
-from models.chat_models import ChatRequest, ChatResponse, ConversationHistoryResponse
-from services.unified_chat_service import UnifiedChatService
+from llm_service.models.chat_models import ChatRequest, ChatResponse, ConversationHistoryResponse
+from llm_service.services.unified_chat_service import UnifiedChatService
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 

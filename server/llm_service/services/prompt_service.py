@@ -1,5 +1,5 @@
 from typing import Dict, Optional, List
-from config.prompts import (
+from llm_service.config.prompts import (
     BASE_ROLE, BASE_CONTEXT, COMMON_ROLES, SPEAKING_STYLES, 
     SPECIAL_ROLES, PROMPT_TEMPLATE
 )

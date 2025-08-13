@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from datetime import datetime, date
+import json
 
 from database import get_db
 from models import Child as ChildModel, User as UserModel, Schedule as ScheduleModel
 from schemas import Child, ChildCreate, ChildUpdate, Schedule, ScheduleCreate, ScheduleUpdate, MessageResponse
 from routers.auth import get_current_active_user
-from datetime import datetime, date
+from backend.redis_client import set_cache, get_cache, redis_client
+
 
 router = APIRouter(prefix="/children", tags=["children"])
 
@@ -15,11 +18,14 @@ async def get_children(
     current_user: UserModel = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """현재 사용자의 아이 목록 조회"""
+    cache_key = f"children_list:{current_user.id}"
+    cached = get_cache(cache_key)
+    if cached:
+        return json.loads(cached)
     children = db.query(ChildModel).filter(
         ChildModel.parent_id == current_user.id
     ).all()
-    
+    set_cache(cache_key, json.dumps(children), expire_seconds=300)
     return children
 
 @router.post("/", response_model=Child)
@@ -37,7 +43,9 @@ async def create_child(
     db.add(child)
     db.commit()
     db.refresh(child)
-    
+    # 캐시 무효화
+    cache_key = f"children_list:{current_user.id}"
+    redis_client.delete(cache_key)
     return child
 
 @router.get("/{child_id}", response_model=Child)
@@ -79,7 +87,9 @@ async def update_child(
     
     db.commit()
     db.refresh(child)
-    
+    # 캐시 무효화
+    cache_key = f"children_list:{current_user.id}"
+    redis_client.delete(cache_key)
     return child
 
 @router.delete("/{child_id}", response_model=MessageResponse)
@@ -101,7 +111,9 @@ async def delete_child(
     db.query(ScheduleModel).filter(ScheduleModel.child_id == child_id).delete()
     db.delete(child)
     db.commit()
-    
+    # 캐시 무효화
+    cache_key = f"children_list:{current_user.id}"
+    redis_client.delete(cache_key)
     return {"message": "아이 프로필이 삭제되었습니다"}
 
 # ===== 일정 관리 =====

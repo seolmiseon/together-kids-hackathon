@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
+import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database import Base, engine
 from routers.auth import router as auth_router
@@ -15,8 +17,10 @@ from llm_service.routers.schedule import router as schedule_router
 # 환경 변수 로드
 load_dotenv()
 
+
 # 데이터베이스 테이블 생성
 Base.metadata.create_all(bind=engine)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,8 +52,6 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(children_router)
 app.include_router(ai_router)
-app.include_router(chat_router, prefix="/chat")
-app.include_router(schedule_router, prefix="/schedule")
 
 
 @app.get("/")
@@ -68,6 +70,8 @@ async def health_check():
         "service": "함께키즈 메인 백엔드",
         "llm_service_url": os.getenv("LLM_SERVICE_URL", "http://localhost:8000")
     }
+    
+    
 
 
 if __name__ == "__main__":
