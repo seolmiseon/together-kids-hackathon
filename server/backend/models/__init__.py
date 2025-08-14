@@ -140,3 +140,22 @@ class Comment(Base):
     post = relationship("Post", back_populates="comments")
     author = relationship("User", back_populates="comments")
     replies = relationship("Comment", remote_side=[id])  # 자기참조
+    
+    
+class SafeZone(Base):
+    """안전구역 모델"""
+    __tablename__ = "safe_zones"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    child_id = Column(Integer, ForeignKey("children.id"), nullable=False)
+    name = Column(String(100), nullable=False)  # "집", "어린이집", "학원" 등
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    radius = Column(Integer, default=100)  # 미터 단위
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+    
+    # 관계설정
+    user = relationship("User")
+    child = relationship("Child")
