@@ -1,7 +1,7 @@
 # 환경 파일들
 .env
 *.env
-!.env.example
+.env.example
 encoding.py
 
 *.secret.yaml
@@ -32,12 +32,11 @@ wheels/
 MANIFEST
 
 # Virtual Environment
-venv_hackathon/
-llm_service_venv/
+venv/
 env/
 ENV/
-env.bak/
-venv.bak/
+env.*
+
 
 # Database
 *.db
