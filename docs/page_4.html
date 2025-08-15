@@ -1,0 +1,185 @@
+<!--Actual display size of this page: width=1280, height=756, aspect ratio=16:9.4--><!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>기존 솔루션 분석 - 함께키즈</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script><style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {width: 1280px; min-height: 756px; font-family: 'Noto Sans KR', sans-serif;}
+        .slide {
+            width: 1280px;
+            min-height: 756px;
+
+            position: relative;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        }
+        .app-card {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+        }
+        .satisfaction {
+            background: rgba(16, 185, 129, 0.15);
+            border-left: 4px solid #10B981;
+        }
+        .dissatisfaction {
+            background: rgba(239, 68, 68, 0.15);
+            border-left: 4px solid #EF4444;
+        }
+        .icon-bg {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="slide gradient-bg flex flex-col">
+<!-- Header Section -->
+<div class="pt-10 px-16">
+<h1 class="text-4xl font-bold text-white mb-2">기존 솔루션 분석</h1>
+<div class="h-1 w-24 bg-yellow-500 mb-6"></div>
+<p class="text-white text-xl mb-8">기존 앱들의 만족/불만족 포인트와 한계점</p>
+</div>
+<!-- Main Content -->
+<div class="flex-grow px-16 flex justify-between">
+<!-- Map Apps -->
+<div class="app-card p-6 w-1/4 mr-2 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="icon-bg bg-blue-500/30 mr-4">
+<i class="fas fa-map-marked-alt text-3xl text-blue-300"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">지도 앱</h3>
+</div>
+<div class="flex items-start mb-3">
+<img alt="지도 앱 화면" class="w-24 h-24 object-cover rounded-lg mr-3" src="https://picture-search.skywork.ai/aippt/image/sheet/e4d8076c00d85c534c92a55309cf32ba.jpg"/>
+<p class="text-white/80 text-sm">카카오맵, 네이버맵과 같은 일반적인 지도 앱</p>
+</div>
+<div class="satisfaction p-3 rounded mb-3">
+<h4 class="text-white font-medium mb-2">만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>정확한 길 찾기 및 최적 경로 제안</li>
+<li>실시간 교통 상황 반영한 소요 시간 안내</li>
+</ul>
+</div>
+<div class="dissatisfaction p-3 rounded">
+<h4 class="text-white font-medium mb-2">불만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>등하원 전용 기능 부재</li>
+<li>부모 간 공동 운송 시스템 부재</li>
+<li>아이들의 안전 확인 기능 없음</li>
+</ul>
+</div>
+</div>
+<!-- Daycare Apps -->
+<div class="app-card p-6 w-1/4 mx-2 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="icon-bg bg-yellow-500/30 mr-4">
+<i class="fas fa-baby text-3xl text-yellow-300"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">어린이집 앱</h3>
+</div>
+<div class="flex items-start mb-3">
+<div class="w-24 h-24 bg-white/10 rounded-lg flex items-center justify-center mr-3">
+<i class="fas fa-mobile-alt text-3xl text-white/70"></i>
+</div>
+<p class="text-white/80 text-sm">키즈노트, 키드카 등 어린이집 전용 앱</p>
+</div>
+<div class="satisfaction p-3 rounded mb-3">
+<h4 class="text-white font-medium mb-2">만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>어린이집 공지사항 및 알림장 기능</li>
+<li>자녀의 활동 사진 및 일과 공유</li>
+<li>출결 및 투약 의뢰서 관리</li>
+</ul>
+</div>
+<div class="dissatisfaction p-3 rounded">
+<h4 class="text-white font-medium mb-2">불만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>등하원 운송 기능 없음</li>
+<li>부모 간 소통 기능 부족</li>
+</ul>
+</div>
+</div>
+<!-- Carpooling Apps -->
+<div class="app-card p-6 w-1/4 mx-2 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="icon-bg bg-green-500/30 mr-4">
+<i class="fas fa-car-side text-3xl text-green-300"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">카풀 앱</h3>
+</div>
+<div class="flex items-start mb-3">
+<div class="w-24 h-24 bg-white/10 rounded-lg flex items-center justify-center mr-3">
+<i class="fas fa-users text-3xl text-white/70"></i>
+</div>
+<p class="text-white/80 text-sm">카카오T, 타다와 같은 카풀 앱</p>
+</div>
+<div class="satisfaction p-3 rounded mb-3">
+<h4 class="text-white font-medium mb-2">만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>이동 경로가 비슷한 사람들 간 공동 운송</li>
+<li>개별 이동 대비 비용 절감 효과</li>
+</ul>
+</div>
+<div class="dissatisfaction p-3 rounded">
+<h4 class="text-white font-medium mb-2">불만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>어린이 전용 안전 시스템 부재</li>
+<li>정기 일정 관리의 어려움</li>
+<li>실시간 안심 모니터링 한계</li>
+</ul>
+</div>
+</div>
+<!-- Automation Tools -->
+<div class="app-card p-6 w-1/4 ml-2 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="icon-bg bg-purple-500/30 mr-4">
+<i class="fas fa-cogs text-3xl text-purple-300"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">일반 자동화 도구</h3>
+</div>
+<div class="flex items-start mb-3">
+<div class="w-24 h-24 bg-white/10 rounded-lg flex items-center justify-center mr-3">
+<i class="fas fa-tools text-3xl text-white/70"></i>
+</div>
+<p class="text-white/80 text-sm">Zapier, IFTTT 등 자동화 도구</p>
+</div>
+<div class="satisfaction p-3 rounded mb-3">
+<h4 class="text-white font-medium mb-2">만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>기본적인 자동화 기능</li>
+</ul>
+</div>
+<div class="dissatisfaction p-3 rounded">
+<h4 class="text-white font-medium mb-2">불만족 포인트</h4>
+<ul class="text-white/90 text-sm pl-5 list-disc">
+<li>육아 특화 워크플로우 부재</li>
+<li>복잡한 설정</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Bottom Conclusion -->
+<div class="px-16 py-6 bg-white/10">
+<p class="text-white text-center text-lg">
+<i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+<span class="font-medium">모든 기존 솔루션은 맞벌이 부모의 등하원 문제를 종합적으로 해결하지 못하는 한계가 있습니다</span>
+</p>
+</div>
+<!-- Footer -->
+<div class="h-12 px-16 flex justify-between items-center text-white/70">
+<div>
+<p>함께키즈 - 맞벌이 부모를 위한 공동육아 플랫폼</p>
+</div>
+<div>
+<p>4 / 11</p>
+</div>
+</div>
+</div>
+
+</body></html>

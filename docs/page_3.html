@@ -1,0 +1,135 @@
+<!--Actual display size of this page: width=1280, height=884, aspect ratio=16:11.1--><!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>페르소나 분석 - 함께키즈</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script><style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {width: 1280px; min-height: 884px; font-family: 'Noto Sans KR', sans-serif;}
+        .slide {
+            width: 1280px;
+            min-height: 884px;
+            
+            position: relative;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+        }
+        .persona-image {
+            border: 4px solid rgba(245, 158, 11, 0.6);
+            border-radius: 12px;
+        }
+        .characteristic-item {
+            border-left: 3px solid #f59e0b;
+            background: rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body>
+<div class="slide gradient-bg flex flex-col">
+<!-- Header Section -->
+<div class="pt-12 px-16">
+<h1 class="text-4xl font-bold text-white mb-2">페르소나 분석</h1>
+<div class="h-1 w-24 bg-yellow-500 mb-8"></div>
+<p class="text-white text-xl mb-6">핵심 고객의 특성과 요구사항 이해</p>
+</div>
+<!-- Main Content -->
+<div class="flex-grow px-16 flex justify-between">
+<!-- Left Column: Persona Profile -->
+<div class="w-1/3 pr-8 flex flex-col">
+<div class="mb-6 relative">
+<img alt="맞벌이 부모와 아이들" class="persona-image w-full h-48 object-cover" src="https://picture-search.skywork.ai/aippt/image/sheet/84f6b7d9744fcb40829bcbe2bef802ad.jpg"/>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900 to-transparent p-4">
+<h3 class="text-white font-bold text-xl">맞벌이 가정의 부모</h3>
+</div>
+</div>
+<div class="feature-card p-6 mb-4">
+<h3 class="text-yellow-500 font-bold text-xl mb-3">정량적 특성</h3>
+<ul class="text-white space-y-3">
+<li class="flex items-center">
+<i class="fas fa-user-clock text-yellow-400 mr-3 w-6"></i>
+<span>30-40대 연령층</span>
+</li>
+<li class="flex items-center">
+<i class="fas fa-briefcase text-yellow-400 mr-3 w-6"></i>
+<span>맞벌이 부모</span>
+</li>
+<li class="flex items-center">
+<i class="fas fa-building text-yellow-400 mr-3 w-6"></i>
+<span>아파트 단지 거주</span>
+</li>
+<li class="flex items-center">
+<i class="fas fa-baby text-yellow-400 mr-3 w-6"></i>
+<span>어린이집 이용 영유아 자녀</span>
+</li>
+</ul>
+</div>
+<div class="feature-card p-6">
+<h3 class="text-yellow-500 font-bold text-xl mb-3">정성적 특성</h3>
+<ul class="text-white space-y-3">
+<li class="flex items-center">
+<i class="fas fa-heart text-yellow-400 mr-3 w-6"></i>
+<span>자녀의 사회성 및 인성 발달 중시</span>
+</li>
+<li class="flex items-center">
+<i class="fas fa-hands-helping text-yellow-400 mr-3 w-6"></i>
+<span>이웃과의 신뢰 기반 관계 중요시</span>
+</li>
+<li class="flex items-center">
+<i class="fas fa-clock text-yellow-400 mr-3 w-6"></i>
+<span>시간과 자원의 효율적 관리 추구</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Right Column: Needs and Pain Points -->
+<div class="w-2/3 pl-8">
+<h3 class="text-2xl font-bold text-white mb-6">페르소나의 어려움과 요구사항</h3>
+<!-- Pain Points -->
+<div class="characteristic-item p-5 mb-5">
+<div class="flex items-center mb-3">
+<div class="bg-red-500/20 p-3 rounded-full mr-4">
+<i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+</div>
+<h4 class="text-xl font-bold text-white">어려움 (Pain Point)</h4>
+</div>
+<p class="text-white text-lg pl-16">부모의 출근 시간이 달라 발생하는 등하원 스케줄의 불일치, 그리고 이로 인한 시간과 비용의 비효율성을 가장 큰 어려움으로 꼽습니다.</p>
+</div>
+<!-- Needs -->
+<div class="characteristic-item p-5 mb-5">
+<div class="flex items-center mb-3">
+<div class="bg-green-500/20 p-3 rounded-full mr-4">
+<i class="fas fa-bullseye text-green-400 text-2xl"></i>
+</div>
+<h4 class="text-xl font-bold text-white">원하는 것 (Needs)</h4>
+</div>
+<p class="text-white text-lg pl-16">신뢰할 수 있는 이웃과 함께 효율적으로 자녀를 등하원시키고, 이 과정을 통해 자녀가 자연스럽게 친구들과 어울리며 사회성을 키우기를 원합니다.</p>
+</div>
+<!-- Dissatisfaction -->
+<div class="characteristic-item p-5">
+<div class="flex items-center mb-3">
+<div class="bg-blue-500/20 p-3 rounded-full mr-4">
+<i class="fas fa-thumbs-down text-blue-400 text-2xl"></i>
+</div>
+<h4 class="text-xl font-bold text-white">불만족 사항 (Dissatisfaction)</h4>
+</div>
+<p class="text-white text-lg pl-16">기존의 육아 관련 앱들이 대부분 단순 정보 제공에 그칠 뿐, 등하원 문제와 같은 실질적인 어려움을 해결해주는 기능이 없어 불만족을 느끼고 있습니다.</p>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="h-16 px-16 flex justify-between items-center text-white/70">
+<div>
+<p>함께키즈 - 맞벌이 부모를 위한 공동육아 플랫폼</p>
+</div>
+<div>
+<p>3 / 11</p>
+</div>
+</div>
+</div>
+
+</body></html>

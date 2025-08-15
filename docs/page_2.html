@@ -1,0 +1,92 @@
+<!--Actual display size of this page: width=1280, height=720, aspect ratio=16:9.0--><!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>문제 정의 - 함께키즈</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script><style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {width: 1280px; min-height: 720px; font-family: 'Noto Sans KR', sans-serif;}
+        .slide {
+            width: 1280px;
+            min-height: 720px;
+            
+            position: relative;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        }
+        .problem-card {
+            background: rgba(255, 255, 255, 0.12);
+            border-left: 4px solid #f59e0b;
+            transition: all 0.3s ease;
+        }
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .icon-container {
+            background: rgba(245, 158, 11, 0.2);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="slide gradient-bg flex flex-col">
+<!-- Header Section -->
+<div class="pt-12 px-16">
+<h1 class="text-4xl font-bold text-white mb-2">문제 정의</h1>
+<div class="h-1 w-24 bg-yellow-500 mb-8"></div>
+<p class="text-white text-xl mb-10 max-w-4xl">맞벌이 부모들이 직면한 등하원 과정의 구조적 문제점</p>
+</div>
+<!-- Main Content: Problem Cards -->
+<div class="flex-grow px-16 flex flex-col justify-center">
+<div class="grid grid-cols-3 gap-8">
+<!-- Problem 1 -->
+<div class="problem-card p-8 rounded-lg flex flex-col items-start">
+<div class="icon-container mb-6">
+<i class="fas fa-calendar-times text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white mb-4">등하원 시간 불일치</h3>
+<p class="text-white/90 text-lg">부모의 서로 다른 출근 시간으로 인한 등하원 시간 조율의 어려움과 한쪽 부모에게 집중되는 부담</p>
+</div>
+<!-- Problem 2 -->
+<div class="problem-card p-8 rounded-lg flex flex-col items-start">
+<div class="icon-container mb-6">
+<i class="fas fa-coins text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white mb-4">시간 및 비용 낭비</h3>
+<p class="text-white/90 text-lg">개별 등하원으로 인한 부모의 귀중한 시간과 사회적 자원의 비효율적 사용과 낭비</p>
+</div>
+<!-- Problem 3 -->
+<div class="problem-card p-8 rounded-lg flex flex-col items-start">
+<div class="icon-container mb-6">
+<i class="fas fa-child text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white mb-4">사회성 발달 기회 부족</h3>
+<p class="text-white/90 text-lg">개별 등하원으로 인해 아이들이 또래와 어울리며 사회성을 기를 기회가 제한됨</p>
+</div>
+</div>
+<!-- Bottom Quote -->
+<div class="mt-12 bg-white/10 p-6 rounded-lg border-l-4 border-yellow-500">
+<p class="text-white italic text-lg">
+                    &#34;연구에 따르면, 부모 간의 협력적인 양육(Cooperative coparenting) 환경은 아이들의 친사회적 행동 발달에 긍정적인 영향을 미칩니다.&#34;
+                </p>
+</div>
+</div>
+<!-- Footer -->
+<div class="h-16 px-16 flex justify-between items-center text-white/70">
+<div>
+<p>함께키즈 - 맞벌이 부모를 위한 공동육아 플랫폼</p>
+</div>
+<div>
+<p>2 / 11</p>
+</div>
+</div>
+</div>
+
+</body></html>

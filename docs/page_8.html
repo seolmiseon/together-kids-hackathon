@@ -1,0 +1,184 @@
+<!--Actual display size of this page: width=1280, height=720, aspect ratio=16:9.0--><!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>기술 스택 - 함께키즈</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script><style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {width: 1280px; min-height: 720px; font-family: 'Noto Sans KR', sans-serif;}
+        .slide {
+            width: 1280px;
+            min-height: 720px;
+
+            position: relative;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        }
+        .tech-card {
+            background: rgba(255, 255, 255, 0.12);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            height: 220px;
+        }
+        .tech-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .tech-icon {
+            background: rgba(245, 158, 11, 0.2);
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .connector {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="slide gradient-bg flex flex-col">
+<!-- Header Section -->
+<div class="pt-10 px-16">
+<h1 class="text-4xl font-bold text-white mb-2">기술 스택</h1>
+<div class="h-1 w-24 bg-yellow-500 mb-6"></div>
+<p class="text-white text-xl mb-4 max-w-4xl">함께키즈 서비스의 핵심 기술 구성 요소</p>
+</div>
+<!-- Main Content: Tech Stack Cards -->
+<div class="flex-grow px-16 flex flex-col justify-center relative">
+<!-- First row: 3 cards -->
+<div class="grid grid-cols-3 gap-6 z-10 mb-6">
+<!-- Tech 1: Next.js -->
+<div class="tech-card p-6 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="tech-icon mr-4">
+<i class="fab fa-react text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">Next.js</h3>
+</div>
+<div class="bg-white/10 p-3 rounded-md mb-4">
+<p class="text-yellow-300 text-sm font-semibold mb-1">프론트엔드</p>
+</div>
+<p class="text-white/90 text-base flex-grow">
+                        웹과 모바일 환경 모두에서 빠르고 안정적인 사용자 경험을 제공하는 반응형 인터페이스 구현
+                    </p>
+<div class="mt-auto">
+<p class="text-white/70 text-sm mt-2">
+<i class="fas fa-check-circle text-yellow-400 mr-1"></i> 
+                            빠른 페이지 로딩과 SEO 최적화
+                        </p>
+</div>
+</div>
+<!-- Tech 2: Firebase -->
+<div class="tech-card p-6 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="tech-icon mr-4">
+<i class="fas fa-database text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">Firebase</h3>
+</div>
+<div class="bg-white/10 p-3 rounded-md mb-4">
+<p class="text-yellow-300 text-sm font-semibold mb-1">백엔드 서비스</p>
+</div>
+<p class="text-white/90 text-base flex-grow">
+                        사용자 인증, 실시간 데이터베이스, 클라우드 스토리지 등 핵심 기능을 안정적으로 관리
+                    </p>
+<div class="mt-auto">
+<p class="text-white/70 text-sm mt-2">
+<i class="fas fa-check-circle text-yellow-400 mr-1"></i> 
+                            실시간 데이터 동기화 기능
+                        </p>
+</div>
+</div>
+<!-- Tech 3: AI 멀티턴 챗봇 -->
+<div class="tech-card p-6 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="tech-icon mr-4">
+<i class="fas fa-robot text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">AI 멀티턴 챗봇</h3>
+</div>
+<div class="bg-white/10 p-3 rounded-md mb-4">
+<p class="text-yellow-300 text-sm font-semibold mb-1">일정 조율 자동화</p>
+</div>
+<p class="text-white/90 text-base flex-grow">
+                        자연스러운 대화 형태로 복잡한 등하원 일정을 자동으로 조율하고 최적의 로테이션 제안
+                    </p>
+<div class="mt-auto">
+<p class="text-white/70 text-sm mt-2">
+<i class="fas fa-check-circle text-yellow-400 mr-1"></i> 
+                            24시간 응대 및 상황 학습 기능
+                        </p>
+</div>
+</div>
+</div>
+<!-- Second row: 2 cards centered -->
+<div class="grid grid-cols-2 gap-6 z-10 mx-auto" style="width: 66%;">
+<!-- Tech 4: GPS 추적 -->
+<div class="tech-card p-6 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="tech-icon mr-4">
+<i class="fas fa-map-marked-alt text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">GPS 추적</h3>
+</div>
+<div class="bg-white/10 p-3 rounded-md mb-4">
+<p class="text-yellow-300 text-sm font-semibold mb-1">안전 관리 시스템</p>
+</div>
+<p class="text-white/90 text-base flex-grow">
+                        실시간 위치 추적으로 등하원 과정을 모니터링하고 지오펜싱을 통한 자동 알림 제공
+                    </p>
+<div class="mt-auto">
+<p class="text-white/70 text-sm mt-2">
+<i class="fas fa-check-circle text-yellow-400 mr-1"></i> 
+                            어린이집 도착 시 자동 알림 기능
+                        </p>
+</div>
+</div>
+<!-- Tech 5: Spell Script -->
+<div class="tech-card p-6 flex flex-col">
+<div class="flex items-center mb-4">
+<div class="tech-icon mr-4">
+<i class="fas fa-magic text-3xl text-yellow-500"></i>
+</div>
+<h3 class="text-2xl font-bold text-white">Spell Script</h3>
+</div>
+<div class="bg-white/10 p-3 rounded-md mb-4">
+<p class="text-yellow-300 text-sm font-semibold mb-1">자동화</p>
+</div>
+<p class="text-white/90 text-base flex-grow">
+                        GPS 기반 자동 알림과 일정 관리를 위한 스크립트 기반 자동화 시스템
+                    </p>
+<div class="mt-auto">
+<p class="text-white/70 text-sm mt-2">
+<i class="fas fa-check-circle text-yellow-400 mr-1"></i> 
+                            상황 인식 기반 스마트 자동화
+                        </p>
+</div>
+</div>
+</div>
+<!-- Bottom Info Box -->
+<div class="mt-8 bg-white/10 p-5 rounded-lg border-l-4 border-yellow-500 z-10">
+<p class="text-white text-lg">
+<i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                    이러한 기술들의 결합으로 <span class="font-bold">부모의 시간 절약</span>과 <span class="font-bold">아이의 안전</span>을 동시에 확보하는 혁신적인 솔루션을 구현합니다.
+                </p>
+</div>
+</div>
+<!-- Footer -->
+<div class="h-16 px-16 flex justify-between items-center text-white/70">
+<div>
+<p>함께키즈 - 맞벌이 부모를 위한 공동육아 플랫폼</p>
+</div>
+<div>
+<p>8 / 11</p>
+</div>
+</div>
+</div>
+
+</body></html>
