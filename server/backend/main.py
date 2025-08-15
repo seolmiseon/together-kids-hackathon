@@ -41,10 +41,15 @@ app = FastAPI(
 # CORS 설정 (프론트엔드 연결용)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 실제 배포시에는 구체적인 도메인으로 변경
+    allow_origins=[
+        "http://localhost:3000",    # Next.js 개발서버
+        "http://localhost:3001",    # 추가 개발포트
+        "http://127.0.0.1:3000",    # 로컬호스트 대체
+        # 배포시 실제 도메인 추가
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # 라우터 등록
@@ -65,10 +70,21 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    try:
+        # DB 연결 테스트
+        from database import SessionLocal
+        db = SessionLocal()
+        db.execute("SELECT 1")
+        db.close()
+        db_status = "healthy"
+    except Exception as e:
+        db_status = "unhealthy"
+    
     return {
-        "status": "healthy", 
-        "service": "함께키즈 메인 백엔드",
-        "llm_service_url": os.getenv("LLM_SERVICE_URL", "http://localhost:8000")
+        "status": "healthy" if db_status == "healthy" else "degraded",
+        "service": "함께키즈 메인 백엔드", 
+        "database": db_status,
+        "llm_service_url": os.getenv("LLM_SERVICE_URL", "http://localhost:8001")
     }
     
     
