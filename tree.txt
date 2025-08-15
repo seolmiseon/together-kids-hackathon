@@ -3,6 +3,26 @@
 ├── docker-compose.dev.yaml
 ├── docker-compose.prod.yaml
 ├── frontend
+│   ├── README.md
+│   ├── eslint.config.mjs
+│   ├── next-env.d.ts
+│   ├── next.config.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.mjs
+│   ├── public
+│   │   ├── file.svg
+│   │   ├── globe.svg
+│   │   ├── next.svg
+│   │   ├── vercel.svg
+│   │   └── window.svg
+│   ├── src
+│   │   ├── app
+│   │   ├── children
+│   │   ├── components
+│   │   ├── lib
+│   │   └── types
+│   └── tsconfig.json
 ├── main.py
 ├── server
 │   ├── backend
@@ -15,7 +35,8 @@
 │   │   ├── models
 │   │   ├── redis_client.py
 │   │   ├── routers
-│   │   └── schemas
+│   │   ├── schemas
+│   │   └── utils
 │   ├── llm_service
 │   │   ├── Dockerfile
 │   │   ├── chroma_db
@@ -32,4 +53,4 @@
 ├── tree.txt
 └── update_tree.sh
 
-15 directories, 17 files
+23 directories, 30 files
