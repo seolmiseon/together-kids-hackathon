@@ -1,0 +1,87 @@
+import { signIn, signOut, useSession } from 'next-auth/react';
+
+interface SocialLoginProps {
+  redirectUrl?: string;
+}
+
+export default function SocialLogin({ redirectUrl = '/dashboard' }: SocialLoginProps) {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (session) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6 text-center">
+        <div className="mb-4">
+          <img
+            src={session.user?.image || '/default-avatar.png'}
+            alt="프로필"
+            className="w-16 h-16 rounded-full mx-auto mb-2"
+          />
+          <h3 className="text-lg font-bold text-gray-800">
+            {session.user?.name}님 환영합니다!
+          </h3>
+          <p className="text-sm text-gray-600">{session.user?.email}</p>
+        </div>
+        <button
+          onClick={() => signOut()}
+          className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
+        >
+          로그아웃
+        </button>
+      </div>
+    );
+  }
+
+  const socialProviders = [
+    {
+      id: 'google',
+      name: 'Google',
+      icon: 'fab fa-google',
+      color: 'bg-red-500 hover:bg-red-600'
+    },
+    {
+      id: 'naver', 
+      name: 'Naver',
+      icon: 'fas fa-n',
+      color: 'bg-green-500 hover:bg-green-600'
+    },
+    {
+      id: 'kakao',
+      name: 'Kakao',
+      icon: 'fas fa-comment',
+      color: 'bg-yellow-400 hover:bg-yellow-500 text-black'
+    }
+  ];
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <h3 className="text-xl font-bold text-center mb-6 text-gray-800">
+        함께 키즈에 로그인하세요
+      </h3>
+      
+      <div className="space-y-3">
+        {socialProviders.map((provider) => (
+          <button
+            key={provider.id}
+            onClick={() => signIn(provider.id, { callbackUrl: redirectUrl })}
+            className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-colors ${provider.color} text-white`}
+          >
+            <i className={`${provider.icon} mr-3 text-lg`}></i>
+            {provider.name}로 계속하기
+          </button>
+        ))}
+      </div>
+      
+      <p className="text-xs text-gray-500 text-center mt-4">
+        로그인하시면 이용약관 및 개인정보처리방침에 동의하게 됩니다.
+      </p>
+    </div>
+  );
+}
