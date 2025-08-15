@@ -45,7 +45,7 @@ hackathon/
 │   ├── routers/       # API 엔드포인트
 │   ├── schemas/       # Pydantic 스키마
 │   └── docker-compose.yml
-├── llm-service/       # AI 채팅 서비스
+├── llm_service/       # AI 채팅 서비스
 │   ├── services/      # UnifiedChatService
 │   ├── routers/       # 채팅 API
 │   └── config/        # 프롬프트 설정
@@ -107,13 +107,13 @@ cd hackathon
 
 # 환경 변수 설정
 cp backend/.env.example backend/.env
-cp llm-service/.env.example llm-service/.env
+cp llm_service/.env.example llm_service/.env
 ```
 
 ### LLM 서비스 실행
 
 ```bash
-cd llm-service
+cd llm_service
 pip install -r requirements.txt
 python main.py
 # http://localhost:8001
