@@ -1,0 +1,56 @@
+# Docker Compose로 MySQL + phpMyAdmin 설정
+
+version: '3.8'
+
+services:
+    # MySQL 데이터베이스
+    mysql:
+        image: mysql:8.0
+        container_name: together_kids_mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: rootpassword123
+            MYSQL_DATABASE: together_kids
+            MYSQL_USER: together_user
+            MYSQL_PASSWORD: userpassword123
+        ports:
+            - '3306:3306'
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - together_kids_network
+
+    # phpMyAdmin (웹 GUI)
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: together_kids_phpmyadmin
+        environment:
+            PMA_HOST: mysql
+            PMA_PORT: 3306
+            PMA_USER: together_user
+            PMA_PASSWORD: userpassword123
+        ports:
+            - '8080:80'
+        depends_on:
+            - mysql
+        networks:
+            - together_kids_network
+
+    # 백엔드 서비스
+    backend:
+        build: .
+        container_name: together_kids_backend
+        environment:
+            DATABASE_URL: mysql+pymysql://together_user:userpassword123@mysql:3306/together_kids
+        ports:
+            - '8000:8000'
+        depends_on:
+            - mysql
+        networks:
+            - together_kids_network
+
+volumes:
+    mysql_data:
+
+networks:
+    together_kids_network:
+        driver: bridge
