@@ -1,1 +1,1 @@
-tree -I "venv_hackathon|llm_service-venv|__pycache__|*.pyc|*.pyo|*.egg-info|.pytest_cache|build|dist|*.log|logs|.vscode|.idea|.DS_Store|node_modules|.next|tmp|temp|*.tmp|uploads|static|*.db|*.sqlite3|docs" -L 3 > tree.txt
+tree -I "venv_hackathon|llm_service-venv|__pycache__|*.pyc|*.pyo|*.egg-info|.pytest_cache|build|dist|*.log|logs|.vscode|.idea|.DS_Store|node_modules|.next|tmp|temp|*.tmp|uploads|static|*.db|*.sqlite3|docs" -L 4 -a -h > tree.txt
