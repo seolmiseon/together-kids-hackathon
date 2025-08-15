@@ -1,0 +1,35 @@
+.
+├── README.md
+├── docker-compose.dev.yaml
+├── docker-compose.prod.yaml
+├── frontend
+├── main.py
+├── server
+│   ├── backend
+│   │   ├── Dockerfile
+│   │   ├── GCP_CLOUD_SQL.md
+│   │   ├── MySQL_SETUP.md
+│   │   ├── database.py
+│   │   ├── encoding.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   ├── redis_client.py
+│   │   ├── routers
+│   │   └── schemas
+│   ├── llm_service
+│   │   ├── Dockerfile
+│   │   ├── chroma_db
+│   │   ├── config
+│   │   ├── database
+│   │   ├── init_embeddings.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   ├── routers
+│   │   ├── services
+│   │   └── utils
+│   └── requirements.txt
+├── tests
+├── tree.txt
+└── update_tree.sh
+
+15 directories, 17 files

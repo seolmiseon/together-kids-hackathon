@@ -2,6 +2,11 @@
 .env
 *.env
 !.env.example
+encoding.py
+
+*.secret.yaml
+*.yaml
+
 
 # Python
 __pycache__/
@@ -27,7 +32,8 @@ wheels/
 MANIFEST
 
 # Virtual Environment
-venv/
+venv_hackathon/
+llm_service_venv/
 env/
 ENV/
 env.bak/
