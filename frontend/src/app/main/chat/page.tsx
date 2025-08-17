@@ -1,0 +1,233 @@
+'use client';
+
+import { useEffect, useState, useRef } from 'react';
+import socket from '@/lib/socket';
+
+interface Message {
+    id: string;
+    text: string;
+    sender: string;
+    timestamp: Date;
+    room: string;
+}
+
+interface ChatProps {
+    room: string;
+    currentUser: string;
+}
+
+export default function RealTimeChat({ room, currentUser }: ChatProps) {
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [inputText, setInputText] = useState<string>('');
+    const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [isTyping, setIsTyping] = useState<boolean>(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // 자동 스크롤 함수
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // 메시지가 업데이트될 때마다 자동 스크롤
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    useEffect(() => {
+        // 연결 상태 관리
+        socket.on('connect', () => setIsConnected(true));
+        socket.on('disconnect', () => setIsConnected(false));
+
+        // 메시지 수신 - ID 생성 로직 추가
+        socket.on('message', (newMessage: Omit<Message, 'id'>) => {
+            const messageWithId: Message = {
+                ...newMessage,
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // 고유 ID 생성
+                timestamp: new Date(newMessage.timestamp), // Date 객체로 변환
+            };
+
+            setMessages((prev) => [...prev, messageWithId]);
+        });
+
+        // 타이핑 상태 관리
+        socket.on('typing', (data: { user: string; isTyping: boolean }) => {
+            if (data.user !== currentUser) {
+                setIsTyping(data.isTyping);
+            }
+        });
+
+        // 방 참여
+        socket.emit('join_room', { room, parent: currentUser });
+
+        // 기존 메시지 로드 (선택사항)
+        socket.emit('load_messages', { room });
+        socket.on('previous_messages', (previousMessages: Message[]) => {
+            setMessages(previousMessages);
+        });
+
+        return () => {
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('message');
+            socket.off('typing');
+            socket.off('previous_messages');
+        };
+    }, [room, currentUser]);
+
+    const sendMessage = () => {
+        if (!inputText.trim()) return;
+
+        const messageData: Omit<Message, 'id'> = {
+            text: inputText,
+            sender: currentUser,
+            timestamp: new Date(),
+            room,
+        };
+
+        // 즉시 UI에 메시지 추가 (낙관적 업데이트)
+        const optimisticMessage: Message = {
+            ...messageData,
+            id: `temp-${Date.now()}`,
+        };
+        setMessages((prev) => [...prev, optimisticMessage]);
+
+        // 서버로 메시지 전송
+        socket.emit('message', messageData);
+
+        // 입력창 초기화
+        setInputText('');
+
+        // 타이핑 상태 중지
+        socket.emit('stop_typing', { room, user: currentUser });
+    };
+
+    // 입력 중 타이핑 상태 전송
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInputText(e.target.value);
+
+        // 타이핑 상태 전송 (디바운싱)
+        socket.emit('typing', { room, user: currentUser, isTyping: true });
+
+        // 3초 후 타이핑 중지
+        setTimeout(() => {
+            socket.emit('typing', { room, user: currentUser, isTyping: false });
+        }, 3000);
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    return (
+        <div className="flex flex-col h-96 bg-white rounded-lg shadow-lg">
+            {/* 헤더 */}
+            <div className="bg-blue-600 text-white p-4 rounded-t-lg">
+                <h3 className="font-bold">101동 등하원 친구들</h3>
+                <p className="text-sm opacity-80 flex items-center">
+                    {isConnected ? (
+                        <>
+                            <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                            연결됨
+                        </>
+                    ) : (
+                        <>
+                            <span className="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
+                            연결 중...
+                        </>
+                    )}
+                </p>
+            </div>
+
+            {/* 메시지 영역 */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {messages.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-8">
+                        <p>아직 메시지가 없습니다.</p>
+                        <p className="text-sm">
+                            첫 번째 메시지를 보내보세요! 👋
+                        </p>
+                    </div>
+                ) : (
+                    messages.map((msg) => (
+                        <div
+                            key={msg.id}
+                            className={`p-2 rounded-lg max-w-xs ${
+                                msg.sender === currentUser
+                                    ? 'bg-blue-500 text-white ml-auto'
+                                    : 'bg-gray-100 text-gray-800'
+                            }`}
+                        >
+                            <p className="text-sm">{msg.text}</p>
+                            <p className="text-xs opacity-70 mt-1">
+                                {msg.sender === currentUser ? '나' : msg.sender}{' '}
+                                •{' '}
+                                {new Date(msg.timestamp).toLocaleTimeString(
+                                    'ko-KR',
+                                    {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    }
+                                )}
+                            </p>
+                        </div>
+                    ))
+                )}
+
+                {/* 타이핑 인디케이터 */}
+                {isTyping && (
+                    <div className="bg-gray-100 text-gray-600 p-2 rounded-lg max-w-xs text-sm">
+                        <div className="flex items-center">
+                            <div className="typing-dots flex space-x-1">
+                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                <div
+                                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                    style={{ animationDelay: '0.1s' }}
+                                ></div>
+                                <div
+                                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                    style={{ animationDelay: '0.2s' }}
+                                ></div>
+                            </div>
+                            <span className="ml-2">입력 중...</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* 자동 스크롤을 위한 참조점 */}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* 입력 영역 */}
+            <div className="p-4 border-t">
+                <div className="flex space-x-2">
+                    <input
+                        type="text"
+                        value={inputText}
+                        onChange={handleInputChange}
+                        onKeyPress={handleKeyPress}
+                        placeholder="메시지를 입력하세요..."
+                        disabled={!isConnected}
+                        className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    />
+                    <button
+                        onClick={sendMessage}
+                        disabled={!inputText.trim() || !isConnected}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        <i className="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+
+                {/* 연결 상태 메시지 */}
+                {!isConnected && (
+                    <p className="text-xs text-red-500 mt-2 text-center">
+                        서버 연결이 끊어졌습니다. 재연결 중...
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
