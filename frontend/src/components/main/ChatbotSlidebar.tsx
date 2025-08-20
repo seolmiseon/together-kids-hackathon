@@ -2,8 +2,15 @@
 import { useState } from 'react';
 import Image from 'next/image';
 
-export default function ChatbotSidebar() {
-    const [isOpen, setIsOpen] = useState(false);
+interface ChatbotSidebarProps {
+    isOpen: boolean;
+    setIsOpen: (open: boolean) => void;
+}
+
+export default function ChatbotSidebar({
+    isOpen,
+    setIsOpen,
+}: ChatbotSidebarProps) {
     const [messages, setMessages] = useState([
         {
             id: 1,

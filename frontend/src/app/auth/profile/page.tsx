@@ -3,6 +3,7 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 
 interface ChildInfo {
     id: number;
@@ -15,6 +16,7 @@ interface ChildInfo {
 
 export default function ProfileSetupPage() {
     const router = useRouter();
+    const { data: session } = useSession();
     const [parentName, setParentName] = useState('');
     const [apartment, setApartment] = useState('');
     const [children, setChildren] = useState<ChildInfo[]>([
@@ -27,6 +29,7 @@ export default function ProfileSetupPage() {
             imageUrl: null,
         },
     ]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // 아이 정보 필드 변경 핸들러
     const handleChildChange = (
@@ -76,40 +79,61 @@ export default function ProfileSetupPage() {
     // 폼 제출 핸들러
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-
-        // FormData를 사용하여 텍스트와 이미지 파일을 함께 보냅니다.
-        const formData = new FormData();
-        formData.append('parentName', parentName);
-        formData.append('apartment', apartment);
-
-        children.forEach((child, index) => {
-            formData.append(`children[${index}][name]`, child.name);
-            formData.append(`children[${index}][age]`, child.age);
-            formData.append(`children[${index}][school]`, child.school);
-            if (child.imageFile) {
-                formData.append(`children[${index}][image]`, child.imageFile);
-            }
-        });
+        if (!session?.accessToken) {
+            alert('로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.');
+            return;
+        }
+        setIsSubmitting(true);
 
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            const accessToken = session.accessToken;
 
-            const response = await fetch(`${apiUrl}/profile`, {
-                method: 'POST',
-                // (주의: 실제 구현 시에는 로그인 인증 토큰을 헤더에 포함해야 합니다.)
-                // headers: { 'Authorization': `Bearer ${token}` },
-                body: formData,
+            // 1. 보호자 정보 업데이트 (예: /users/me API 호출)
+            const userResponse = await fetch(`${apiUrl}/users/me`, {
+                method: 'PUT', // 또는 'POST' - 백엔드 API에 따라 다름
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    name: parentName,
+                    apartment_complex: apartment,
+                }),
             });
+            if (!userResponse.ok)
+                throw new Error('보호자 정보 저장에 실패했습니다.');
 
-            if (!response.ok) {
-                throw new Error('프로필 저장에 실패했습니다.');
+            // 2. 각 자녀 정보를 순서대로 등록 (예: /children API 호출)
+            for (const child of children) {
+                const childFormData = new FormData();
+                childFormData.append('name', child.name);
+                childFormData.append('age', child.age);
+                childFormData.append('school_name', child.school);
+                if (child.imageFile) {
+                    childFormData.append('image', child.imageFile);
+                }
+
+                const childResponse = await fetch(`${apiUrl}/children`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                    body: childFormData,
+                });
+                if (!childResponse.ok)
+                    throw new Error(`${child.name} 정보 저장에 실패했습니다.`);
             }
 
             alert('프로필이 성공적으로 저장되었습니다!');
             router.push('/dashboard');
         } catch (error) {
             console.error('프로필 저장 오류:', error);
-            alert('프로필 저장 중 오류가 발생했습니다.');
+            if (error instanceof Error) {
+                alert(`프로필 저장 중 오류가 발생했습니다: ${error.message}`);
+            } else {
+                alert('프로필 저장 중 알 수 없는 오류가 발생했습니다.');
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 

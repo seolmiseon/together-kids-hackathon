@@ -1,16 +1,14 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 
 export default function LoginPage() {
-    const router = useRouter();
-
-    const handleSocialLogin = (provider: string) => {
-        // 실제로는 OAuth URL로 리다이렉트
+    const handleSocialLogin = async (provider: string) => {
         console.log(`${provider} 로그인 시작`);
 
-        // 임시로 바로 프로필 설정으로 이동 (데모용)
-        router.push('/profile-setup');
+        await signIn(provider, {
+            callbackUrl: '/dashboard',
+        });
     };
 
     return (

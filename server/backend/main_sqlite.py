@@ -5,7 +5,7 @@ import uvicorn
 import os
 
 # SQLite 전용 imports
-from database_sqlite import get_db, create_tables, User, Child, Schedule, ChatMessage
+from .database_sqlite import get_db, create_tables, User, Child, Schedule, ChatMessage
 
 app = FastAPI(title="함께 키즈 API (SQLite)", version="1.0.0")
 

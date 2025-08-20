@@ -1,141 +1,143 @@
-[4.0K]  .
-├── [4.0K]  .git
-│   ├── [  66]  COMMIT_EDITMSG
-│   ├── [  21]  HEAD
-│   ├── [4.0K]  branches
-│   ├── [ 307]  config
-│   ├── [  73]  description
-│   ├── [4.0K]  hooks
-│   │   ├── [ 478]  applypatch-msg.sample
-│   │   ├── [ 896]  commit-msg.sample
-│   │   ├── [4.5K]  fsmonitor-watchman.sample
-│   │   ├── [ 189]  post-update.sample
-│   │   ├── [ 424]  pre-applypatch.sample
-│   │   ├── [1.6K]  pre-commit.sample
-│   │   ├── [ 416]  pre-merge-commit.sample
-│   │   ├── [1.3K]  pre-push.sample
-│   │   ├── [4.8K]  pre-rebase.sample
-│   │   ├── [ 544]  pre-receive.sample
-│   │   ├── [1.5K]  prepare-commit-msg.sample
-│   │   ├── [2.7K]  push-to-checkout.sample
-│   │   └── [3.6K]  update.sample
-│   ├── [9.9K]  index
-│   ├── [4.0K]  info
-│   │   └── [ 240]  exclude
-│   ├── [4.0K]  objects
-│   │   ├── [4.0K]  18
-│   │   │   └── [ 195]  3953e8beff7d528e321a9de36d059d39b6dce2
-│   │   ├── [4.0K]  1c
-│   │   │   └── [ 283]  fa8534d163904f672c8cd3911fc889658e7d00
-│   │   ├── [4.0K]  info
-│   │   └── [4.0K]  pack
-│   │       ├── [6.5K]  pack-1b697ed5d05308aff3d99fb879168d124f8c149f.idx
-│   │       └── [8.0M]  pack-1b697ed5d05308aff3d99fb879168d124f8c149f.pack
-│   ├── [ 537]  packed-refs
-│   └── [4.0K]  refs
-│       ├── [4.0K]  heads
-│       │   └── [  41]  main
-│       ├── [4.0K]  remotes
-│       │   └── [4.0K]  origin
-│       └── [4.0K]  tags
-├── [ 762]  .gitignore
-├── [5.5K]  README.md
-├── [2.1K]  docker-compose.dev.yaml
-├── [1.7K]  docker-compose.prod.yaml
-├── [4.0K]  frontend
-│   ├── [ 469]  .env.local
-│   ├── [ 480]  .gitignore
-│   ├── [ 844]  Dockerfile
-│   ├── [ 242]  Dockerfile.dev
-│   ├── [1.4K]  README.md
-│   ├── [ 393]  eslint.config.mjs
-│   ├── [ 133]  next.config.ts
-│   ├── [243K]  package-lock.json
-│   ├── [ 983]  package.json
-│   ├── [  81]  postcss.config.mjs
-│   ├── [4.0K]  public
-│   │   ├── [ 391]  file.svg
-│   │   ├── [1.0K]  globe.svg
-│   │   ├── [4.0K]  images
-│   │   │   └── [4.0K]  logo
-│   │   ├── [1.3K]  next.svg
-│   │   ├── [ 128]  vercel.svg
-│   │   └── [ 385]  window.svg
-│   ├── [4.0K]  src
-│   │   ├── [4.0K]  app
-│   │   │   ├── [ 25K]  favicon.ico
-│   │   │   ├── [ 488]  globals.css
-│   │   │   ├── [ 689]  layout.tsx
-│   │   │   ├── [3.9K]  page.tsx
-│   │   │   └── [4.0K]  schedule
-│   │   ├── [4.0K]  children
-│   │   │   ├── [4.0K]  [child_id]
-│   │   │   ├── [4.0K]  add
-│   │   │   └── [   0]  page.tsx
-│   │   ├── [4.0K]  components
-│   │   │   ├── [4.5K]   GPSTracker.tsx 
-│   │   │   ├── [7.0K]   RealTimeChat.tsx 
-│   │   │   └── [2.5K]   SocialLogin.tsx 
-│   │   └── [4.0K]  types
-│   │       └── [   0]  next-auth.d.ts
-│   └── [ 602]  tsconfig.json
-├── [1.3K]  main.py
-├── [4.0K]  server
-│   ├── [ 642]  Dockerfile
-│   ├── [ 543]  Dockerfile.dev
-│   ├── [4.0K]  backend
-│   │   ├── [1.7K]  .env
-│   │   ├── [ 711]  .env.example
-│   │   ├── [2.4K]  GCP_CLOUD_SQL.md
-│   │   ├── [1.7K]  MySQL_SETUP.md
-│   │   ├── [ 562]  database.py
-│   │   ├── [2.6K]  main.py
-│   │   ├── [4.0K]  models
-│   │   │   └── [7.1K]  __init__.py
-│   │   ├── [1.1K]  redis_client.py
-│   │   ├── [4.0K]  routers
-│   │   │   ├── [ 405]  __init__.py
-│   │   │   ├── [7.9K]  ai.py
-│   │   │   ├── [4.1K]  alerts.py
-│   │   │   ├── [5.8K]  auth.py
-│   │   │   ├── [8.6K]  children.py
-│   │   │   └── [4.7K]  users.py
-│   │   ├── [4.0K]  schemas
-│   │   │   └── [4.9K]  __init__.py
-│   │   └── [4.0K]  utils
-│   │       └── [8.0K]  spell_utils.py
-│   ├── [4.0K]  llm_service
-│   │   ├── [ 920]  .env
-│   │   ├── [ 366]  .env.example
-│   │   ├── [4.0K]  chroma_db
-│   │   │   ├── [ 823]  chroma-collections.parquet
-│   │   │   └── [ 208]  chroma-embeddings.parquet
-│   │   ├── [4.0K]  config
-│   │   │   └── [1.4K]  prompts.py
-│   │   ├── [4.0K]  database
-│   │   │   └── [ 215]  crud.py
-│   │   ├── [ 987]  init_embeddings.py
-│   │   ├── [3.0K]  main.py
-│   │   ├── [4.0K]  models
-│   │   │   ├── [   0]  __init__.py
-│   │   │   ├── [ 769]  chat_models.py
-│   │   │   └── [1.3K]  community_models.py
-│   │   ├── [4.0K]  routers
-│   │   │   ├── [ 134]  __init__.py
-│   │   │   ├── [4.4K]  chat.py
-│   │   │   └── [1.1K]  schedule.py
-│   │   ├── [4.0K]  services
-│   │   │   ├── [   0]  __init__.py
-│   │   │   ├── [4.6K]  openai_service.py
-│   │   │   ├── [2.4K]  prompt_service.py
-│   │   │   ├── [ 669]  rag_service.py
-│   │   │   ├── [2.3K]  session_manager.py
-│   │   │   ├── [ 12K]  unified_chat_service.py
-│   │   │   └── [1.5K]  vector_service.py
-│   │   └── [4.0K]  utils
-│   │       └── [ 317]  chunk_utils.py
-│   └── [ 910]  requirements.txt
-├── [   0]  tree.txt
-└── [ 227]  update_tree.sh
+.
+├── README.md
+├── docker-compose.dev.yaml
+├── docker-compose.prod.yaml
+├── frontend
+│   ├── Dockerfile
+│   ├── Dockerfile.dev
+│   ├── README.md
+│   ├── eslint.config.mjs
+│   ├── next-env.d.ts
+│   ├── next.config.mjs
+│   ├── next.config.ts
+│   ├── postcss.config.cjs
+│   ├── public
+│   │   └── images
+│   │       └── logo
+│   │           ├── logocolumn.png
+│   │           ├── logosymbol.png
+│   │           └── logowide.png
+│   ├── src
+│   │   ├── app
+│   │   │   ├── api
+│   │   │   │   └── auth
+│   │   │   │       └── [...nextauth]
+│   │   │   ├── auth
+│   │   │   │   ├── login
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── profile
+│   │   │   │       └── page.tsx
+│   │   │   ├── dashboard
+│   │   │   │   └── page.tsx
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   ├── main
+│   │   │   │   ├── chat
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── community
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── layout.tsx
+│   │   │   │   └── safety
+│   │   │   │       └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── schedule
+│   │   │       └── page.tsx
+│   │   ├── children
+│   │   │   ├── [child_id]
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── traking
+│   │   │   │       └── page.tsx
+│   │   │   ├── add
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── components
+│   │   │   ├── dashboard
+│   │   │   │   ├── RecentActivityFeed.tsx
+│   │   │   │   └── TodayScheduleCard.tsx
+│   │   │   ├── layout
+│   │   │   │   ├── Header.tsx
+│   │   │   │   └── Notification.tsx
+│   │   │   ├── main
+│   │   │   │   ├── ChatbotSlidebar.tsx
+│   │   │   │   ├── MainHeader.tsx
+│   │   │   │   └── MapSection.tsx
+│   │   │   ├── providers
+│   │   │   │   └── AuthSessionProvider.tsx
+│   │   │   └── ui
+│   │   │       ├── BellIcon.tsx
+│   │   │       └── LoadingSkeleton.tsx
+│   │   ├── store
+│   │   │   ├── notificationStore.ts
+│   │   │   └── userStore.ts
+│   │   └── types
+│   │       └── next-auth.d.ts
+│   ├── tailwind.config.ts
+│   └── tsconfig.json
+├── main.py
+├── server
+│   ├── Dockerfile
+│   ├── Dockerfile.dev
+│   ├── backend
+│   │   ├── GCP_CLOUD_SQL.md
+│   │   ├── MySQL_SETUP.md
+│   │   ├── database.py
+│   │   ├── database_sqlite.py
+│   │   ├── main.py
+│   │   ├── main_sqlite.py
+│   │   ├── models
+│   │   │   └── __init__.py
+│   │   ├── redis_client.py
+│   │   ├── routers
+│   │   │   ├── __init__.py
+│   │   │   ├── ai.py
+│   │   │   ├── alerts.py
+│   │   │   ├── auth.py
+│   │   │   ├── children.py
+│   │   │   └── users.py
+│   │   ├── schemas
+│   │   │   └── __init__.py
+│   │   ├── together_kids.db
+│   │   └── utils
+│   │       └── spell_utils.py
+│   ├── llm_service
+│   │   ├── ai_coordinator.py
+│   │   ├── database
+│   │   │   └── crud.py
+│   │   ├── init_embeddings.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   │   ├── __init__.py
+│   │   │   ├── chat_models.py
+│   │   │   └── community_models.py
+│   │   ├── prompts
+│   │   │   ├── __init__.py
+│   │   │   ├── base
+│   │   │   │   └── system_prompts.py
+│   │   │   ├── community
+│   │   │   │   └── group_management.py
+│   │   │   ├── safety
+│   │   │   │   └── gps_alerts.py
+│   │   │   ├── schedule
+│   │   │   │   └── schedule_coordination.py
+│   │   │   └── utils
+│   │   │       └── prompt_loader.py
+│   │   ├── routers
+│   │   │   ├── __init__.py
+│   │   │   ├── chat.py
+│   │   │   └── schedule.py
+│   │   ├── services
+│   │   │   ├── __init__.py
+│   │   │   ├── openai_service.py
+│   │   │   ├── prompt_service.py
+│   │   │   ├── rag_service.py
+│   │   │   ├── session_manager.py
+│   │   │   ├── unified_chat_service.py
+│   │   │   └── vector_service.py
+│   │   └── utils
+│   │       └── chunk_utils.py
+│   ├── requirements.txt
+│   └── together_kids.db
+├── tree.txt
+└── update_tree.sh
 
-40 directories, 98 files
+48 directories, 92 files

@@ -1,20 +1,27 @@
-import type { Metadata } from 'next';
-import './globals.css';
+'use client';
 
-export const metadata: Metadata = {
-    title: '함께 키즈',
-    description: '맞벌이 부모를 위한 공동육아 플랫폼',
-};
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 
-export default function RootLayout({
-    children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
-    return (
-        <html lang="ko">
-            {/* tailwind.config.ts에 설정된 Pretendard 폰트가 자동으로 적용됩니다. */}
-            <body>{children}</body>
-        </html>
-    );
+export default function GatekeeperPage() {
+    const { data: session, status } = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === 'loading') {
+            return;
+        }
+
+        if (status === 'authenticated') {
+            router.replace('/dashboard');
+        }
+
+        if (status === 'unauthenticated') {
+            router.replace('/auth/login');
+        }
+    }, [status, router]);
+
+    return <LoadingSkeleton />;
 }
