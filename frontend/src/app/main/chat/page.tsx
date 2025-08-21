@@ -11,12 +11,10 @@ interface Message {
     room: string;
 }
 
-interface ChatProps {
-    room: string;
-    currentUser: string;
-}
-
-export default function RealTimeChat({ room, currentUser }: ChatProps) {
+export default function ChatPage() {
+    // 페이지 컴포넌트는 props를 받을 수 없으므로 기본값 사용
+    const room = 'general';
+    const currentUser = 'user';
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState<string>('');
     const [isConnected, setIsConnected] = useState<boolean>(false);

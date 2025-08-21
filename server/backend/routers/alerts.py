@@ -3,10 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from datetime import datetime
 
-from database import get_db
-from models import User as UserModel, Child  as ChildModel,SafeZone
-from routers.auth import get_current_active_user
-from utils.spell_utils import (
+# from ..database import get_db
+from ..database_sqlite import get_db
+from ..database_sqlite import User as UserModel
+from ..models import Child  as ChildModel,SafeZone
+from ..dependencies import get_current_active_user
+from ..utils.spell_utils import (
     gps_safety_spell, schedule_conflict_spell, emergency_spell,
     auto_spell_trigger, get_user_alerts, clear_user_alerts, demo_spell_system,
     check_geofence_exit

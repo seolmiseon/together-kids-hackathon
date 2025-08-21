@@ -4,11 +4,10 @@ from typing import List, Optional
 from datetime import datetime, date
 import json
 
-from database import get_db
-from models import Child as ChildModel, User as UserModel, Schedule as ScheduleModel
-from schemas import Child, ChildCreate, ChildUpdate, Schedule, ScheduleCreate, ScheduleUpdate, MessageResponse
-from routers.auth import get_current_active_user
-from backend.redis_client import set_cache, get_cache, redis_client
+from ..database_sqlite import get_db, User as UserModel, Child as ChildModel, Schedule as ScheduleModel
+from ..schemas import Child, ChildCreate, ChildUpdate, Schedule, ScheduleCreate, ScheduleUpdate, MessageResponse
+from ..dependencies import get_current_active_user
+from ..redis_client import set_cache, get_cache, redis_client
 
 
 router = APIRouter(prefix="/children", tags=["children"])
@@ -23,7 +22,7 @@ async def get_children(
     if cached:
         return json.loads(cached)
     children = db.query(ChildModel).filter(
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).all()
     set_cache(cache_key, json.dumps(children), expire_seconds=300)
     return children
@@ -36,7 +35,7 @@ async def create_child(
 ):
     """새 아이 프로필 생성"""
     child = ChildModel(
-        parent_id=current_user.id,
+        user_id=current_user.id,
         **child_data.dict()
     )
     
@@ -57,7 +56,7 @@ async def get_child(
     """특정 아이 프로필 조회"""
     child = db.query(ChildModel).filter(
         ChildModel.id == child_id,
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).first()
     
     if not child:
@@ -75,7 +74,7 @@ async def update_child(
     """아이 프로필 수정"""
     child = db.query(ChildModel).filter(
         ChildModel.id == child_id,
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).first()
     
     if not child:
@@ -101,7 +100,7 @@ async def delete_child(
     """아이 프로필 삭제"""
     child = db.query(ChildModel).filter(
         ChildModel.id == child_id,
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).first()
     
     if not child:
@@ -131,7 +130,7 @@ async def get_child_schedules(
     # 아이 소유권 확인
     child = db.query(ChildModel).filter(
         ChildModel.id == child_id,
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).first()
     
     if not child:
@@ -163,7 +162,7 @@ async def create_schedule(
     # 아이 소유권 확인
     child = db.query(ChildModel).filter(
         ChildModel.id == child_id,
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).first()
     
     if not child:
@@ -192,7 +191,7 @@ async def update_schedule(
     schedule = db.query(ScheduleModel).join(ChildModel).filter(
         ScheduleModel.id == schedule_id,
         ScheduleModel.child_id == child_id,
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).first()
     
     if not schedule:
@@ -219,7 +218,7 @@ async def delete_schedule(
     schedule = db.query(ScheduleModel).join(ChildModel).filter(
         ScheduleModel.id == schedule_id,
         ScheduleModel.child_id == child_id,
-        ChildModel.parent_id == current_user.id
+        ChildModel.user_id == current_user.id
     ).first()
     
     if not schedule:
@@ -239,7 +238,7 @@ async def get_today_schedules(
     today = datetime.now().date()
     
     schedules = db.query(ScheduleModel).join(ChildModel).filter(
-        ChildModel.parent_id == current_user.id,
+        ChildModel.user_id == current_user.id,
         ScheduleModel.start_time >= today,
         ScheduleModel.start_time < today.replace(day=today.day + 1)
     ).order_by(ScheduleModel.start_time).all()
@@ -259,7 +258,7 @@ async def get_upcoming_schedules(
     end_date = start_date + timedelta(days=days)
     
     schedules = db.query(ScheduleModel).join(ChildModel).filter(
-        ChildModel.parent_id == current_user.id,
+        ChildModel.user_id == current_user.id,
         ScheduleModel.start_time >= start_date,
         ScheduleModel.start_time <= end_date,
         ScheduleModel.is_completed == False

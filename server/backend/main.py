@@ -57,6 +57,8 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(children_router)
 app.include_router(ai_router)
+app.include_router(chat_router)
+app.include_router(schedule_router)
 
 
 @app.get("/")

@@ -98,5 +98,6 @@ async def initialize_vector_store_from_csv(csv_path):
     
 if __name__ == "__main__":
     import uvicorn
-    asyncio.run(initialize_vector_store_from_csv("mydata.csv"))
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)    
+    # CSV 파일이 있을 때만 초기화
+    # asyncio.run(initialize_vector_store_from_csv("mydata.csv"))
+    uvicorn.run("llm_service.main:app", host="0.0.0.0", port=8002, reload=True)    
