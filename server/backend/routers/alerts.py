@@ -5,7 +5,8 @@ from datetime import datetime
 
 # from ..database import get_db
 from ..database_sqlite import get_db
-from ..models import User as UserModel, Child  as ChildModel,SafeZone
+from ..database_sqlite import User as UserModel
+from ..models import Child  as ChildModel,SafeZone
 from ..dependencies import get_current_active_user
 from ..utils.spell_utils import (
     gps_safety_spell, schedule_conflict_spell, emergency_spell,

@@ -16,12 +16,16 @@ export default function LandingPage() {
     }, []);
 
     if (!isMounted) {
-        return null;
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-xl">로딩 중...</div>
+            </div>
+        );
     }
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden">
-            <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 z-0 pt-24">
                 <MapSection />
             </div>
 

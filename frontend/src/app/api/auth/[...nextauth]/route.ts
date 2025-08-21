@@ -92,6 +92,11 @@ const handler = NextAuth({
         KakaoProvider({
             clientId: process.env.KAKAO_CLIENT_ID!,
             clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+            authorization: {
+                params: {
+                    scope: 'profile_nickname profile_image account_email',
+                },
+            },
         }),
         NaverProvider({
             clientId: process.env.NAVER_CLIENT_ID!,
@@ -100,19 +105,31 @@ const handler = NextAuth({
     ],
     callbacks: {
         async jwt({ token, user, account }) {
+            console.log(
+                'JWT 콜백 시작 - account:',
+                account,
+                'user:',
+                user,
+                'token:',
+                token
+            );
+
             // 첫 로그인
             if (account && user) {
                 try {
+                    console.log('백엔드 토큰 교환 시도...');
                     const backendTokens = await exchangeTokenWithBackend(
                         account.provider,
                         account
                     );
+                    console.log('백엔드 토큰 교환 성공:', backendTokens);
                     token.accessToken = backendTokens.access_token;
                     token.refreshToken = backendTokens.refresh_token;
                     token.accessTokenExpires =
                         Date.now() + backendTokens.expires_in * 1000;
                     token.provider = account.provider;
                 } catch (error) {
+                    console.log('백엔드 토큰 교환 실패:', error);
                     token.error = 'RefreshAccessTokenError';
                 }
                 return token;
@@ -128,10 +145,12 @@ const handler = NextAuth({
         },
 
         async session({ session, token }) {
+            console.log('Session 콜백 - token:', token);
             session.accessToken = token.accessToken;
             session.refreshToken = token.refreshToken;
             session.error =
                 typeof token.error === 'string' ? token.error : undefined;
+            console.log('Session 콜백 - session:', session);
             return session;
         },
     },

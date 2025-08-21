@@ -218,9 +218,17 @@ export default function ProfileSetupPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <span className="text-gray-400 text-xs">
-                                                사진 등록
-                                            </span>
+                                            <svg
+                                                className="w-12 h-12 text-gray-400"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
                                         )}
                                     </div>
                                     <div className="flex-1">

@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 import jwt
 import os
 
-from .database_sqlite import get_db
-from .models import User as UserModel
+from .database_sqlite import get_db, User as UserModel
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")

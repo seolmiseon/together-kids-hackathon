@@ -13,7 +13,7 @@ class PromptManager:
         """모든 프롬프트 모듈을 동적으로 로드"""
         try:
             # base 모듈 로드
-            base_module = importlib.import_module('prompts.base.system_prompts')
+            base_module = importlib.import_module('llm_service.prompts.base.system_prompts')
             self.prompts['base'] = {
                 'system': getattr(base_module, 'SYSTEM_BASE', ''),
                 'style': getattr(base_module, 'CONVERSATION_STYLE', ''),
@@ -21,7 +21,7 @@ class PromptManager:
             }
             
             # schedule 모듈 로드
-            schedule_module = importlib.import_module('prompts.schedule.schedule_coordination')
+            schedule_module = importlib.import_module('llm_service.prompts.schedule.schedule_coordination')
             self.prompts['schedule'] = {
                 'analysis': getattr(schedule_module, 'SCHEDULE_ANALYSIS_PROMPT', ''),
                 'conflict': getattr(schedule_module, 'CONFLICT_RESOLUTION_PROMPT', ''),
@@ -29,14 +29,14 @@ class PromptManager:
             }
             
             # safety 모듈 로드
-            safety_module = importlib.import_module('prompts.safety.gps_alerts')
+            safety_module = importlib.import_module('llm_service.prompts.safety.gps_alerts')
             self.prompts['safety'] = {
                 'gps_alerts': getattr(safety_module, 'GPS_SAFETY_ALERT_PROMPT', ''),
                 'emergency': getattr(safety_module, 'EMERGENCY_PROTOCOL_PROMPT', '')
             }
             
             # community 모듈 로드
-            community_module = importlib.import_module('prompts.community.group_management')
+            community_module = importlib.import_module('llm_service.prompts.community.group_management')
             self.prompts['community'] = {
                 'welcome': getattr(community_module, 'COMMUNITY_WELCOME_PROMPT', ''),
                 'group_formation': getattr(community_module, 'GROUP_FORMATION_PROMPT', ''),

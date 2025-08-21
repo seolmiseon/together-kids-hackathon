@@ -7,7 +7,8 @@ import json
 
 # from ..database import get_db
 from ..database_sqlite import get_db
-from ..models import User as UserModel, UserApartment, Child as ChildModel
+from ..database_sqlite import User as UserModel
+from ..models import UserApartment, Child as ChildModel
 from ..models import Child
 from ..schemas import User
 from ..dependencies import get_current_active_user

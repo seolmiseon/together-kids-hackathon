@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
-import Script from 'next/script';
 import { useSession } from 'next-auth/react';
 interface Child {
     id: number;
@@ -17,6 +16,7 @@ export default function MapSection() {
     const { data: session, status } = useSession();
     const [children, setChildren] = useState<Child[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [mapError, setMapError] = useState(false);
     // [수정] isTrackingTime의 기본값을 true로 변경하여 항상 마커가 보이도록
     const [isTrackingTime, setIsTrackingTime] = useState(true);
 
@@ -98,33 +98,42 @@ export default function MapSection() {
     return (
         <div
             className="flex-1 relative bg-gray-100"
-            style={{ height: 'calc(100vh - 80px)' }}
+            style={{ height: 'calc(100vh - 120px)', marginTop: '80px' }}
         >
-            <Script
-                src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`}
-                strategy="beforeInteractive"
-            />
-            <Map
-                center={{ lat: 37.5665, lng: 126.978 }}
-                style={{ width: '100%', height: '100%' }}
-                level={4}
-            >
-                {isTrackingTime &&
-                    children.map((child) => (
-                        <MapMarker
-                            key={child.id}
-                            position={{ lat: child.lat, lng: child.lng }}
-                            title={child.name}
-                            image={{
-                                src: child.imageUrl,
-                                size: { width: 48, height: 48 },
-                                options: {
-                                    offset: { x: 24, y: 48 },
-                                },
-                            }}
-                        />
-                    ))}
-            </Map>
+            {mapError ? (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                    <div className="text-center">
+                        <p className="text-red-500 mb-2">
+                            지도 로딩에 실패했습니다
+                        </p>
+                        <p className="text-gray-500 text-sm">
+                            카카오 지도 API 키를 확인해주세요
+                        </p>
+                    </div>
+                </div>
+            ) : (
+                <Map
+                    center={{ lat: 37.5665, lng: 126.978 }}
+                    style={{ width: '100%', height: '100%' }}
+                    level={4}
+                >
+                    {isTrackingTime &&
+                        children.map((child) => (
+                            <MapMarker
+                                key={child.id}
+                                position={{ lat: child.lat, lng: child.lng }}
+                                title={child.name}
+                                image={{
+                                    src: child.imageUrl,
+                                    size: { width: 48, height: 48 },
+                                    options: {
+                                        offset: { x: 24, y: 48 },
+                                    },
+                                }}
+                            />
+                        ))}
+                </Map>
+            )}
 
             <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-white rounded-lg shadow-lg p-3 sm:p-4 z-30 max-w-xs sm:max-w-sm">
                 <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2">

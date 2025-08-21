@@ -1,13 +1,20 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bell, AlertTriangle, CalendarClock, LogOut } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import BellIcon from '@/components/ui/BellIcon';
+import { useState, useEffect, useRef } from 'react';
+import {
+    Bell,
+    AlertTriangle,
+    CalendarClock,
+    LogOut,
+    User as UserIcon,
+} from 'lucide-react';
+import { useNotificationStore } from '@/store/notificationStore';
 import { useUserStore } from '@/store/userStore';
 import { signOut, useSession } from 'next-auth/react';
-import { useNotificationStore } from '@/store/notificationStore';
+import BellIcon from '@/components/ui/BellIcon';
 
+// --- 타입 정의 ---
 interface Notification {
     id: number;
     type: 'schedule' | 'emergency' | 'community';
@@ -19,7 +26,10 @@ interface Notification {
 
 export default function MainHeader() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
+    const userMenuRef = useRef<HTMLDivElement>(null);
+
     const { notifications, unreadCount, fetchNotifications } =
         useNotificationStore();
     const { user, login, logout } = useUserStore();
@@ -27,7 +37,6 @@ export default function MainHeader() {
 
     useEffect(() => {
         if (status === 'authenticated' && session?.user) {
-            // Ensure 'id' is present; fallback to email or a default string if not available
             login({
                 id: session.user.email ?? 'unknown-id',
                 name: session.user.name ?? null,
@@ -48,11 +57,17 @@ export default function MainHeader() {
             ) {
                 setIsModalOpen(false);
             }
+            if (
+                userMenuRef.current &&
+                !userMenuRef.current.contains(event.target as Node)
+            ) {
+                setIsUserMenuOpen(false);
+            }
         }
         document.addEventListener('mousedown', handleClickOutside);
         return () =>
             document.removeEventListener('mousedown', handleClickOutside);
-    }, [modalRef]);
+    }, [modalRef, userMenuRef]);
 
     const getNotificationStyle = (type: Notification['type']) => {
         switch (type) {
@@ -75,22 +90,21 @@ export default function MainHeader() {
     };
 
     return (
-        <header className="bg-white shadow-sm sticky top-0 z-50">
-            <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-                <div className="w-1/3"></div>
-                <div className="w-1/3 flex justify-center">
+        <header className="bg-white shadow-sm sticky top-0 z-50 h-20 flex items-center">
+            <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
+                <div className="flex-1 flex justify-start">
                     <Link href="/" className="flex items-center">
                         <Image
                             src="/images/logo/logowide.png"
                             alt="함께 키즈 로고"
-                            width={160}
-                            height={50}
-                            className="h-8 sm:h-10 md:h-12 w-auto"
+                            width={180}
+                            height={60}
                             priority
                         />
                     </Link>
                 </div>
-                <div className="w-1/3 flex items-center justify-end space-x-2 sm:space-x-4">
+
+                <div className="flex-1 flex items-center justify-end space-x-2 sm:space-x-4">
                     {status === 'authenticated' && user ? (
                         <>
                             <div className="relative" ref={modalRef}>
@@ -106,94 +120,53 @@ export default function MainHeader() {
 
                                 {isModalOpen && (
                                     <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border overflow-hidden animate-fade-in-down">
-                                        <div className="p-3 sm:p-4 border-b flex justify-between items-center">
-                                            <h3 className="font-bold text-gray-800">
-                                                알림
-                                            </h3>
-                                            <span className="text-xs font-bold text-white bg-blue-600 rounded-full px-2 py-1">
-                                                {unreadCount}
-                                            </span>
-                                        </div>
-                                        <div className="max-h-96 overflow-y-auto">
-                                            {notifications.length > 0 ? (
-                                                notifications.map((n) => (
-                                                    <div
-                                                        key={n.id}
-                                                        className={`p-3 sm:p-4 flex items-start gap-3 sm:gap-4 hover:bg-gray-50 transition-colors ${
-                                                            !n.isRead
-                                                                ? getNotificationStyle(
-                                                                      n.type
-                                                                  ).color
-                                                                : ''
-                                                        }`}
-                                                    >
-                                                        <div className="flex-shrink-0 mt-1">
-                                                            {
-                                                                getNotificationStyle(
-                                                                    n.type
-                                                                ).icon
-                                                            }
-                                                        </div>
-                                                        <div className="flex-grow min-w-0">
-                                                            <p
-                                                                className={`font-semibold text-sm ${
-                                                                    !n.isRead
-                                                                        ? 'text-gray-800'
-                                                                        : 'text-gray-500'
-                                                                }`}
-                                                            >
-                                                                {n.title}
-                                                            </p>
-                                                            <p className="text-xs text-gray-500 break-words">
-                                                                {n.message}
-                                                            </p>
-                                                            <p className="text-xs text-gray-400 mt-1">
-                                                                {n.time}
-                                                            </p>
-                                                        </div>
-                                                        {!n.isRead && (
-                                                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                                                        )}
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="p-3 sm:p-4 text-sm text-gray-500 text-center">
-                                                    새로운 알림이 없습니다.
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="p-2 bg-gray-50 text-center border-t">
-                                            <button className="text-sm font-medium text-blue-600 hover:underline">
-                                                모든 알림 읽음 처리
-                                            </button>
-                                        </div>
+                                        {/* 알림 모달 내용 */}
                                     </div>
                                 )}
                             </div>
 
-                            <div className="flex items-center space-x-1 sm:space-x-2">
-                                <Image
-                                    src={
-                                        user.image ||
-                                        '/images/default-profile.png'
-                                    }
-                                    alt={user.name || '사용자'}
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full w-8 h-8"
-                                />
-                                <span className="hidden sm:inline font-medium text-gray-700 text-sm">
-                                    {user.name}
-                                </span>
+                            <div className="relative" ref={userMenuRef}>
                                 <button
                                     onClick={() =>
-                                        signOut({ callbackUrl: '/' })
+                                        setIsUserMenuOpen(!isUserMenuOpen)
                                     }
-                                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full"
-                                    title="로그아웃"
+                                    className="rounded-full overflow-hidden w-9 h-9 border-2 border-gray-200 hover:border-blue-500 transition-colors"
                                 >
-                                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                                    {user.image ? (
+                                        <Image
+                                            src={user.image}
+                                            alt={user.name || '사용자'}
+                                            width={36}
+                                            height={36}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                            <UserIcon className="w-5 h-5 text-gray-500" />
+                                        </div>
+                                    )}
                                 </button>
+
+                                {isUserMenuOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-50">
+                                        <div className="px-4 py-3 border-b">
+                                            <p className="text-sm font-semibold text-gray-800 truncate">
+                                                {user.name}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate">
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() =>
+                                                signOut({ callbackUrl: '/' })
+                                            }
+                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                        >
+                                            <LogOut className="w-4 h-4 mr-2" />
+                                            로그아웃
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </>
                     ) : (

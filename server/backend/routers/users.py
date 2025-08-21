@@ -5,7 +5,8 @@ import json
 
 # from ..database import get_db
 from ..database_sqlite import get_db
-from ..models import User as UserModel, UserApartment, Apartment
+from ..database_sqlite import User as UserModel
+from ..models import UserApartment, Apartment
 from ..schemas import User, UserUpdate, UserApartment as UserApartmentSchema, MessageResponse
 from ..dependencies import get_current_active_user
 from ..redis_client import set_cache, get_cache, redis_client
