@@ -54,7 +54,7 @@ export default function ChatbotSidebar({
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed right-6 bottom-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 z-50"
+                    className="fixed right-4 sm:right-6 bottom-4 sm:bottom-6 bg-blue-600 hover:bg-blue-700 text-white p-3 sm:p-4 rounded-full shadow-lg transition-all duration-300 z-50"
                 >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path
@@ -68,7 +68,7 @@ export default function ChatbotSidebar({
 
             {/* 챗봇 사이드바 */}
             <div
-                className={`fixed right-0 top-0 h-full w-96 bg-white shadow-2xl transform transition-transform duration-300 z-40 ${
+                className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl transform transition-transform duration-300 z-40 ${
                     isOpen ? 'translate-x-0' : 'translate-x-full'
                 }`}
             >
@@ -78,6 +78,8 @@ export default function ChatbotSidebar({
                             src="/images/logo/logosymbol.png"
                             alt="함께키즈"
                             className="w-8 h-8"
+                            width={32}
+                            height={32}
                         />
                         <div>
                             <h3 className="font-bold">함께키즈 AI</h3>

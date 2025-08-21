@@ -8,9 +8,10 @@ from passlib.context import CryptContext
 import httpx 
 import os
 
-from database import get_db
-from models import User as UserModel
-from schemas import User, UserCreate, Token 
+# from ..database import get_db
+from ..database_sqlite import get_db
+from ..models import User as UserModel
+from ..schemas import User, UserCreate, Token 
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 

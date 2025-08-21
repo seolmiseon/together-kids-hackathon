@@ -1,22 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MapSection from '@/components/main/MapSection';
 import ChatbotSlidebar from '@/components/main/ChatbotSlidebar';
 import MainHeader from '@/components/main/MainHeader';
 
 export default function DashboardPage() {
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return null;
+    }
 
     return (
         <div>
-            <MainHeader />
-
             <main className="relative">
-                {/* 지도 섹션 - 메인 화면 */}
+                <MainHeader />
                 <MapSection />
-
-                {/* 챗봇 사이드바 */}
                 <ChatbotSlidebar
                     isOpen={isChatbotOpen}
                     setIsOpen={setIsChatbotOpen}

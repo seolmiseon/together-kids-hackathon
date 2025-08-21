@@ -10,6 +10,7 @@ load_dotenv()
 # 프로젝트 루트를 Python 경로에 추가
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from services.prompt_service import prompt_service_instance
 
 try:
     from prompts.utils.prompt_loader import get_system_prompt, get_prompt, format_prompt
@@ -32,7 +33,9 @@ class AIScheduleCoordinator:
             raise ValueError("OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
         
         self.client = AsyncOpenAI(api_key=api_key)
-        print("✅ OpenAI 클라이언트 초기화 완료")
+        self.prompt_service = prompt_service_instance
+        print("✅ OpenAI 클라이언트 및 PromptService 초기화 완료")
+    
     
     async def test_connection(self) -> Dict[str, Any]:
         """OpenAI API 연결 테스트"""
@@ -60,14 +63,12 @@ class AIScheduleCoordinator:
     async def coordinate_schedule(self, schedule_data: Dict[str, Any]) -> Dict[str, Any]:
         """일정 조율 처리"""
         try:
-            system_prompt = get_system_prompt("schedule")
-            
+            system_prompt_dict = self.prompt_service.get_system_prompt("schedule")
+            system_prompt_content = system_prompt_dict["content"]
             user_message = f"""
             등하원 일정 조율을 요청합니다.
-            
-            요청 정보:
-            {schedule_data}
-            
+            요청 정보: {schedule_data}
+
             다음 형식으로 응답해주세요:
             1. 현재 상황 분석
             2. 추천 해결책 (1순위)
@@ -76,7 +77,7 @@ class AIScheduleCoordinator:
             """
             
             messages = [
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": system_prompt_content},
                 {"role": "user", "content": user_message}
             ]
             
@@ -102,17 +103,16 @@ class AIScheduleCoordinator:
     async def handle_safety_alert(self, alert_data: Dict[str, Any]) -> Dict[str, Any]:
         """안전 알림 처리"""
         try:
-            system_prompt = get_system_prompt("safety")
+            system_prompt_dict = self.prompt_service.get_system_prompt("safety")
+            system_prompt_content = system_prompt_dict["content"]
             
             user_message = f"""
             GPS 안전 알림을 생성해주세요.
-            
-            알림 정보:
-            {alert_data}
+            알림 정보: {alert_data}
             """
             
             messages = [
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": system_prompt_content},
                 {"role": "user", "content": user_message}
             ]
             

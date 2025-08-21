@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import Script from 'next/script';
-
+import { useSession } from 'next-auth/react';
 interface Child {
     id: number;
     name: string;
@@ -14,56 +14,50 @@ interface Child {
 }
 
 export default function MapSection() {
+    const { data: session, status } = useSession();
     const [children, setChildren] = useState<Child[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     // [수정] isTrackingTime의 기본값을 true로 변경하여 항상 마커가 보이도록
     const [isTrackingTime, setIsTrackingTime] = useState(true);
 
     useEffect(() => {
-        const fetchChildrenData = async () => {
-            try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-                const response = await fetch(`${apiUrl}/children`);
-
-                if (!response.ok) {
-                    throw new Error(
-                        '서버에서 데이터를 가져오는 데 실패했습니다.'
-                    );
+        // 로그인 상태일 때만 실제 데이터를 가져옵니다.
+        if (status === 'authenticated') {
+            const fetchChildrenData = async () => {
+                try {
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+                    const response = await fetch(`${apiUrl}/children`, {
+                        headers: {
+                            Authorization: `Bearer ${session.accessToken}`,
+                        },
+                    });
+                    if (!response.ok) throw new Error('데이터 로딩 실패');
+                    const data = await response.json();
+                    setChildren(data);
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    setIsLoading(false);
                 }
-
-                const data: Child[] = await response.json();
-                setChildren(data);
-            } catch (error) {
-                console.error('아이 정보를 불러오는 데 실패했습니다:', error);
-                // 테스트를 위해 에러 발생 시에도 임시 데이터를 보여줍니다.
-                const mockData: Child[] = [
-                    {
-                        id: 1,
-                        name: '김지연',
-                        lat: 37.5665,
-                        lng: 126.978,
-                        status: 'safe',
-                        guardian: '변우석엄마',
-                        imageUrl: '/images/children/child_profile_1.png',
-                    },
-                    {
-                        id: 2,
-                        name: '박민준',
-                        lat: 37.5675,
-                        lng: 126.9785,
-                        status: 'moving',
-                        guardian: '박민준엄마',
-                        imageUrl: '/images/children/child_profile_2.png',
-                    },
-                ];
-                setChildren(mockData);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchChildrenData();
-    }, []);
+            };
+            fetchChildrenData();
+        } else if (status === 'unauthenticated') {
+            // 비로그인 상태일 때는 데모용 데이터를 보여줍니다.
+            const demoData: Child[] = [
+                {
+                    id: 1,
+                    name: '데모 아이',
+                    lat: 37.5665,
+                    lng: 126.978,
+                    status: 'safe',
+                    guardian: '함께키즈',
+                    imageUrl: '/images/logo/logosymbol.png',
+                },
+            ];
+            setChildren(demoData);
+            setIsLoading(false);
+        }
+    }, [status, session]); // 로그인 상태가 바뀔 때마다 다시 실행됩니다.
 
     /*
     // [주석 처리] 테스트 중에는 시간 제한 로직을 사용하지 않습니다.
@@ -132,8 +126,8 @@ export default function MapSection() {
                     ))}
             </Map>
 
-            <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-4 z-30">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">
+            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-white rounded-lg shadow-lg p-3 sm:p-4 z-30 max-w-xs sm:max-w-sm">
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2">
                     실시간 위치 현황
                 </h3>
                 {isTrackingTime ? (

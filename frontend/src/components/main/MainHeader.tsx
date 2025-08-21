@@ -76,7 +76,7 @@ export default function MainHeader() {
 
     return (
         <header className="bg-white shadow-sm sticky top-0 z-50">
-            <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
                 <div className="w-1/3"></div>
                 <div className="w-1/3 flex justify-center">
                     <Link href="/" className="flex items-center">
@@ -85,15 +85,15 @@ export default function MainHeader() {
                             alt="함께 키즈 로고"
                             width={160}
                             height={50}
+                            className="h-8 sm:h-10 md:h-12 w-auto"
                             priority
                         />
                     </Link>
                 </div>
-                <div className="w-1/3 flex items-center justify-end space-x-4">
+                <div className="w-1/3 flex items-center justify-end space-x-2 sm:space-x-4">
                     {status === 'authenticated' && user ? (
                         <>
                             <div className="relative" ref={modalRef}>
-                                {/* [수정] lucide-react의 Bell 대신 BellIcon 컴포넌트를 사용합니다. */}
                                 <button
                                     onClick={() => setIsModalOpen(!isModalOpen)}
                                     className="relative p-2"
@@ -106,7 +106,7 @@ export default function MainHeader() {
 
                                 {isModalOpen && (
                                     <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border overflow-hidden animate-fade-in-down">
-                                        <div className="p-4 border-b flex justify-between items-center">
+                                        <div className="p-3 sm:p-4 border-b flex justify-between items-center">
                                             <h3 className="font-bold text-gray-800">
                                                 알림
                                             </h3>
@@ -119,7 +119,7 @@ export default function MainHeader() {
                                                 notifications.map((n) => (
                                                     <div
                                                         key={n.id}
-                                                        className={`p-4 flex items-start gap-4 hover:bg-gray-50 transition-colors ${
+                                                        className={`p-3 sm:p-4 flex items-start gap-3 sm:gap-4 hover:bg-gray-50 transition-colors ${
                                                             !n.isRead
                                                                 ? getNotificationStyle(
                                                                       n.type
@@ -134,7 +134,7 @@ export default function MainHeader() {
                                                                 ).icon
                                                             }
                                                         </div>
-                                                        <div className="flex-grow">
+                                                        <div className="flex-grow min-w-0">
                                                             <p
                                                                 className={`font-semibold text-sm ${
                                                                     !n.isRead
@@ -144,7 +144,7 @@ export default function MainHeader() {
                                                             >
                                                                 {n.title}
                                                             </p>
-                                                            <p className="text-xs text-gray-500">
+                                                            <p className="text-xs text-gray-500 break-words">
                                                                 {n.message}
                                                             </p>
                                                             <p className="text-xs text-gray-400 mt-1">
@@ -157,7 +157,7 @@ export default function MainHeader() {
                                                     </div>
                                                 ))
                                             ) : (
-                                                <p className="p-4 text-sm text-gray-500 text-center">
+                                                <p className="p-3 sm:p-4 text-sm text-gray-500 text-center">
                                                     새로운 알림이 없습니다.
                                                 </p>
                                             )}
@@ -171,7 +171,7 @@ export default function MainHeader() {
                                 )}
                             </div>
 
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-1 sm:space-x-2">
                                 <Image
                                     src={
                                         user.image ||
@@ -180,26 +180,26 @@ export default function MainHeader() {
                                     alt={user.name || '사용자'}
                                     width={32}
                                     height={32}
-                                    className="rounded-full"
+                                    className="rounded-full w-8 h-8"
                                 />
-                                <span className="hidden sm:inline font-medium text-gray-700">
+                                <span className="hidden sm:inline font-medium text-gray-700 text-sm">
                                     {user.name}
                                 </span>
                                 <button
                                     onClick={() =>
                                         signOut({ callbackUrl: '/' })
                                     }
-                                    className="p-2 hover:bg-gray-100 rounded-full"
+                                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full"
                                     title="로그아웃"
                                 >
-                                    <LogOut className="w-5 h-5 text-gray-500" />
+                                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                                 </button>
                             </div>
                         </>
                     ) : (
                         <Link
                             href="/auth/login"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm"
                         >
                             로그인
                         </Link>

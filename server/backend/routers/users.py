@@ -3,11 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import json
 
-from database import get_db
-from models import User as UserModel, UserApartment, Apartment
-from schemas import User, UserUpdate, UserApartment as UserApartmentSchema, MessageResponse
-from routers.auth import get_current_active_user
-from backend.redis_client import set_cache, get_cache, redis_client
+# from ..database import get_db
+from ..database_sqlite import get_db
+from ..models import User as UserModel, UserApartment, Apartment
+from ..schemas import User, UserUpdate, UserApartment as UserApartmentSchema, MessageResponse
+from ..dependencies import get_current_active_user
+from ..redis_client import set_cache, get_cache, redis_client
 
 router = APIRouter(prefix="/users", tags=["users"])
 

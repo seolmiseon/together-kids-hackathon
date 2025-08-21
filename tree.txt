@@ -40,6 +40,8 @@
 │   │   │   │   └── safety
 │   │   │   │       └── page.tsx
 │   │   │   ├── page.tsx
+│   │   │   ├── providers
+│   │   │   │   └── SessionProviderWrapper.tsx
 │   │   │   └── schedule
 │   │   │       └── page.tsx
 │   │   ├── children
@@ -61,8 +63,6 @@
 │   │   │   │   ├── ChatbotSlidebar.tsx
 │   │   │   │   ├── MainHeader.tsx
 │   │   │   │   └── MapSection.tsx
-│   │   │   ├── providers
-│   │   │   │   └── AuthSessionProvider.tsx
 │   │   │   └── ui
 │   │   │       ├── BellIcon.tsx
 │   │   │       └── LoadingSkeleton.tsx
@@ -82,10 +82,10 @@
 │   │   ├── MySQL_SETUP.md
 │   │   ├── database.py
 │   │   ├── database_sqlite.py
+│   │   ├── dependencies.py
 │   │   ├── main.py
 │   │   ├── main_sqlite.py
-│   │   ├── models
-│   │   │   └── __init__.py
+│   │   ├── models.py
 │   │   ├── redis_client.py
 │   │   ├── routers
 │   │   │   ├── __init__.py
@@ -140,4 +140,4 @@
 ├── tree.txt
 └── update_tree.sh
 
-48 directories, 92 files
+47 directories, 93 files

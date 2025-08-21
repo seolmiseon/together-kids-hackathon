@@ -5,12 +5,13 @@ import os
 import datetime
 import json
 
-from database import get_db
-from models import User as UserModel, UserApartment
-from models import Child
-from schemas import User
-from routers.auth import get_current_active_user
-from backend.redis_client import set_cache, get_cache
+# from ..database import get_db
+from ..database_sqlite import get_db
+from ..models import User as UserModel, UserApartment, Child as ChildModel
+from ..models import Child
+from ..schemas import User
+from ..dependencies import get_current_active_user
+from ..redis_client import set_cache, get_cache
 
 router = APIRouter(prefix="/ai", tags=["ai-integration"])
 
@@ -24,8 +25,8 @@ async def get_user_context(user: UserModel, db: Session) -> dict:
     user_apartments = db.query(UserApartment).filter(
         UserApartment.user_id == user.id
     ).all()
-    user = db.query(User).filter(User.id == user.id).first()
-    children = db.query(Child).filter(Child.user_id == user.id).all()
+    user = db.query(UserModel).filter(UserModel.id == user.id).first()
+    children = db.query(ChildModel).filter(ChildModel.user_id == user.id).all()
 
     apartments = []
     for ua in user_apartments:

@@ -4,11 +4,12 @@ from typing import List, Optional
 from datetime import datetime, date
 import json
 
-from database import get_db
-from models import Child as ChildModel, User as UserModel, Schedule as ScheduleModel
-from schemas import Child, ChildCreate, ChildUpdate, Schedule, ScheduleCreate, ScheduleUpdate, MessageResponse
-from routers.auth import get_current_active_user
-from backend.redis_client import set_cache, get_cache, redis_client
+# from ..database import get_db
+from ..database_sqlite import get_db
+from ..models import Child as ChildModel, User as UserModel, Schedule as ScheduleModel
+from ..schemas import Child, ChildCreate, ChildUpdate, Schedule, ScheduleCreate, ScheduleUpdate, MessageResponse
+from ..dependencies import get_current_active_user
+from ..redis_client import set_cache, get_cache, redis_client
 
 
 router = APIRouter(prefix="/children", tags=["children"])

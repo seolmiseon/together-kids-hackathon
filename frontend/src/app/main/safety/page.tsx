@@ -17,15 +17,11 @@ interface Parent {
     children: string[];
 }
 
-interface GPSTrackerProps {
-    groupId: string;
-    currentParent: string;
-}
+export default function SafetyPage() {
+    // 페이지 컴포넌트는 props를 받을 수 없으므로 기본값 사용
+    const groupId = 'general';
+    const currentParent = 'user';
 
-export default function GPSTracker({
-    groupId,
-    currentParent,
-}: GPSTrackerProps) {
     const [parents, setParents] = useState<Parent[]>([]);
     const [myLocation, setMyLocation] = useState<Location | null>(null);
     const [trackingEnabled, setTrackingEnabled] = useState<boolean>(false);
