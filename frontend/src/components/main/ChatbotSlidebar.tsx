@@ -50,6 +50,7 @@ export default function ChatbotSidebar({
             timestamp: new Date(),
         };
         setMessages((prev) => [...prev, newMessage]);
+        const userMessage = inputMessage;
         setInputMessage('');
         setIsAiResponding(true);
         setUrgency('low');
@@ -59,23 +60,29 @@ export default function ChatbotSidebar({
             if (!session?.accessToken) {
                 throw new Error('로그인이 필요합니다.');
             }
-
-            const response = await fetch(`${apiUrl}/chat`, {
+            const params = new URLSearchParams({
+                message: userMessage,
+                mode: 'auto',
+            });
+            const requestUrl = `${apiUrl}/ai/chat?${params.toString()}`;
+            const response = await fetch(requestUrl, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${session.accessToken}`,
                 },
-                body: JSON.stringify({ message: inputMessage }),
             });
 
             if (!response.ok) throw new Error('AI 응답 실패');
 
             const aiData = await response.json();
+            const aiContent =
+                aiData.response ||
+                aiData.coordination_result ||
+                '응답을 처리할 수 없습니다.';
             const aiResponse: Message = {
                 id: Date.now() + 1,
                 type: 'ai',
-                content: aiData.response,
+                content: aiContent,
                 timestamp: new Date(),
             };
             setMessages((prev) => [...prev, aiResponse]);

@@ -2,54 +2,41 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 import httpx
 import os
-import datetime
+from datetime import date
 import json
 
 # from ..database import get_db
 from ..database_sqlite import get_db
-from ..database_sqlite import User as UserModel
-from ..models import UserApartment, Child as ChildModel
-from ..models import Child
-from ..schemas import User
+from ..models import User as UserModel, Child as ChildModel, UserApartment
+from ..schemas import User as UserSchema
 from ..dependencies import get_current_active_user
 from ..redis_client import set_cache, get_cache
 
 router = APIRouter(prefix="/ai", tags=["ai-integration"])
 
 # LLM 서비스 설정
-LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8000")
+LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8002")
 LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY", "")
 
 async def get_user_context(user: UserModel, db: Session) -> dict:
     """사용자 컨텍스트 생성"""
-    # 사용자 아파트 정보
-    user_apartments = db.query(UserApartment).filter(
-        UserApartment.user_id == user.id
-    ).all()
-    user = db.query(UserModel).filter(UserModel.id == user.id).first()
-    children = db.query(ChildModel).filter(ChildModel.user_id == user.id).all()
-
     apartments = []
-    for ua in user_apartments:
-        apartments.append({
-            "id": ua.apartment.id,
-            "name": ua.apartment.name,
-            "unit_number": ua.unit_number,
-            "role": ua.role
-        })
-    
-
-    user_context = {}  
-    children_info = []
-    for child in children:
-        today = datetime.today().date()
-        birth_date = child.birth_date
-        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-        children_info.append({
-            "id": child.id,
-            "name": child.name,
-            "age": age
-        })
+    try:
+        user_apartments = db.query(UserApartment).filter(
+            UserApartment.user_id == user.id
+        ).all()
+        for ua in user_apartments:
+            apartments.append({
+                "id": ua.apartment.id,
+                "name": ua.apartment.name,
+                "unit_number": ua.unit_number,
+                "role": ua.role
+            })
+    except Exception as e:
+        apartments = []
+        
+    children = db.query(ChildModel).filter(ChildModel.user_id == user.id).all()
+    children_info = [{"id": child.id, "name": child.name, "age": child.age} for child in children]
 
     user_context = {
         "user_id": user.id,
@@ -59,6 +46,7 @@ async def get_user_context(user: UserModel, db: Session) -> dict:
         "children": children_info
     }
     return user_context
+
 @router.post("/chat")
 async def chat_with_ai(
     message: str = Query(..., description="채팅 메시지"),
@@ -67,7 +55,7 @@ async def chat_with_ai(
     db: Session = Depends(get_db)
 ):
     cache_key = f"chat_response:{current_user.id}:{message}:{mode}"
-    cached_response = get_cache(cache_key)
+    cached_response = await get_cache(cache_key)
     if cached_response:
         return json.loads(cached_response)
     
@@ -93,7 +81,7 @@ async def chat_with_ai(
             
             if response.status_code == 200:
                 result = response.json()
-                set_cache(cache_key, json.dumps(result), expire_seconds=300)
+                await set_cache(cache_key, json.dumps(result), expire_seconds=300)
                 return result
             else:
                 raise HTTPException(

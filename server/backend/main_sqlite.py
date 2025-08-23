@@ -8,7 +8,7 @@ load_dotenv()
 from .database_sqlite import create_tables
 
 
-from .routers import auth, users, children, alerts
+from .routers import auth, users, children, alerts,ai
 from llm_service.routers import chat as llm_chat
 from llm_service.routers import schedule as llm_schedule
 
@@ -32,6 +32,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(children.router)
 app.include_router(alerts.router)
+app.include_router(ai.router)
 app.include_router(llm_chat.router)
 app.include_router(llm_schedule.router)
 

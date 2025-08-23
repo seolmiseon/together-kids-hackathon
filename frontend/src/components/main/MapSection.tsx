@@ -1,6 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Map, MapMarker } from 'react-kakao-maps-sdk';
+import {
+    Container as MapDiv,
+    NaverMap,
+    Marker,
+    useNavermaps,
+} from 'react-naver-maps';
 import { useSession } from 'next-auth/react';
 interface Child {
     id: number;
@@ -17,13 +22,14 @@ export default function MapSection() {
     const [children, setChildren] = useState<Child[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [mapError, setMapError] = useState(false);
+    const navermaps = useNavermaps();
     // [수정] isTrackingTime의 기본값을 true로 변경하여 항상 마커가 보이도록
     const [isTrackingTime, setIsTrackingTime] = useState(true);
 
     useEffect(() => {
-        // 로그인 상태일 때만 실제 데이터를 가져옵니다.
-        if (status === 'authenticated') {
-            const fetchChildrenData = async () => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            if (status === 'authenticated') {
                 try {
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
                     const response = await fetch(`${apiUrl}/children`, {
@@ -36,32 +42,27 @@ export default function MapSection() {
                     setChildren(data);
                 } catch (error) {
                     console.error(error);
-                } finally {
-                    setIsLoading(false);
                 }
-            };
-            fetchChildrenData();
-        } else if (status === 'unauthenticated') {
-            // 비로그인 상태일 때는 데모용 데이터를 보여줍니다.
-            const demoData: Child[] = [
-                {
-                    id: 1,
-                    name: '데모 아이',
-                    lat: 37.5665,
-                    lng: 126.978,
-                    status: 'safe',
-                    guardian: '함께키즈',
-                    imageUrl: '/images/logo/logosymbol.png',
-                },
-            ];
-            setChildren(demoData);
+            } else if (status === 'unauthenticated') {
+                const demoData: Child[] = [
+                    {
+                        id: 1,
+                        name: '데모 아이',
+                        lat: 37.566826,
+                        lng: 126.9786567,
+                        status: 'safe',
+                        guardian: '함께키즈',
+                        imageUrl: '/images/logo/logosymbol.png',
+                    },
+                ];
+                setChildren(demoData);
+            }
             setIsLoading(false);
-        }
-    }, [status, session]); // 로그인 상태가 바뀔 때마다 다시 실행됩니다.
+        };
+        fetchData();
+    }, [status, session]);
 
     /*
-    // [주석 처리] 테스트 중에는 시간 제한 로직을 사용하지 않습니다.
-    // 나중에 실제 서비스 운영 시 이 주석을 다시 해제하면 됩니다.
     useEffect(() => {
         const checkTrackingTime = () => {
             const now = new Date();
@@ -80,63 +81,75 @@ export default function MapSection() {
     }, []);
     */
 
-    const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!navermaps) {
+                setMapError(true);
+                console.error('Naver Maps script loading timed out.');
+            }
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, [navermaps]);
 
     if (isLoading) {
         return (
             <div
-                className="flex-1 relative bg-gray-100 flex items-center justify-center"
-                style={{ height: 'calc(100vh - 80px)' }}
+                className="w-full flex items-center justify-center"
+                style={{ height: 'calc(100vh - 5rem)' }}
             >
-                <p className="text-gray-500">
-                    아이들 위치 정보를 불러오는 중...
-                </p>
+                <p className="text-center pt-10">지도 로딩 중...</p>
             </div>
         );
     }
 
     return (
         <div
-            className="flex-1 relative bg-gray-100"
-            style={{ height: 'calc(100vh - 120px)', marginTop: '80px' }}
+            className="relative w-full"
+            style={{ height: 'calc(100vh - 5rem)' }}
         >
             {mapError ? (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
                     <div className="text-center">
-                        <p className="text-red-500 mb-2">
-                            지도 로딩에 실패했습니다
+                        <p className="text-red-500 font-semibold mb-2">
+                            지도 로딩에 실패했습니다.
                         </p>
-                        <p className="text-gray-500 text-sm">
-                            카카오 지도 API 키를 확인해주세요
+                        <p className="text-gray-600 text-sm">
+                            네이버 지도 Client ID 또는 도메인 등록을
+                            확인해주세요.
                         </p>
                     </div>
                 </div>
             ) : (
-                <Map
-                    center={{ lat: 37.5665, lng: 126.978 }}
-                    style={{ width: '100%', height: '100%' }}
-                    level={4}
+                <NaverMap
+                    defaultCenter={new navermaps.LatLng(37.566826, 126.9786567)}
+                    defaultZoom={15}
                 >
                     {isTrackingTime &&
                         children.map((child) => (
-                            <MapMarker
+                            <Marker
                                 key={child.id}
-                                position={{ lat: child.lat, lng: child.lng }}
+                                position={
+                                    new navermaps.LatLng(child.lat, child.lng)
+                                }
                                 title={child.name}
-                                image={{
-                                    src: child.imageUrl,
-                                    size: { width: 48, height: 48 },
-                                    options: {
-                                        offset: { x: 24, y: 48 },
-                                    },
+                                icon={{
+                                    content: `<div style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:3px solid ${
+                                        child.status === 'safe'
+                                            ? '#10B981'
+                                            : '#3B82F6'
+                                    };box-shadow: 0 0 0 2px white;"><img src="${
+                                        child.imageUrl
+                                    }" style="width:100%;height:100%;object-fit:cover;" alt="${
+                                        child.name
+                                    }"/></div>`,
+                                    anchor: new navermaps.Point(24, 48),
                                 }}
                             />
                         ))}
-                </Map>
+                </NaverMap>
             )}
-
-            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-white rounded-lg shadow-lg p-3 sm:p-4 z-30 max-w-xs sm:max-w-sm">
-                <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2">
+            <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-4 z-30">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">
                     실시간 위치 현황
                 </h3>
                 {isTrackingTime ? (
@@ -150,9 +163,7 @@ export default function MapSection() {
                                     className={`w-3 h-3 rounded-full ${
                                         child.status === 'safe'
                                             ? 'bg-green-500'
-                                            : child.status === 'moving'
-                                            ? 'bg-blue-500'
-                                            : 'bg-red-500'
+                                            : 'bg-blue-500'
                                     }`}
                                 ></div>
                                 <span className="text-gray-800">
