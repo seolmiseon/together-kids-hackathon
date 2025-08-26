@@ -11,10 +11,9 @@ import {
 } from 'lucide-react';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useUserStore } from '@/store/userStore';
-import { signOut, useSession } from 'next-auth/react';
+import { getAuth, signOut } from 'firebase/auth';
 import BellIcon from '@/components/ui/BellIcon';
 
-// --- 타입 정의 ---
 interface Notification {
     id: number;
     type: 'schedule' | 'emergency' | 'community';
@@ -32,22 +31,13 @@ export default function MainHeader() {
 
     const { notifications, unreadCount, fetchNotifications } =
         useNotificationStore();
-    const { user, login, logout } = useUserStore();
-    const { data: session, status } = useSession();
+    const { user, isLoggedIn } = useUserStore();
 
     useEffect(() => {
-        if (status === 'authenticated' && session?.user) {
-            login({
-                id: session.user.email ?? 'unknown-id',
-                name: session.user.name ?? null,
-                email: session.user.email ?? null,
-                image: session.user.image ?? null,
-            });
+        if (isLoggedIn) {
             fetchNotifications();
-        } else if (status === 'unauthenticated') {
-            logout();
         }
-    }, [status, session, login, logout, fetchNotifications]);
+    }, [isLoggedIn, fetchNotifications]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -89,6 +79,16 @@ export default function MainHeader() {
         }
     };
 
+    const handleSignOut = async () => {
+        const auth = getAuth();
+        try {
+            await signOut(auth);
+            window.location.href = '/';
+        } catch (error) {
+            console.error('로그아웃 실패:', error);
+        }
+    };
+
     return (
         <header className="bg-white shadow-sm sticky top-0 z-50 h-20 flex items-center">
             <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
@@ -119,8 +119,46 @@ export default function MainHeader() {
                                 </button>
 
                                 {isModalOpen && (
-                                    <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border overflow-hidden animate-fade-in-down">
-                                        {/* 알림 모달 내용 */}
+                                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg border z-50">
+                                        <div className="p-4">
+                                            <h4 className="font-semibold text-gray-800">
+                                                알림
+                                            </h4>
+                                            {notifications.length > 0 ? (
+                                                <ul className="mt-2 space-y-2">
+                                                    {notifications.map(
+                                                        (notification) => {
+                                                            const {
+                                                                icon,
+                                                                color,
+                                                            } =
+                                                                getNotificationStyle(
+                                                                    notification.type
+                                                                );
+                                                            return (
+                                                                <li
+                                                                    key={
+                                                                        notification.id
+                                                                    }
+                                                                    className={`flex items-center p-2 rounded-md ${color}`}
+                                                                >
+                                                                    {icon}
+                                                                    <span className="ml-2 text-sm text-gray-800">
+                                                                        {
+                                                                            notification.message
+                                                                        }
+                                                                    </span>
+                                                                </li>
+                                                            );
+                                                        }
+                                                    )}
+                                                </ul>
+                                            ) : (
+                                                <p className="mt-2 text-sm text-gray-500">
+                                                    새로운 알림이 없습니다.
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -157,9 +195,7 @@ export default function MainHeader() {
                                             </p>
                                         </div>
                                         <button
-                                            onClick={() =>
-                                                signOut({ callbackUrl: '/' })
-                                            }
+                                            onClick={handleSignOut}
                                             className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                                         >
                                             <LogOut className="w-4 h-4 mr-2" />

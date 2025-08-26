@@ -2,12 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# 환경변수 로드 (최상위에서 한 번만)
+
+
 load_dotenv()
 
 from .database_sqlite import create_tables
-
-
 from .routers import auth, users, children, alerts,ai
 from llm_service.routers import chat as llm_chat
 from llm_service.routers import schedule as llm_schedule
@@ -21,7 +20,7 @@ app = FastAPI(
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

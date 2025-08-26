@@ -1,7 +1,6 @@
 import { create } from 'zustand';
+import { getAuth } from 'firebase/auth';
 
-// --- 타입 정의 ---
-// 백엔드 API 응답과 일치해야 합니다.
 interface Notification {
     id: number;
     type: 'schedule' | 'emergency' | 'community';
@@ -24,10 +23,25 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
     fetchNotifications: async () => {
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            // (주의: 실제 구현 시에는 로그인 인증 토큰을 헤더에 포함해야 합니다.)
-            const response = await fetch(`${apiUrl}/alerts`);
+            const auth = getAuth();
+            const user = auth.currentUser;
 
+            if (!user) {
+                console.log(
+                    'Firebase 사용자가 없어 알림을 가져올 수 없습니다.'
+                );
+                set({ notifications: [], unreadCount: 0 });
+                return;
+            }
+
+            const token = await user.getIdToken();
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            const response = await fetch(`${apiUrl}/alerts/`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             if (!response.ok) {
                 throw new Error('알림 데이터를 가져오는 데 실패했습니다.');
             }
@@ -46,8 +60,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         }
     },
 
-    // 특정 알림을 읽음 처리하는 함수
-    markAsRead: (id: number) => {
+    markAsRead: async (id: number) => {
         const updatedNotifications = get().notifications.map((n) =>
             n.id === id ? { ...n, isRead: true } : n
         );
@@ -56,6 +69,23 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             unreadCount: updatedNotifications.filter((n) => !n.isRead).length,
         });
 
-        fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const token = await user.getIdToken();
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+            await fetch(`${apiUrl}/alerts/${id}/read/`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+        } catch (error) {
+            console.error('알림 읽음 처리 실패:', error);
+            // (선택) 읽음 처리 실패 시, UI를 원래대로 되돌리는 로직을 추가할 수 있습니다.
+        }
     },
 }));

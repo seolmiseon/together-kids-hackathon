@@ -56,7 +56,7 @@ async def health_check():
 @app.get("/env-test")
 async def env_test():
     database_url = os.getenv("DATABASE_URL")
-    secret_key = os.getenv("SECRET_KEY")
+    secret_key = os.getenv("SECRET_KEY","default_secret")
     return {
         "DATABASE_URL": database_url,
         "SECRET_KEY": "****" if secret_key else None 

@@ -10,7 +10,7 @@ from ..models import Child  as ChildModel,SafeZone
 from ..dependencies import get_current_active_user
 from ..utils.spell_utils import (
     gps_safety_spell, schedule_conflict_spell, emergency_spell,
-    auto_spell_trigger, get_user_alerts, clear_user_alerts, demo_spell_system,
+    auto_spell_trigger, get_user_alerts, clear_user_alerts,
     check_geofence_exit
 )
 
@@ -119,8 +119,3 @@ async def clear_alerts_endpoint(
     result = await clear_user_alerts(str(current_user.id))
     return {"status": "success", "message": result}
 
-@router.get("/demo")
-async def demo_endpoint():
-    """스펠 시스템 데모 (개발용)"""
-    result = await demo_spell_system()
-    return result

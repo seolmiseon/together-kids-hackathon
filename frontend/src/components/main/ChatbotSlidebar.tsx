@@ -1,8 +1,8 @@
 'use client';
 import { useState, Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
-
+import { getAuth } from 'firebase/auth';
+import { useUserStore } from '@/store/userStore';
 // --- 타입 정의 ---
 interface Message {
     id: number;
@@ -33,7 +33,7 @@ export default function ChatbotSidebar({
     const [isAiResponding, setIsAiResponding] = useState(false);
     const [urgency, setUrgency] = useState<'low' | 'medium' | 'high'>('low');
 
-    const { data: session } = useSession();
+    const { isLoggedIn } = useUserStore();
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -57,18 +57,23 @@ export default function ChatbotSidebar({
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         try {
-            if (!session?.accessToken) {
+            const auth = getAuth();
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
                 throw new Error('로그인이 필요합니다.');
             }
+            const token = await currentUser.getIdToken();
+
             const params = new URLSearchParams({
                 message: userMessage,
                 mode: 'auto',
             });
             const requestUrl = `${apiUrl}/ai/chat?${params.toString()}`;
+
             const response = await fetch(requestUrl, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${session.accessToken}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
 

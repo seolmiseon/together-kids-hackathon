@@ -121,7 +121,7 @@ async def search_users(
     # 이름 또는 사용자명으로 검색
     query = query.filter(
         (UserModel.full_name.ilike(f"%{q}%")) |
-        (UserModel.username.ilike(f"%{q}%"))
+        (UserModel.user_name.ilike(f"%{q}%"))
     )
     
     # 특정 아파트 사용자만 검색

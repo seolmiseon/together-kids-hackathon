@@ -8,7 +8,7 @@ import json
 # from ..database import get_db
 from ..database_sqlite import get_db
 from ..models import User as UserModel, Child as ChildModel, UserApartment
-from ..schemas import User as UserSchema
+from ..schemas import User 
 from ..dependencies import get_current_active_user
 from ..redis_client import set_cache, get_cache
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/ai", tags=["ai-integration"])
 
 # LLM 서비스 설정
 LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8002")
-LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY", "")
+LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY", "default_secret")
 
 async def get_user_context(user: UserModel, db: Session) -> dict:
     """사용자 컨텍스트 생성"""
@@ -32,7 +32,7 @@ async def get_user_context(user: UserModel, db: Session) -> dict:
                 "unit_number": ua.unit_number,
                 "role": ua.role
             })
-    except Exception as e:
+    except Exception:
         apartments = []
         
     children = db.query(ChildModel).filter(ChildModel.user_id == user.id).all()
@@ -40,8 +40,7 @@ async def get_user_context(user: UserModel, db: Session) -> dict:
 
     user_context = {
         "user_id": user.id,
-        "username": user.username,
-        "full_name": user.full_name,
+        "user_name": user.name,
         "apartments": apartments,
         "children": children_info
     }
@@ -55,6 +54,7 @@ async def chat_with_ai(
     db: Session = Depends(get_db)
 ):
     cache_key = f"chat_response:{current_user.id}:{message}:{mode}"
+    
     cached_response = await get_cache(cache_key)
     if cached_response:
         return json.loads(cached_response)
@@ -67,6 +67,7 @@ async def chat_with_ai(
             headers = {}
             if LLM_SERVICE_API_KEY:
                 headers["Authorization"] = f"Bearer {LLM_SERVICE_API_KEY}"
+                
             response = await client.post(
                 f"{LLM_SERVICE_URL}/chat/unified",
                 params={

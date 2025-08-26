@@ -6,7 +6,9 @@ import {
     Marker,
     useNavermaps,
 } from 'react-naver-maps';
-import { useSession } from 'next-auth/react';
+import { getAuth } from 'firebase/auth';
+import { useUserStore } from '@/store/userStore';
+
 interface Child {
     id: number;
     name: string;
@@ -18,32 +20,41 @@ interface Child {
 }
 
 export default function MapSection() {
-    const { data: session, status } = useSession();
+    const { isLoggedIn } = useUserStore();
     const [children, setChildren] = useState<Child[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [mapError, setMapError] = useState(false);
+    const [isTrackingTime, setIsTrackingTime] = useState(true); // 테스트를 위해 기본값을 true로 설정
     const navermaps = useNavermaps();
-    // [수정] isTrackingTime의 기본값을 true로 변경하여 항상 마커가 보이도록
-    const [isTrackingTime, setIsTrackingTime] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
-            if (status === 'authenticated') {
+
+            if (isLoggedIn) {
                 try {
+                    const auth = getAuth();
+                    const currentUser = auth.currentUser;
+                    if (!currentUser)
+                        throw new Error('Firebase 사용자를 찾을 수 없습니다.');
+
+                    const token = await currentUser.getIdToken();
+
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-                    const response = await fetch(`${apiUrl}/children`, {
-                        headers: {
-                            Authorization: `Bearer ${session.accessToken}`,
-                        },
+                    const response = await fetch(`${apiUrl}/children/`, {
+                        headers: { Authorization: `Bearer ${token}` },
                     });
                     if (!response.ok) throw new Error('데이터 로딩 실패');
                     const data = await response.json();
-                    setChildren(data);
+                    setChildren(Array.isArray(data) ? data : []);
                 } catch (error) {
-                    console.error(error);
+                    console.error('Children fetch error:', error);
+                    setChildren([]);
+                } finally {
+                    setIsLoading(false);
                 }
-            } else if (status === 'unauthenticated') {
+            } else {
+                // 비로그인 상태일 때는 데모 데이터를 보여줍니다.
                 const demoData: Child[] = [
                     {
                         id: 1,
@@ -56,30 +67,12 @@ export default function MapSection() {
                     },
                 ];
                 setChildren(demoData);
+                setIsLoading(false);
             }
-            setIsLoading(false);
         };
+
         fetchData();
-    }, [status, session]);
-
-    /*
-    useEffect(() => {
-        const checkTrackingTime = () => {
-            const now = new Date();
-            const currentHour = now.getHours();
-
-            const isMorningRush = currentHour >= 8 && currentHour < 9;
-            const isAfternoonRush = currentHour >= 15 && currentHour < 16;
-
-            setIsTrackingTime(isMorningRush || isAfternoonRush);
-        };
-
-        const interval = setInterval(checkTrackingTime, 60000);
-        checkTrackingTime();
-
-        return () => clearInterval(interval);
-    }, []);
-    */
+    }, [isLoggedIn]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -103,7 +96,7 @@ export default function MapSection() {
     }
 
     return (
-        <div
+        <MapDiv
             className="relative w-full"
             style={{ height: 'calc(100vh - 5rem)' }}
         >
@@ -181,6 +174,6 @@ export default function MapSection() {
                     </p>
                 )}
             </div>
-        </div>
+        </MapDiv>
     );
 }

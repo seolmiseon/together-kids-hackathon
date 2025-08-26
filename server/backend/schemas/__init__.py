@@ -5,7 +5,7 @@ from datetime import datetime
 # ===== 사용자 스키마 =====
 class UserBase(BaseModel):
     email: EmailStr
-    username: str
+    user_name: str
     full_name: str
     phone: Optional[str] = None
 

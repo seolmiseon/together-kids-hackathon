@@ -52,6 +52,7 @@ logs/
 .idea/
 *.swp
 *.swo
+.firebase/
 
 # macOS
 .DS_Store

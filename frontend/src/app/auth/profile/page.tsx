@@ -91,7 +91,7 @@ export default function ProfileSetupPage() {
 
             // 1. 보호자 정보 업데이트 (예: /users/me API 호출)
             const userResponse = await fetch(`${apiUrl}/users/me`, {
-                method: 'PUT', // 또는 'POST' - 백엔드 API에 따라 다름
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${accessToken}`,
@@ -114,7 +114,7 @@ export default function ProfileSetupPage() {
                     childFormData.append('image', child.imageFile);
                 }
 
-                const childResponse = await fetch(`${apiUrl}/children`, {
+                const childResponse = await fetch(`${apiUrl}/children/`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${accessToken}` },
                     body: childFormData,
