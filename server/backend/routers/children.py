@@ -1,267 +1,209 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from typing import List, Optional
-from datetime import datetime, date
-import json
+from datetime import datetime, date, timedelta
+from firebase_admin import firestore
+import firebase_admin
 
-from ..database_sqlite import get_db, User as UserModel, Child as ChildModel, Schedule as ScheduleModel
 from ..schemas import Child, ChildCreate, ChildUpdate, Schedule, ScheduleCreate, ScheduleUpdate, MessageResponse
-from ..dependencies import get_current_active_user
-from ..redis_client import set_cache, get_cache, redis_client
+from ..dependencies import get_current_user
 
+if not firebase_admin._apps:
+    from ..main import cred
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 router = APIRouter(prefix="/children", tags=["children"])
 
 @router.get("/", response_model=List[Child])
 async def get_children(
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
-    cache_key = f"children_list:{current_user.id}"
-    cached = get_cache(cache_key)
-    if cached:
-        return json.loads(cached)
-    children = db.query(ChildModel).filter(
-        ChildModel.user_id == current_user.id
-    ).all()
-    set_cache(cache_key, json.dumps(children), expire_seconds=300)
-    return children
+    """현재 로그인한 사용자의 자녀 목록을 Firestore에서 조회합니다."""
+    uid = current_user.get("uid")
+    try:
+        children_ref = db.collection("users").document(uid).collection("children")
+        docs = await children_ref.stream() # 비동기적으로 문서를 가져옵니다.
+        children_list = [doc.to_dict() for doc in docs]
+        return children_list
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"자녀 목록 조회 중 오류 발생: {e}")
+
 
 @router.post("/", response_model=Child)
 async def create_child(
     child_data: ChildCreate,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
-    """새 아이 프로필 생성"""
-    child = ChildModel(
-        user_id=current_user.id,
-        **child_data.dict()
-    )
-    
-    db.add(child)
-    db.commit()
-    db.refresh(child)
-    # 캐시 무효화
-    cache_key = f"children_list:{current_user.id}"
-    redis_client.delete(cache_key)
-    return child
+    """새 아이 프로필을 Firestore에 생성합니다."""
+    uid = current_user.get("uid")
+    try:
+        new_child_ref = db.collection("users").document(uid).collection("children").document()
+        
+        child_dict = child_data.dict()
+        child_dict["id"] = new_child_ref.id # 생성된 문서 ID를 데이터에 포함
+        child_dict["parent_id"] = uid
+        child_dict["created_at"] = firestore.SERVER_TIMESTAMP
+        child_dict["updated_at"] = firestore.SERVER_TIMESTAMP
+        await new_child_ref.set(child_dict)
+        return child_dict
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"자녀 프로필 생성 중 오류 발생: {e}")
 
 @router.get("/{child_id}", response_model=Child)
 async def get_child(
-    child_id: int,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    child_id: str,
+    current_user: dict = Depends(get_current_user)
 ):
-    """특정 아이 프로필 조회"""
-    child = db.query(ChildModel).filter(
-        ChildModel.id == child_id,
-        ChildModel.user_id == current_user.id
-    ).first()
-    
-    if not child:
-        raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
-    
-    return child
+    """특정 아이 프로필을 Firestore에서 조회합니다."""
+    uid = current_user.get("uid")
+    try:
+        child_ref = db.collection("users").document(uid).collection("children").document(child_id)
+        child_doc = await child_ref.get()
+        
+        if not child_doc.exists:
+            raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
+        
+        return child_doc.to_dict()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"자녀 프로필 조회 중 오류 발생: {e}")
+
 
 @router.put("/{child_id}", response_model=Child)
 async def update_child(
-    child_id: int,
+    child_id: str,
     child_update: ChildUpdate,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
-    """아이 프로필 수정"""
-    child = db.query(ChildModel).filter(
-        ChildModel.id == child_id,
-        ChildModel.user_id == current_user.id
-    ).first()
-    
-    if not child:
-        raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
-    
+    """아이 프로필을 Firestore에서 수정합니다."""
+    uid = current_user.get("uid")
     update_data = child_update.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(child, field, value)
+    update_data["updated_at"] = firestore.SERVER_TIMESTAMP
     
-    db.commit()
-    db.refresh(child)
-    # 캐시 무효화
-    cache_key = f"children_list:{current_user.id}"
-    redis_client.delete(cache_key)
-    return child
+    try:
+        child_ref = db.collection("users").document(uid).collection("children").document(child_id)
+        await child_ref.update(update_data)
+        
+        updated_doc = await child_ref.get()
+        if not updated_doc.exists:
+            raise HTTPException(status_code=404, detail="업데이트 후 아이를 찾을 수 없습니다")
+            
+        return updated_doc.to_dict()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"자녀 프로필 수정 중 오류 발생: {e}")
+
 
 @router.delete("/{child_id}", response_model=MessageResponse)
 async def delete_child(
-    child_id: int,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    child_id: str,
+    current_user: dict = Depends(get_current_user)
 ):
-    """아이 프로필 삭제"""
-    child = db.query(ChildModel).filter(
-        ChildModel.id == child_id,
-        ChildModel.user_id == current_user.id
-    ).first()
+    """아이 프로필을 Firestore에서 삭제합니다."""
+    uid = current_user.get("uid")
+    try:
+        child_ref = db.collection("users").document(uid).collection("children").document(child_id)
+        await child_ref.delete()
+        
+        # (추가 기능) 관련 스케줄도 함께 삭제하는 로직이 필요하다면 여기에 추가합니다.
+        # 예: schedules 컬렉션에서 child_id가 일치하는 문서를 쿼리하여 삭제
+        
+        return {"message": "아이 프로필이 삭제되었습니다"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"자녀 프로필 삭제 중 오류 발생: {e}")
     
-    if not child:
-        raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
-    
-    # 관련 스케줄도 함께 삭제
-    db.query(ScheduleModel).filter(ScheduleModel.child_id == child_id).delete()
-    db.delete(child)
-    db.commit()
-    # 캐시 무효화
-    cache_key = f"children_list:{current_user.id}"
-    redis_client.delete(cache_key)
-    return {"message": "아이 프로필이 삭제되었습니다"}
-
-# ===== 일정 관리 =====
 
 @router.get("/{child_id}/schedules", response_model=List[Schedule])
 async def get_child_schedules(
-    child_id: int,
-    start_date: Optional[date] = Query(None, description="시작 날짜"),
-    end_date: Optional[date] = Query(None, description="종료 날짜"),
-    schedule_type: Optional[str] = Query(None, description="일정 유형"),
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    child_id: str,
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
+    schedule_type: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user)
 ):
-    """아이의 일정 목록 조회"""
-    # 아이 소유권 확인
-    child = db.query(ChildModel).filter(
-        ChildModel.id == child_id,
-        ChildModel.user_id == current_user.id
-    ).first()
-    
-    if not child:
-        raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
-    
-    query = db.query(ScheduleModel).filter(ScheduleModel.child_id == child_id)
-    
-    # 날짜 필터
-    if start_date:
-        query = query.filter(ScheduleModel.start_time >= start_date)
-    if end_date:
-        query = query.filter(ScheduleModel.start_time <= end_date)
-    
-    # 일정 유형 필터
-    if schedule_type:
-        query = query.filter(ScheduleModel.schedule_type == schedule_type)
-    
-    schedules = query.order_by(ScheduleModel.start_time).all()
-    return schedules
+    """특정 아이의 모든 일정을 Firestore에서 조회합니다."""
+    uid = current_user.get("uid")
+    try:
+        child_doc = await db.collection("users").document(uid).collection("children").document(child_id).get()
+        if not child_doc.exists:
+            raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
+        
+        query = child_doc.reference.collection("schedules")
+        if start_date:
+            query = query.where("start_time", ">=", datetime.combine(start_date, datetime.min.time()))
+        if end_date:
+            query = query.where("start_time", "<=", datetime.combine(end_date, datetime.max.time()))
+        if schedule_type:
+            query = query.where("schedule_type", "==", schedule_type)
+            
+        docs = await query.order_by("start_time").stream()
+        schedules_list = [doc.to_dict() for doc in docs]
+        return schedules_list
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"일정 조회 중 오류 발생: {e}")
 
 @router.post("/{child_id}/schedules", response_model=Schedule)
 async def create_schedule(
-    child_id: int,
+    child_id: str,
     schedule_data: ScheduleCreate,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
-    """새 일정 생성"""
-    # 아이 소유권 확인
-    child = db.query(ChildModel).filter(
-        ChildModel.id == child_id,
-        ChildModel.user_id == current_user.id
-    ).first()
-    
-    if not child:
-        raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
-    
-    # child_id 설정
-    schedule_data.child_id = child_id
-    
-    schedule = ScheduleModel(**schedule_data.dict())
-    db.add(schedule)
-    db.commit()
-    db.refresh(schedule)
-    
-    return schedule
+    """특정 아이의 새 일정을 Firestore에 생성합니다."""
+    uid = current_user.get("uid")
+    try:
+        child_doc = await db.collection("users").document(uid).collection("children").document(child_id).get()
+        if not child_doc.exists:
+            raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
 
-@router.put("/{child_id}/schedules/{schedule_id}", response_model=Schedule)
-async def update_schedule(
-    child_id: int,
-    schedule_id: int,
-    schedule_update: ScheduleUpdate,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """일정 수정"""
-    # 일정 조회 및 소유권 확인
-    schedule = db.query(ScheduleModel).join(ChildModel).filter(
-        ScheduleModel.id == schedule_id,
-        ScheduleModel.child_id == child_id,
-        ChildModel.user_id == current_user.id
-    ).first()
-    
-    if not schedule:
-        raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다")
-    
-    update_data = schedule_update.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(schedule, field, value)
-    
-    db.commit()
-    db.refresh(schedule)
-    
-    return schedule
-
-@router.delete("/{child_id}/schedules/{schedule_id}", response_model=MessageResponse)
-async def delete_schedule(
-    child_id: int,
-    schedule_id: int,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """일정 삭제"""
-    # 일정 조회 및 소유권 확인
-    schedule = db.query(ScheduleModel).join(ChildModel).filter(
-        ScheduleModel.id == schedule_id,
-        ScheduleModel.child_id == child_id,
-        ChildModel.user_id == current_user.id
-    ).first()
-    
-    if not schedule:
-        raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다")
-    
-    db.delete(schedule)
-    db.commit()
-    
-    return {"message": "일정이 삭제되었습니다"}
+        new_schedule_ref = child_doc.reference.collection("schedules").document()
+        schedule_dict = schedule_data.dict()
+        schedule_dict["id"] = new_schedule_ref.id
+        schedule_dict["created_at"] = firestore.SERVER_TIMESTAMP
+        schedule_dict["updated_at"] = firestore.SERVER_TIMESTAMP
+        
+        await new_schedule_ref.set(schedule_dict)
+        return schedule_dict
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"일정 생성 중 오류 발생: {e}")
 
 @router.get("/schedules/today", response_model=List[Schedule])
-async def get_today_schedules(
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
+async def get_today_schedules(current_user: dict = Depends(get_current_user)):
     """오늘의 모든 아이 일정 조회"""
-    today = datetime.now().date()
-    
-    schedules = db.query(ScheduleModel).join(ChildModel).filter(
-        ChildModel.user_id == current_user.id,
-        ScheduleModel.start_time >= today,
-        ScheduleModel.start_time < today.replace(day=today.day + 1)
-    ).order_by(ScheduleModel.start_time).all()
-    
-    return schedules
+    uid = current_user.get("uid")
+    try:
+        today_start = datetime.combine(date.today(), datetime.min.time())
+        today_end = datetime.combine(date.today(), datetime.max.time())
+
+        schedules_ref = db.collection_group("schedules")
+        query = schedules_ref.where("parent_id", "==", uid) \
+                             .where("start_time", ">=", today_start) \
+                             .where("start_time", "<=", today_end)
+        
+        docs_stream = query.order_by("start_time").stream()
+        schedules_list = [doc.to_dict() for doc in docs_stream]
+        return schedules_list
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"오늘 일정 조회 중 오류 발생: {e}")
+
 
 @router.get("/schedules/upcoming", response_model=List[Schedule])
 async def get_upcoming_schedules(
     days: int = Query(7, description="앞으로 며칠간의 일정"),
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """다가오는 일정 조회"""
-    from datetime import timedelta
-    
-    start_date = datetime.now()
-    end_date = start_date + timedelta(days=days)
-    
-    schedules = db.query(ScheduleModel).join(ChildModel).filter(
-        ChildModel.user_id == current_user.id,
-        ScheduleModel.start_time >= start_date,
-        ScheduleModel.start_time <= end_date,
-        ScheduleModel.is_completed == False
-    ).order_by(ScheduleModel.start_time).all()
-    
-    return schedules
+    uid = current_user.get("uid")
+    try:
+        start_date = datetime.now()
+        end_date = start_date + timedelta(days=days)
+        
+        schedules_ref = db.collection_group("schedules")
+        query = schedules_ref.where("parent_id", "==", uid) \
+                             .where("start_time", ">=", start_date) \
+                             .where("start_time", "<=", end_date) \
+                             .where("is_completed", "==", False)
+        
+        docs_stream = query.order_by("start_time").stream()
+        schedules_list = [doc.to_dict() for doc in docs_stream]
+        return schedules_list
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"다가오는 일정 조회 중 오류 발생: {e}")

@@ -236,12 +236,12 @@ export default function ChatbotSidebar({
                             }
                             placeholder="메시지를 입력하세요..."
                             className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            disabled={isAiResponding}
+                            disabled={isAiResponding || !isLoggedIn}
                         />
                         <button
                             onClick={sendMessage}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-colors disabled:bg-gray-300"
-                            disabled={isAiResponding}
+                            disabled={isAiResponding || !isLoggedIn}
                         >
                             전송
                         </button>

@@ -1,95 +1,98 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlalchemy.orm import Session
 from typing import List, Dict, Any
-from datetime import datetime
+import firebase_admin
+from firebase_admin import firestore
 
-# from ..database import get_db
-from ..database_sqlite import get_db
-from ..database_sqlite import User as UserModel
-from ..models import Child  as ChildModel,SafeZone
-from ..dependencies import get_current_active_user
+
+from ..dependencies import get_current_user
 from ..utils.spell_utils import (
     gps_safety_spell, schedule_conflict_spell, emergency_spell,
     auto_spell_trigger, get_user_alerts, clear_user_alerts,
     check_geofence_exit
 )
 
+if not firebase_admin._apps:
+    from ..main import cred
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 router = APIRouter(prefix="/alerts", tags=["simple-alerts"])
 
 @router.post("/gps")
 async def gps_alert_endpoint(
-    child_name: str,
-    location: str,
-    current_user: UserModel = Depends(get_current_active_user)
+    body: dict, # child_name, location을 body로 받음
+    current_user: dict = Depends(get_current_user)
 ):
-    """GPS 안전구역 이탈 알림"""
-    result = await gps_safety_spell(str(current_user.id), child_name, location)
+    """GPS 안전구역 이탈 알림 생성"""
+    uid = current_user.get("uid")
+    child_name = body.get("child_name")
+    location = body.get("location")
+    result = await gps_safety_spell(uid, child_name, location)
     return {"status": "success", "message": result}
 
 @router.post("/gps/check-safety")
 async def check_gps_safety(
-    child_id: int,
-    current_lat: float,
-    current_lng: float,
-    current_user: UserModel = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    body: dict, # child_id, current_lat, current_lng을 body로 받음
+    current_user: dict = Depends(get_current_user)
 ):
-    """실시간 GPS 안전구역 체크"""
-    
-    # 해당 아이의 안전구역 조회
-    safe_zones = db.query(SafeZone).filter(
-        SafeZone.user_id == current_user.id,
-        SafeZone.child_id == child_id,
-        SafeZone.is_active == True
-    ).all()
-    
-    zones_data = [
-        {
-            "name": zone.name,
-            "latitude": zone.latitude,
-            "longitude": zone.longitude,
-            "radius": zone.radius
-        }
-        for zone in safe_zones
-    ]
-    
-    # 지오펜스 체크
-    check_result = await check_geofence_exit(current_lat, current_lng, zones_data)
-    
-    if check_result["is_outside"]:
-        # 자동 알림 트리거
-        child = db.query(ChildModel).filter(ChildModel.id == child_id).first()
-        await gps_safety_spell(
-            str(current_user.id),
-            child.name,
-            f"안전구역({check_result['zone_name']})에서 {int(check_result['distance'])}m 이탈"
-        )
+    """실시간 GPS 안전구역 체크 (Firestore 연동)"""
+    uid = current_user.get("uid")
+    child_id = body.get("child_id")
+    current_lat = body.get("current_lat")
+    current_lng = body.get("current_lng")
+
+    try:
+        safe_zones_ref = db.collection("users").document(uid).collection("safe_zones")
+        query = safe_zones_ref.where("child_id", "==", child_id).where("is_active", "==", True)
+        safe_zones_docs = await query.get()
         
-        return {
-            "status": "alert_sent",
-            "message": f"{child.name}이(가) {check_result['zone_name']} 안전구역을 벗어났습니다",
-            "distance": check_result['distance']
-        }
-    
-    return {"status": "safe", "message": "안전구역 내에 있습니다"}
+        zones_data = [zone.to_dict() for zone in safe_zones_docs]
+        
+        # 지오펜스 체크
+        check_result = await check_geofence_exit(current_lat, current_lng, zones_data)
+        
+        if check_result.get("is_outside"):
+            # Firestore에서 아이 정보 조회
+            child_doc = await db.collection("users").document(uid).collection("children").document(child_id).get()
+            child_name = child_doc.to_dict().get("name", "아이") if child_doc.exists else "아이"
+
+            await gps_safety_spell(
+                uid,
+                child_name,
+                f"안전구역({check_result['zone_name']})에서 {int(check_result['distance'])}m 이탈"
+            )
+            
+            return {
+                "status": "alert_sent",
+                "message": f"{child_name}이(가) {check_result['zone_name']} 안전구역을 벗어났습니다",
+                "distance": check_result['distance']
+            }
+        
+        return {"status": "safe", "message": "안전구역 내에 있습니다"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"안전구역 체크 중 오류 발생: {e}")
+
+
 @router.post("/schedule")
 async def schedule_alert_endpoint(
-    conflict_details: str,
-    current_user: UserModel = Depends(get_current_active_user)
+    body: dict, # conflict_details를 body로 받음
+    current_user: dict = Depends(get_current_user)
 ):
     """일정 충돌 알림"""
-    result = await schedule_conflict_spell(str(current_user.id), conflict_details)
+    uid = current_user.get("uid")
+    conflict_details = body.get("conflict_details")
+    result = await schedule_conflict_spell(uid, conflict_details)
     return {"status": "success", "message": result}
 
 @router.post("/emergency")
 async def emergency_alert_endpoint(
     emergency_message: str,
     apartment_id: str = None,
-    current_user: UserModel = Depends(get_current_active_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """응급상황 알림"""
-    result = await emergency_spell(str(current_user.id), emergency_message, apartment_id)
+    result = await emergency_spell(str(current_user.get("uid")), emergency_message, apartment_id)
     return {"status": "success", "message": result}
 
 @router.post("/trigger")
@@ -104,18 +107,19 @@ async def auto_trigger_endpoint(
 
 @router.get("/")
 async def get_alerts_endpoint(
-    current_user: UserModel = Depends(get_current_active_user),
+    current_user: dict = Depends(get_current_user),
     limit: int = 10
 ):
     """사용자 알림 목록 조회"""
-    alerts = await get_user_alerts(str(current_user.id), limit)
+    uid = current_user.get("uid")
+    alerts = await get_user_alerts(uid, limit)
     return {"alerts": alerts, "count": len(alerts)}
 
 @router.delete("/clear")
 async def clear_alerts_endpoint(
-    current_user: UserModel = Depends(get_current_active_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """알림 전체 삭제"""
-    result = await clear_user_alerts(str(current_user.id))
+    uid = current_user.get("uid")
+    result = await clear_user_alerts(uid)
     return {"status": "success", "message": result}
-

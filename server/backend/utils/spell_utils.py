@@ -2,10 +2,18 @@ import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from math import radians, cos, sin, asin, sqrt
+from fastapi import HTTPException
+from firebase_admin import firestore
+import firebase_admin
 
+if not firebase_admin._apps:
+    try:
+        from ..main import cred
+        firebase_admin.initialize_app(cred)
+    except Exception as e:
+        print(f"spell_utils.py에서 Firebase 초기화 중 오류 발생: {e}")
 
-from ..redis_client import redis_client, set_cache, get_cache
-
+db = firestore.client()
 
 async def gps_safety_spell(user_id: str, child_name: str, location: str, safe_zone: str = None):
     """GPS 안전구역 이탈 알림"""
@@ -14,13 +22,12 @@ async def gps_safety_spell(user_id: str, child_name: str, location: str, safe_zo
         "type": "safety",
         "title": f"🚨 {child_name} 안전구역 이탈",
         "message": f"현재 위치: {location}",
-        "time": datetime.now().isoformat(),
+        "time": firestore.SERVER_TIMESTAMP,
         "isRead": False
     }
 
-    await redis_client.lpush(f"notifications:{user_id}", json.dumps(alert))
-    await redis_client.expire(f"notifications:{user_id}", 86400)
-    return f"GPS 알림 전송 완료: {child_name}"
+    await db.collection("user").document(user_id).collection("notifications").add(alert)
+    return f"GPS 알림 생성 완료: {child_name}"
 
 async def schedule_conflict_spell(user_id: str, conflict_details: str, date: str = None):
     """일정 충돌 알림"""
@@ -29,10 +36,10 @@ async def schedule_conflict_spell(user_id: str, conflict_details: str, date: str
         "type": "schedule",
         "title": "⏰ 일정 충돌 발생!",
         "message": conflict_details,
-        "time": datetime.now().isoformat(),
+        "time": firestore.SERVER_TIMESTAMP,
         "isRead": False
     }
-    await redis_client.lpush(f"notifications:{user_id}", json.dumps(alert))
+    await db.collection("user").document(user_id).collection("notifications").add(alert)
     return "일정 충돌 알림 완료"
 
 async def emergency_spell(user_id: str, emergency_message: str, apartment_id: str = None):
@@ -42,15 +49,14 @@ async def emergency_spell(user_id: str, emergency_message: str, apartment_id: st
         "type": "emergency",
         "title": "🚨 긴급상황!",
         "message": emergency_message,
-        "time": datetime.now().isoformat(),
+        "time": firestore.SERVER_TIMESTAMP,
         "isRead": False
     }
-    await redis_client.lpush(f"notifications:{user_id}", json.dumps(alert))
-    
+    await db.collection("user").document(user_id).collection("notifications").add(alert)
     if apartment_id:
         community_alert = { "message": f"🆘 {apartment_id} 아파트 긴급상황 발생!" }
-        await redis_client.lpush(f"community_alerts:{apartment_id}", json.dumps(community_alert))
-    
+        await db.collection("community_alerts").add(community_alert)
+
     return f"응급 알림 전송 완료"
 
 async def ai_recommendation_spell(user_id: str, recommendation: str, category: str = "general"):
@@ -60,48 +66,62 @@ async def ai_recommendation_spell(user_id: str, recommendation: str, category: s
         "type": "ai_recommendation",
         "title": f"💡 AI 추천 ({category})",
         "message": recommendation,
-        "time": datetime.now().isoformat(),
+        "time": firestore.SERVER_TIMESTAMP,
         "isRead": False
     }
-    await redis_client.lpush(f"notifications:{user_id}", json.dumps(alert))
+    await db.collection("user").document(user_id).collection("notifications").add(alert)
     return f"AI 추천 알림 완료"
 
 
 # --- 알림 관리 함수 ---
 async def get_user_alerts(user_id: str, limit: int = 10) -> List[Dict]:
-    """사용자의 알림 목록을 Redis에서 조회합니다."""
-    notification_key = f"notifications:{user_id}"
+    """사용자의 알림 목록을 Firestore에서 조회합니다."""
     try:
-       
-        alerts_raw = await redis_client.lrange(notification_key, 0, limit - 1)
-        if not alerts_raw:
-            return []
-        return [json.loads(alert) for alert in alerts_raw]
+        alerts_ref = db.collection("users").document(user_id).collection("notifications")
+        # 최신순으로 정렬하여 limit만큼 가져옵니다.
+        query = alerts_ref.order_by("time", direction=firestore.Query.DESCENDING).limit(limit)
+        docs_stream = query.stream()
+        alerts_list = [doc.to_dict() for doc in docs_stream]
+        return alerts_list
     except Exception as e:
         print(f"알림 조회 중 오류 발생: {e}")
         return []
 
 async def mark_alert_read(user_id: str, alert_id: str) -> bool:
     """특정 알림을 읽음 처리합니다."""
-    notification_key = f"notifications:{user_id}"
     try:
-        all_alerts_raw = await redis_client.lrange(notification_key, 0, -1)
-        for i, alert_str in enumerate(all_alerts_raw):
-            alert = json.loads(alert_str)
-            if str(alert.get("id")) == alert_id:
-                alert["isRead"] = True
-                await redis_client.lset(notification_key, i, json.dumps(alert))
-                return True
-        return False
+        alert_ref = db.collection("users").document(user_id).collection("notifications").document(alert_id)
+        await alert_ref.update({"isRead": True})
+        return True
     except Exception as e:
         print(f"알림 읽음 처리 중 오류 발생: {e}")
         return False
 
 async def clear_user_alerts(user_id: str) -> str:
-    """사용자 알림 전체 삭제"""
-    await redis_client.delete(f"notifications:{user_id}")
-    return "알림 전체 삭제 완료"
+    """사용자의 모든 알림을 '삭제됨'으로 표시합니다 (Soft Delete)."""
+    try:
+        alerts_ref = db.collection("users").document(user_id).collection("notifications")
 
+        docs_stream = alerts_ref.where("isDeleted", "==", False).stream()
+
+        batch = db.batch()
+        count = 0
+        async for doc in docs_stream:
+            batch.update(doc.reference, {"isDeleted": True})
+            count += 1
+            if count == 499:
+                await batch.commit()
+                batch = db.batch() # 새 배치 시작
+        
+        # 남은 배치가 있다면 커밋합니다.
+        if count > 0:
+            await batch.commit()
+        
+        print(f"{user_id}의 알림 {count}개를 '삭제됨'으로 처리했습니다.")
+        return "알림 전체 삭제 요청이 처리되었습니다."
+    except Exception as e:
+        print(f"알림 전체 삭제 처리 중 오류 발생: {e}")
+        raise HTTPException(status_code=500, detail="알림 삭제 중 오류가 발생했습니다.")
 
 # --- 유틸리티 및 트리거 함수 ---
 def haversine_distance(lat1, lon1, lat2, lon2):
@@ -112,6 +132,8 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     c = 2 * asin(sqrt(a))
     r = 6371 # 지구 반지름 (km)
     return c * r * 1000
+pass
+
 
 async def check_geofence_exit(current_lat, current_lng, safe_zones):
     """지오펜스 이탈 체크"""
@@ -120,14 +142,15 @@ async def check_geofence_exit(current_lat, current_lng, safe_zones):
         if distance > zone['radius']:
             return {"is_outside": True, "zone_name": zone['name'], "distance": distance}
     return {"is_outside": False}
+pass
 
 async def check_schedule_conflict(user_id: str, new_schedule: Dict[str, Any]) -> bool:
     """일정 충돌 체크"""
     existing_schedules_key = f"schedules:{user_id}"
-    existing_raw = await get_cache(existing_schedules_key)
+    existing_raw = await db.collection("users").document(user_id).collection("schedules").get()
     if not existing_raw: return False
-    
-    existing_schedules = json.loads(existing_raw)
+
+    existing_schedules = [doc.to_dict() for doc in existing_raw]
     new_start = datetime.fromisoformat(new_schedule['start_time'])
     new_end = datetime.fromisoformat(new_schedule['end_time'])
     
@@ -137,6 +160,7 @@ async def check_schedule_conflict(user_id: str, new_schedule: Dict[str, Any]) ->
         if new_start < exist_end and new_end > exist_start:
             return True
     return False
+pass
 
 async def auto_spell_trigger(trigger_type: str, data: Dict[str, Any]) -> str:
     """자동 스펠 트리거 - 조건 체크 후 알림 실행"""
@@ -152,3 +176,4 @@ async def auto_spell_trigger(trigger_type: str, data: Dict[str, Any]) -> str:
         return await emergency_spell(data['user_id'], data['message'], data.get('apartment_id'))
     
     return "조건 미충족 또는 트리거 없음"
+pass

@@ -3,6 +3,7 @@
 *.env
 .env.example
 encoding.py
+serviceAccountKey.json
 
 *.secret.yaml
 *.yaml
