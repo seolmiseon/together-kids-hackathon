@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Providers from './providers/FirebaseProvider';
+import Providers from './providers/Providers';
 
 export const metadata: Metadata = {
     title: '함께 키즈',

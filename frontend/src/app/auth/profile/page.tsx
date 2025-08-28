@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 interface ChildInfo {
     id: number;
@@ -16,7 +16,6 @@ interface ChildInfo {
 
 export default function ProfileSetupPage() {
     const router = useRouter();
-    const { data: session } = useSession();
     const [parentName, setParentName] = useState('');
     const [apartment, setApartment] = useState('');
     const [children, setChildren] = useState<ChildInfo[]>([
@@ -30,8 +29,24 @@ export default function ProfileSetupPage() {
         },
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // 아이 정보 필드 변경 핸들러
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setIsAuthenticated(true);
+                // 소셜 로그인에서 가져온 이름이 있다면 기본값으로 설정
+                setParentName(user.displayName || '');
+            } else {
+                setIsAuthenticated(false);
+                // 로그인이 안 되어있으면 로그인 페이지로 보냅니다.
+                router.replace('/auth/login');
+            }
+        });
+        return () => unsubscribe();
+    }, [router]);
+
     const handleChildChange = (
         index: number,
         e: ChangeEvent<HTMLInputElement>
@@ -55,7 +70,6 @@ export default function ProfileSetupPage() {
         }
     };
 
-    // 아이 추가 버튼 핸들러
     const addChild = () => {
         setChildren([
             ...children,
@@ -70,34 +84,36 @@ export default function ProfileSetupPage() {
         ]);
     };
 
-    // 아이 삭제 버튼 핸들러
     const removeChild = (index: number) => {
         const newChildren = children.filter((_, i) => i !== index);
         setChildren(newChildren);
     };
 
-    // 폼 제출 핸들러
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!session?.accessToken) {
-            alert('로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.');
-            return;
-        }
         setIsSubmitting(true);
 
         try {
+            const auth = getAuth();
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                throw new Error(
+                    '로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.'
+                );
+            }
+            const token = await currentUser.getIdToken();
+
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            const accessToken = session.accessToken;
 
             // 1. 보호자 정보 업데이트 (예: /users/me API 호출)
-            const userResponse = await fetch(`${apiUrl}/users/me`, {
+            const userResponse = await fetch(`${apiUrl}/users/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    name: parentName,
+                    full_name: parentName,
                     apartment_complex: apartment,
                 }),
             });
@@ -116,7 +132,7 @@ export default function ProfileSetupPage() {
 
                 const childResponse = await fetch(`${apiUrl}/children/`, {
                     method: 'POST',
-                    headers: { Authorization: `Bearer ${accessToken}` },
+                    headers: { Authorization: `Bearer ${token}` },
                     body: childFormData,
                 });
                 if (!childResponse.ok)
@@ -136,6 +152,14 @@ export default function ProfileSetupPage() {
             setIsSubmitting(false);
         }
     };
+
+    if (!isAuthenticated) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                로딩 중...
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -218,17 +242,9 @@ export default function ProfileSetupPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <svg
-                                                className="w-12 h-12 text-gray-400"
-                                                fill="currentColor"
-                                                viewBox="0 0 20 20"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
+                                            <span className="text-gray-400 text-xs">
+                                                사진 등록
+                                            </span>
                                         )}
                                     </div>
                                     <div className="flex-1">
@@ -306,9 +322,12 @@ export default function ProfileSetupPage() {
                     <div className="pt-4">
                         <button
                             type="submit"
-                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
+                            disabled={isSubmitting || !isAuthenticated}
+                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors disabled:bg-gray-400"
                         >
-                            저장하고 시작하기
+                            {isSubmitting
+                                ? '저장하는 중...'
+                                : '저장하고 시작하기'}
                         </button>
                     </div>
                 </form>

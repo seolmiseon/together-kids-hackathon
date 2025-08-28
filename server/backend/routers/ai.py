@@ -37,7 +37,6 @@ async def get_user_context(current_user: dict) -> dict:
             "user_id": uid,
             "user_name": user_data.get("user_name", ""),
             "full_name": user_data.get("full_name", ""),
-            # 아파트 정보 등 다른 정보도 같은 방식으로 가져올 수 있습니다.
             "apartments": user_data.get("apartments", []),
             "children": children_info
         }

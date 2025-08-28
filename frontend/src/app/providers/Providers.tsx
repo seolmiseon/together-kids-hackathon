@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useUserStore } from '@/store/userStore';
+import { NavermapsProvider } from 'react-naver-maps';
+import React from 'react';
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,14 +17,11 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Firebase 앱 초기화
-initializeApp(firebaseConfig);
+if (!getApps().length) {
+    initializeApp(firebaseConfig);
+}
 
-export default function FirebaseProvider({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+export default function Providers({ children }: { children: React.ReactNode }) {
     const { login, logout } = useUserStore();
 
     useEffect(() => {
@@ -44,5 +43,11 @@ export default function FirebaseProvider({
         return () => unsubscribe();
     }, [login, logout]);
 
-    return <>{children}</>;
+    return (
+        <NavermapsProvider
+            ncpClientId={process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID || ''}
+        >
+            {children}
+        </NavermapsProvider>
+    );
 }

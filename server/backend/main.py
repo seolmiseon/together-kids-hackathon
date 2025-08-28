@@ -5,10 +5,10 @@ import os
 import firebase_admin
 from firebase_admin import credentials
 
-from routers.auth import router as auth_router
-from routers.users import router as users_router
-from routers.children import router as children_router
-from routers.ai import router as ai_router
+from .routers.auth import router as auth_router
+from .routers.users import router as users_router
+from .routers.children import router as children_router
+from .routers.ai import router as ai_router
 # from llm_service.routers.chat import router as chat_router
 # from llm_service.routers.schedule import router as schedule_router  
 

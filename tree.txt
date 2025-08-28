@@ -2,16 +2,20 @@
 ├── README.md
 ├── docker-compose.dev.yaml
 ├── docker-compose.prod.yaml
+├── dump.rdb
 ├── frontend
 │   ├── Dockerfile
 │   ├── Dockerfile.dev
 │   ├── README.md
 │   ├── eslint.config.mjs
+│   ├── firebase.json
 │   ├── next-env.d.ts
 │   ├── next.config.mjs
 │   ├── next.config.ts
 │   ├── postcss.config.cjs
 │   ├── public
+│   │   ├── favicon.ico
+│   │   ├── favicon.svg
 │   │   └── images
 │   │       └── logo
 │   │           ├── logocolumn.png
@@ -19,10 +23,11 @@
 │   │           └── logowide.png
 │   ├── src
 │   │   ├── app
-│   │   │   ├── api
-│   │   │   │   └── auth
-│   │   │   │       └── [...nextauth]
 │   │   │   ├── auth
+│   │   │   │   ├── callback
+│   │   │   │   │   ├── google
+│   │   │   │   │   ├── kakao
+│   │   │   │   │   └── naver
 │   │   │   │   ├── login
 │   │   │   │   │   └── page.tsx
 │   │   │   │   └── profile
@@ -40,18 +45,8 @@
 │   │   │   │   └── safety
 │   │   │   │       └── page.tsx
 │   │   │   ├── page.tsx
-│   │   │   ├── providers
-│   │   │   │   └── SessionProviderWrapper.tsx
-│   │   │   └── schedule
-│   │   │       └── page.tsx
-│   │   ├── children
-│   │   │   ├── [child_id]
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── traking
-│   │   │   │       └── page.tsx
-│   │   │   ├── add
-│   │   │   │   └── page.tsx
-│   │   │   └── page.tsx
+│   │   │   └── providers
+│   │   │       └── FirebaseProvider.tsx
 │   │   ├── components
 │   │   │   ├── dashboard
 │   │   │   │   ├── RecentActivityFeed.tsx
@@ -72,21 +67,14 @@
 │   │   └── types
 │   │       └── next-auth.d.ts
 │   ├── tailwind.config.ts
-│   └── tsconfig.json
-├── main.py
+│   ├── tsconfig.json
+│   └── tsconfig.tsbuildinfo
 ├── server
 │   ├── Dockerfile
 │   ├── Dockerfile.dev
 │   ├── backend
-│   │   ├── GCP_CLOUD_SQL.md
-│   │   ├── MySQL_SETUP.md
-│   │   ├── database.py
-│   │   ├── database_sqlite.py
 │   │   ├── dependencies.py
 │   │   ├── main.py
-│   │   ├── main_sqlite.py
-│   │   ├── models.py
-│   │   ├── redis_client.py
 │   │   ├── routers
 │   │   │   ├── __init__.py
 │   │   │   ├── ai.py
@@ -96,7 +84,6 @@
 │   │   │   └── users.py
 │   │   ├── schemas
 │   │   │   └── __init__.py
-│   │   ├── together_kids.db
 │   │   └── utils
 │   │       └── spell_utils.py
 │   ├── llm_service
@@ -135,9 +122,10 @@
 │   │   │   └── vector_service.py
 │   │   └── utils
 │   │       └── chunk_utils.py
+│   ├── llm_service.log
 │   ├── requirements.txt
-│   └── together_kids.db
+│   └── serviceAccountKey.json
 ├── tree.txt
 └── update_tree.sh
 
-47 directories, 93 files
+43 directories, 85 files

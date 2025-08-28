@@ -22,6 +22,7 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
     profile_image: Optional[str] = None
+    apartment_complex: Optional[str] = None
 
 class User(UserBase):
     id: int
@@ -82,24 +83,26 @@ class UserApartment(UserApartmentBase):
 # ===== 아이 프로필 스키마 =====
 class ChildBase(BaseModel):
     name: str
-    birth_date: datetime
+    age: int
     gender: Optional[str] = None
     special_notes: Optional[str] = None
     emergency_contact: Optional[str] = None
 
 class ChildCreate(ChildBase):
+    profile_image: Optional[str] = None
     pass
 
 class ChildUpdate(BaseModel):
     name: Optional[str] = None
+    age: Optional[int] = None
     gender: Optional[str] = None
     profile_image: Optional[str] = None
     special_notes: Optional[str] = None
     emergency_contact: Optional[str] = None
 
 class Child(ChildBase):
-    id: int
-    parent_id: int
+    id: str
+    parent_id: str
     profile_image: Optional[str] = None
     created_at: datetime
     updated_at: datetime
