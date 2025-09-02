@@ -33,6 +33,11 @@ export default function MainHeader() {
         useNotificationStore();
     const { user, isLoggedIn } = useUserStore();
 
+    // 디버깅을 위한 로그
+    useEffect(() => {
+        console.log('🔐 MainHeader - 로그인 상태 변화:', { isLoggedIn, user });
+    }, [isLoggedIn, user]);
+
     useEffect(() => {
         if (isLoggedIn) {
             fetchNotifications();
@@ -105,7 +110,7 @@ export default function MainHeader() {
                 </div>
 
                 <div className="flex-1 flex items-center justify-end space-x-2 sm:space-x-4">
-                    {status === 'authenticated' && user ? (
+                    {isLoggedIn && user ? (
                         <>
                             <div className="relative" ref={modalRef}>
                                 <button

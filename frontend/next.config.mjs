@@ -9,7 +9,14 @@ const nextConfig = {
             't1.kakaocdn.net', // 카카오 프로필 이미지 (추가)
         ],
     },
-    // 여기에 Next.js 관련 특별한 설정을 추가할 수 있습니다.
+    // 개발 환경 최적화
+    experimental: {
+        optimizeCss: false,
+    },
+    // Fast Refresh 활성화
+    reactStrictMode: true,
+    // 빌드 최적화
+    swcMinify: true,
 };
 
 export default nextConfig;

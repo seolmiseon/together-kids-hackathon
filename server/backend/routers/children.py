@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, Form, File, UploadFile
 from typing import List, Optional
 from datetime import datetime, date, timedelta
 from firebase_admin import firestore
@@ -15,7 +15,7 @@ db = firestore.client()
 
 router = APIRouter(prefix="/children", tags=["children"])
 
-@router.get("/", response_model=List[Child])
+@router.get("/")
 async def get_children(
     current_user: dict = Depends(get_current_user)
 ):
@@ -23,16 +23,28 @@ async def get_children(
     uid = current_user.get("uid")
     try:
         children_ref = db.collection("users").document(uid).collection("children")
-        docs = await children_ref.stream() # 비동기적으로 문서를 가져옵니다.
-        children_list = [doc.to_dict() for doc in docs]
+        docs = children_ref.stream() # Firestore stream()은 동기 메서드입니다.
+        children_list = []
+        for doc in docs:
+            child_data = doc.to_dict()
+            if child_data:
+                child_data["id"] = doc.id
+                children_list.append(child_data)
         return children_list
     except Exception as e:
+        # Firestore 데이터베이스가 없는 경우 빈 목록 반환
+        if "does not exist" in str(e):
+            print(f"⚠️ Firestore 데이터베이스가 존재하지 않습니다. 빈 목록을 반환합니다.")
+            return []
         raise HTTPException(status_code=500, detail=f"자녀 목록 조회 중 오류 발생: {e}")
 
 
-@router.post("/", response_model=Child)
+@router.post("/")
 async def create_child(
-    child_data: ChildCreate,
+    name: str = Form(...),
+    age: str = Form(...),
+    school_name: str = Form(...),
+    image: UploadFile = File(None),
     current_user: dict = Depends(get_current_user)
 ):
     """새 아이 프로필을 Firestore에 생성합니다."""
@@ -40,12 +52,29 @@ async def create_child(
     try:
         new_child_ref = db.collection("users").document(uid).collection("children").document()
         
-        child_dict = child_data.dict()
-        child_dict["id"] = new_child_ref.id # 생성된 문서 ID를 데이터에 포함
-        child_dict["parent_id"] = uid
-        child_dict["created_at"] = firestore.SERVER_TIMESTAMP
-        child_dict["updated_at"] = firestore.SERVER_TIMESTAMP
-        await new_child_ref.set(child_dict)
+        child_dict = {
+            "id": new_child_ref.id,
+            "name": name,
+            "age": int(age),
+            "school_name": school_name,
+            "parent_id": uid,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat(),
+            # 테스트용 기본 위치 (서울 중심가)
+            "location": {
+                "lat": 37.5665 + (hash(name) % 100) * 0.001,  # 이름 기반으로 조금씩 다른 위치
+                "lng": 126.978 + (hash(name) % 100) * 0.001,
+                "address": f"{school_name} 근처",
+                "last_updated": datetime.now().isoformat()
+            }
+        }
+        
+        # 이미지 처리 (나중에 구현)
+        if image:
+            # TODO: 이미지 업로드 처리
+            child_dict["image_url"] = None
+        
+        new_child_ref.set(child_dict)
         return child_dict
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"자녀 프로필 생성 중 오류 발생: {e}")
@@ -59,12 +88,14 @@ async def get_child(
     uid = current_user.get("uid")
     try:
         child_ref = db.collection("users").document(uid).collection("children").document(child_id)
-        child_doc = await child_ref.get()
+        child_doc = child_ref.get()  # Firestore get()은 동기 메서드입니다.
         
         if not child_doc.exists:
             raise HTTPException(status_code=404, detail="아이를 찾을 수 없습니다")
         
-        return child_doc.to_dict()
+        child_data = child_doc.to_dict()
+        child_data["id"] = child_doc.id
+        return child_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"자녀 프로필 조회 중 오류 발생: {e}")
 

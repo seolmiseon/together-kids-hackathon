@@ -37,9 +37,89 @@ export default function NaverCallbackPage() {
                     // 2. 받은 커스텀 토큰으로 Firebase에 로그인합니다.
                     const auth = getAuth();
                     await signInWithCustomToken(auth, firebase_token);
+                    console.log('✅ Firebase 로그인 성공');
 
-                    // 3. 로그인이 성공하면 대시보드로 이동합니다.
-                    router.replace('/dashboard');
+                    // 3. 사용자 프로필 확인
+                    const user = auth.currentUser;
+                    if (user) {
+                        const token = await user.getIdToken();
+
+                        // 사용자 프로필 상태 확인
+                        const profileResponse = await fetch(
+                            `${apiUrl}/users/profile`,
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                    'Content-Type': 'application/json',
+                                },
+                            }
+                        );
+
+                        if (profileResponse.ok) {
+                            const profileData = await profileResponse.json();
+
+                            // 프로필이 완성되어 있는지 확인 (자녀 정보 포함)
+                            if (
+                                profileData.full_name &&
+                                profileData.apartment_complex
+                            ) {
+                                // 자녀 정보도 확인
+                                const childrenResponse = await fetch(
+                                    `${apiUrl}/children/`,
+                                    {
+                                        headers: {
+                                            Authorization: `Bearer ${token}`,
+                                            'Content-Type': 'application/json',
+                                        },
+                                    }
+                                );
+
+                                if (childrenResponse.ok) {
+                                    const childrenData =
+                                        await childrenResponse.json();
+
+                                    if (
+                                        childrenData.children &&
+                                        childrenData.children.length > 0
+                                    ) {
+                                        // 프로필과 자녀 정보 모두 있음 → 대시보드로
+                                        console.log(
+                                            '✅ 완전한 프로필 확인 → 대시보드로 이동'
+                                        );
+                                        router.replace('/dashboard');
+                                    } else {
+                                        // 자녀 정보가 없음 → 프로필 설정으로
+                                        console.log(
+                                            '⚠️ 자녀 정보 없음 → 프로필 설정으로 이동'
+                                        );
+                                        router.replace('/auth/profile');
+                                    }
+                                } else {
+                                    // 자녀 정보 조회 실패 → 프로필 설정으로
+                                    console.log(
+                                        '⚠️ 자녀 정보 조회 실패 → 프로필 설정으로 이동'
+                                    );
+                                    router.replace('/auth/profile');
+                                }
+                            } else {
+                                // 기본 프로필 정보가 없음 → 프로필 설정으로
+                                console.log(
+                                    '⚠️ 기본 프로필 정보 없음 → 프로필 설정으로 이동'
+                                );
+                                router.replace('/auth/profile');
+                            }
+                        } else {
+                            // 프로필 조회 실패 → 프로필 설정으로
+                            console.log(
+                                '⚠️ 프로필 조회 실패 → 프로필 설정으로 이동'
+                            );
+                            router.replace('/auth/profile');
+                        }
+                    } else {
+                        // 사용자 정보 없음 → 로그인으로
+                        console.log('❌ 사용자 정보 없음 → 로그인으로 이동');
+                        router.replace('/auth/login');
+                    }
                 } catch (error) {
                     console.error('네이버 로그인 콜백 처리 중 오류:', error);
                     // 에러 발생 시 로그인 페이지로 돌려보냅니다.

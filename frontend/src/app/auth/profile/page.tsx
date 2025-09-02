@@ -32,19 +32,30 @@ export default function ProfileSetupPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setIsAuthenticated(true);
-                // 소셜 로그인에서 가져온 이름이 있다면 기본값으로 설정
-                setParentName(user.displayName || '');
-            } else {
-                setIsAuthenticated(false);
-                // 로그인이 안 되어있으면 로그인 페이지로 보냅니다.
-                router.replace('/auth/login');
+        // Firebase 초기화 상태 확인 후 Auth 사용
+        const initAuth = async () => {
+            try {
+                const auth = getAuth();
+                const unsubscribe = onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        setIsAuthenticated(true);
+                        setParentName(user.displayName || '');
+                    } else {
+                        setIsAuthenticated(false);
+                        router.replace('/auth/login');
+                    }
+                });
+                return () => unsubscribe();
+            } catch (error) {
+                console.error('Firebase Auth 초기화 오류:', error);
+                // Firebase가 초기화되지 않은 경우 잠시 대기 후 재시도
+                setTimeout(() => {
+                    router.replace('/auth/login');
+                }, 1000);
             }
-        });
-        return () => unsubscribe();
+        };
+
+        initAuth();
     }, [router]);
 
     const handleChildChange = (
@@ -94,14 +105,23 @@ export default function ProfileSetupPage() {
         setIsSubmitting(true);
 
         try {
-            const auth = getAuth();
-            const currentUser = auth.currentUser;
-            if (!currentUser) {
+            let auth, currentUser, token;
+
+            try {
+                auth = getAuth();
+                currentUser = auth.currentUser;
+                if (!currentUser) {
+                    throw new Error(
+                        '로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.'
+                    );
+                }
+                token = await currentUser.getIdToken();
+            } catch (authError) {
+                console.error('Firebase Auth 오류:', authError);
                 throw new Error(
-                    '로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.'
+                    '인증 상태를 확인할 수 없습니다. 다시 로그인해주세요.'
                 );
             }
-            const token = await currentUser.getIdToken();
 
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 

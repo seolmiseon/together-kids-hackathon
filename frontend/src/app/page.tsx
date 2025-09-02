@@ -1,27 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import MainHeader from '@/components/main/MainHeader';
 import MapSection from '@/components/main/MapSection';
 
 export default function LandingPage() {
     const router = useRouter();
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    if (!isMounted) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-xl">로딩 중...</div>
-            </div>
-        );
-    }
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden">
