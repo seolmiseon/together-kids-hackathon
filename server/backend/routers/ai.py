@@ -21,17 +21,29 @@ router = APIRouter(prefix="/ai", tags=["ai-integration"])
 LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8002")
 LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY")
 
-async def get_user_context(current_user: dict) -> dict:
+def get_user_context(current_user: dict) -> dict:
     uid = current_user.get("uid")
     try:
         user_ref = db.collection("users").document(uid)
-        user_doc = await user_ref.get()
+        user_doc = user_ref.get()
         user_data = user_doc.to_dict() if user_doc.exists else {}
 
         
         children_ref = db.collection("users").document(uid).collection("children")
-        children_docs = await children_ref.get()
-        children_info = [child.to_dict() for child in children_docs]
+        children_docs = children_ref.get()
+        children_info = []
+        
+        # Firestore 날짜 객체를 문자열로 변환
+        for child in children_docs:
+            child_data = child.to_dict()
+            if child_data:
+                # 날짜 객체들을 ISO 문자열로 변환
+                if 'created_at' in child_data and hasattr(child_data['created_at'], 'isoformat'):
+                    child_data['created_at'] = child_data['created_at'].isoformat()
+                if 'updated_at' in child_data and hasattr(child_data['updated_at'], 'isoformat'):
+                    child_data['updated_at'] = child_data['updated_at'].isoformat()
+                    
+                children_info.append(child_data)
 
         user_context = {
             "user_id": uid,
@@ -53,25 +65,30 @@ async def chat_with_ai(
     current_user: dict = Depends(get_current_user)
 ):
    try:
-       user_context = await get_user_context(current_user)
+       print(f"=== AI 채팅 요청 시작: {current_user.get('uid')} ===")
+       print(f"메시지: {message}")
+       
+       user_context = get_user_context(current_user)
+       print(f"사용자 컨텍스트: {user_context}")
 
        async with httpx.AsyncClient() as client:
            headers = {}
            if LLM_SERVICE_API_KEY:
                headers["Authorization"] = f"Bearer {LLM_SERVICE_API_KEY}"
 
+           print(f"LLM 서비스 호출: {LLM_SERVICE_URL}/chat/unified")
            response = await client.post(
                 f"{LLM_SERVICE_URL}/chat/unified",
-                params={
-                    "message": message,
+                json={
                     "user_id": current_user.get("uid"),
-                    "mode": mode
+                    "message": message,
+                    "user_context": user_context
                 },
-                json={"user_context": user_context},
                 headers=headers,
                 timeout=30.0
             )
             
+           print(f"LLM 응답 상태: {response.status_code}")
            response.raise_for_status() 
            return response.json()
             
@@ -153,7 +170,7 @@ async def get_ai_suggestions(
     current_user: dict = Depends(get_current_user)
 ):
     """AI 제안사항 조회"""
-    user_context = await get_user_context(current_user)
+    user_context = get_user_context(current_user)
     
     suggestions = {
         "general": ["오늘 아이 일정을 확인해보세요", "우리 아파트 커뮤니티 소식을 확인해보세요"],

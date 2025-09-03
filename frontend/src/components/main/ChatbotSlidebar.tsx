@@ -81,6 +81,7 @@ export default function ChatbotSidebar({
 
             const aiData = await response.json();
             const aiContent =
+                aiData.message ||
                 aiData.response ||
                 aiData.coordination_result ||
                 '응답을 처리할 수 없습니다.';

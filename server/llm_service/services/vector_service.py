@@ -28,3 +28,7 @@ class VectorService:
         results = self.vector_store.similarity_search_with_score(query_text, k=top_k)
         return [{"text": doc.page_content, "metadata": doc.metadata, "similarity": score} for doc, score in results]
     
+    async def search_similar_documents(self, query_text: str, top_k: int = 3) -> List[Dict[str, Any]]:
+        """통합 문서 검색 메서드"""
+        return await self.search_similar_schedules(query_text, top_k)
+    

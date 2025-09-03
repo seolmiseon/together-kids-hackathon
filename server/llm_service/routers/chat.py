@@ -10,6 +10,33 @@ unified_chat_service = UnifiedChatService()
 
 
 
+@router.post("/unified", response_model=ChatResponse)
+async def unified_chat_endpoint(request: ChatRequest):
+    """통합 채팅 엔드포인트 - 백엔드에서 호출"""
+    try:
+        print(f"=== 통합 채팅 요청: {request.user_id} ===")
+        print(f"메시지: {request.message}")
+        
+        # 통합 서비스로 메시지 처리
+        result = await unified_chat_service.process_message(
+            user_id=request.user_id,
+            message=request.message,
+            user_context=request.user_context or {}
+        )
+        
+        return ChatResponse(
+            message=result["response"],
+            user_id=request.user_id,
+            timestamp=result["timestamp"]
+        )
+        
+    except Exception as e:
+        print(f"통합 채팅 처리 오류: {str(e)}")
+        import traceback
+        print(f"상세 오류: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류가 발생했습니다: {str(e)}")
+
+
 @router.post("/", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     try:
@@ -20,35 +47,13 @@ async def chat_endpoint(request: ChatRequest):
         result = await unified_chat_service.process_message(
             user_id=request.user_id,
             message=request.message,
-            chat_mode="auto"  # 자동 모드 선택
+            user_context=request.user_context or {}
         )
         
-        print(f"처리 결과: {result['mode']}, 응답 {len(result['responses'])}개")
-        
-        # AI 응답이 있는 경우 그것을 주 응답으로 사용
-        main_response = ""
-        community_status = ""
-        
-        for response in result["responses"]:
-            if response["type"] == "ai":
-                main_response = response["content"]["response"]
-                if response["content"].get("suggestion"):
-                    main_response += f"\n\n {response['content']['suggestion']}"
-            elif response["type"] == "community":
-                community_status = response["content"]["message"]
-                if response["content"]["status"] == "emergency_alert_sent":
-                    main_response = f"{response['content']['ai_assessment']}\n\n{community_status}"
-        
-        # 커뮤니티 상태가 있으면 추가
-        if community_status and not main_response:
-            main_response = community_status
-        elif community_status and result["urgency"] != "high":
-            main_response += f"\n\n{community_status}"
-        
         return ChatResponse(
-            message=main_response,
+            message=result["response"],
             user_id=request.user_id,
-            timestamp=None
+            timestamp=result["timestamp"]
         )
         
     except Exception as e:
@@ -65,11 +70,14 @@ async def ai_only_chat(request: ChatRequest):
         result = await unified_chat_service.process_message(
             user_id=request.user_id,
             message=request.message,
-            chat_mode="ai_only"
+            user_context=request.user_context or {}
         )
         
-        ai_response = result["responses"][0]["content"]["response"]
-        return ChatResponse(message=ai_response, user_id=request.user_id, timestamp=None)
+        return ChatResponse(
+            message=result["response"], 
+            user_id=request.user_id, 
+            timestamp=result["timestamp"]
+        )
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI 채팅 오류: {str(e)}")
@@ -81,10 +89,10 @@ async def community_only_request(request: ChatRequest):
         result = await unified_chat_service.process_message(
             user_id=request.user_id,
             message=request.message,
-            chat_mode="community_only"
+            user_context=request.user_context or {}
         )
         
-        return result["responses"][0]["content"]
+        return result
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"커뮤니티 요청 오류: {str(e)}")
