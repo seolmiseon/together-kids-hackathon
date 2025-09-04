@@ -46,7 +46,7 @@
 │   │   │   │       └── page.tsx
 │   │   │   ├── page.tsx
 │   │   │   └── providers
-│   │   │       └── FirebaseProvider.tsx
+│   │   │       └── Providers.tsx
 │   │   ├── components
 │   │   │   ├── dashboard
 │   │   │   │   ├── RecentActivityFeed.tsx
@@ -61,11 +61,9 @@
 │   │   │   └── ui
 │   │   │       ├── BellIcon.tsx
 │   │   │       └── LoadingSkeleton.tsx
-│   │   ├── store
-│   │   │   ├── notificationStore.ts
-│   │   │   └── userStore.ts
-│   │   └── types
-│   │       └── next-auth.d.ts
+│   │   └── store
+│   │       ├── notificationStore.ts
+│   │       └── userStore.ts
 │   ├── tailwind.config.ts
 │   ├── tsconfig.json
 │   └── tsconfig.tsbuildinfo
@@ -99,6 +97,7 @@
 │   │   ├── prompts
 │   │   │   ├── __init__.py
 │   │   │   ├── base
+│   │   │   │   ├── general_prompts.py
 │   │   │   │   └── system_prompts.py
 │   │   │   ├── community
 │   │   │   │   └── group_management.py
@@ -114,6 +113,7 @@
 │   │   │   └── schedule.py
 │   │   ├── services
 │   │   │   ├── __init__.py
+│   │   │   ├── naver_place_service.py
 │   │   │   ├── openai_service.py
 │   │   │   ├── prompt_service.py
 │   │   │   ├── rag_service.py
@@ -122,10 +122,9 @@
 │   │   │   └── vector_service.py
 │   │   └── utils
 │   │       └── chunk_utils.py
-│   ├── llm_service.log
 │   ├── requirements.txt
 │   └── serviceAccountKey.json
 ├── tree.txt
 └── update_tree.sh
 
-43 directories, 85 files
+42 directories, 85 files
