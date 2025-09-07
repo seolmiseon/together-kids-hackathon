@@ -185,24 +185,21 @@ gcloud run deploy together-kids-llm \
   --max-instances 5
 ```
 
-### 4. 프론트엔드 배포
+### 4. 프론트엔드 배포 (Firebase Hosting)
 
 ```bash
-# 프론트엔드 이미지 빌드 및 푸시
-cd frontend
-docker build -f Dockerfile -t gcr.io/YOUR_PROJECT_ID/together-kids-frontend .
-docker push gcr.io/YOUR_PROJECT_ID/together-kids-frontend
+# Firebase CLI 설치 및 로그인
+npm install -g firebase-tools
+firebase login
 
-# Cloud Run 배포
-gcloud run deploy together-kids-frontend \
-  --image gcr.io/YOUR_PROJECT_ID/together-kids-frontend \
-  --platform managed \
-  --region asia-northeast3 \
-  --allow-unauthenticated \
-  --port 3000 \
-  --memory 512Mi \
-  --cpu 1 \
-  --max-instances 10
+# 프론트엔드 빌드 및 배포
+cd frontend
+npm install
+npm run build
+firebase deploy
+
+# 배포 완료 후 URL 확인
+# https://YOUR_PROJECT_ID.web.app
 ```
 
 ### 5. 환경 변수 설정
@@ -220,11 +217,11 @@ gcloud run services update together-kids-llm \
   --set-env-vars="NAVER_CLIENT_ID=your_naver_id" \
   --set-env-vars="NAVER_CLIENT_SECRET=your_naver_secret"
 
-# 프론트엔드 환경 변수
-gcloud run services update together-kids-frontend \
-  --set-env-vars="NEXT_PUBLIC_API_URL=https://together-kids-backend-xxx.run.app" \
-  --set-env-vars="NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=your_naver_map_id"
+# 프론트엔드 환경 변수는 .env.local 파일에서 관리
+# firebase.json에서 빌드 시 자동 포함됨
 ```
+
+````
 
 ## 빠른 시작
 
@@ -237,7 +234,7 @@ cd hackathon
 # 환경 변수 설정
 cp backend/.env.example backend/.env
 cp llm_service/.env.example llm_service/.env
-```
+````
 
 ### LLM 서비스 실행
 
