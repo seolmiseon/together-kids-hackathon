@@ -51,7 +51,11 @@ class NaverPlaceService:
                             "description": item.get("description", ""),
                             "telephone": item.get("telephone", ""),
                             "category": item.get("category", ""),
-                            "roadAddress": item.get("roadAddress", "")
+                            "roadAddress": item.get("roadAddress", ""),
+                            "lat": float(item.get("mapy", 0)) / 10000000,  # 네이버 API는 10^7 배수로 좌표 제공
+                            "lng": float(item.get("mapx", 0)) / 10000000,
+                            "mapx": item.get("mapx", ""),  # 원본 좌표값도 보관
+                            "mapy": item.get("mapy", "")
                         }
                         places.append(place)
                     

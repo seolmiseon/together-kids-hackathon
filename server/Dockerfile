@@ -17,13 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 소스 코드 복사
 COPY . /app
 
-# 권한 설정
-RUN chown -R appuser:appuser /app
-USER appuser
-
-
-# 포트 노출
+# 포트 노출 (Cloud Run에서는 동적 포트 사용)
 EXPOSE 8000
 
-# 컨테이너 시작 시 실행할 명령어 (예: uvicorn으로 FastAPI 실행)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 컨테이너 시작 시 실행할 명령어 (PORT 환경 변수 사용)
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

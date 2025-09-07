@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import logging
 
 from .routers import chat, schedule
-import pandas as pd
 
 # 환경 변수 로드
 load_dotenv()

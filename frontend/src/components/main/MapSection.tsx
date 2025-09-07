@@ -30,6 +30,18 @@ interface ParentLocation {
     };
 }
 
+// AI 검색 결과 장소 타입 정의
+interface SearchPlace {
+    id: string;
+    name: string;
+    address: string;
+    lat: number;
+    lng: number;
+    category?: string;
+    phone?: string;
+    description?: string;
+}
+
 // Naver Maps 타입 선언
 declare global {
     interface Window {
@@ -41,6 +53,12 @@ const MapSection = () => {
     const { user } = useUserStore();
     const [children, setChildren] = useState<Child[]>([]);
     const [nearbyParents, setNearbyParents] = useState<ParentLocation[]>([]);
+    const [searchPlaces, setSearchPlaces] = useState<SearchPlace[]>([]); // AI 검색 결과 장소들
+    const [currentUserLocation, setCurrentUserLocation] = useState<{
+        lat: number;
+        lng: number;
+        address?: string;
+    } | null>(null);
     const [markers, setMarkers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -233,6 +251,95 @@ const MapSection = () => {
         }
     };
 
+    // 🔍 AI 검색 결과를 지도에 표시하는 함수
+    const displaySearchResults = (places: SearchPlace[]) => {
+        console.log('🔍 AI 검색 결과를 지도에 표시:', places);
+        setSearchPlaces(places);
+
+        // 검색 결과가 있으면 해당 지역으로 지도 이동
+        if (places.length > 0 && mapInstanceRef.current) {
+            const firstPlace = places[0];
+            const bounds = new window.naver.maps.LatLngBounds();
+
+            // 검색된 장소들을 모두 포함하는 범위 계산
+            places.forEach((place) => {
+                bounds.extend(
+                    new window.naver.maps.LatLng(place.lat, place.lng)
+                );
+            });
+
+            // 내 위치도 포함
+            if (currentUserLocation) {
+                bounds.extend(
+                    new window.naver.maps.LatLng(
+                        currentUserLocation.lat,
+                        currentUserLocation.lng
+                    )
+                );
+            }
+
+            mapInstanceRef.current.fitBounds(bounds, {
+                top: 60,
+                right: 60,
+                bottom: 60,
+                left: 60,
+            });
+        }
+    };
+
+    // 📍 현재 위치 즉시 가져오기 (마커 표시용)
+    const getCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                console.log('📍 현재 위치 획득:', latitude, longitude);
+
+                setCurrentUserLocation({
+                    lat: latitude,
+                    lng: longitude,
+                    address: undefined,
+                });
+
+                // 지도 중심을 현재 위치로 이동
+                if (mapInstanceRef.current) {
+                    mapInstanceRef.current.setCenter(
+                        new window.naver.maps.LatLng(latitude, longitude)
+                    );
+                    mapInstanceRef.current.setZoom(15);
+                }
+            },
+            (error) => {
+                console.error('❌ 현재 위치 가져오기 실패:', error);
+                alert(
+                    '현재 위치를 가져올 수 없습니다. 위치 권한을 확인해주세요.'
+                );
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000,
+            }
+        );
+    };
+
+    // MapSection 컴포넌트를 전역에서 접근 가능하게 함 (AI 검색 결과 표시용)
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            (window as any).displaySearchResults = displaySearchResults;
+        }
+
+        return () => {
+            if (typeof window !== 'undefined') {
+                delete (window as any).displaySearchResults;
+            }
+        };
+    }, [currentUserLocation]);
+
     // 서버에 위치 업데이트
     const updateLocationToServer = async (position: GeolocationPosition) => {
         try {
@@ -292,6 +399,14 @@ const MapSection = () => {
 
             if (response.ok) {
                 console.log('✅ 위치 업데이트 성공:', locationData);
+
+                // 현재 사용자 위치 상태 업데이트
+                setCurrentUserLocation({
+                    lat: latitude,
+                    lng: longitude,
+                    address: address || undefined,
+                });
+
                 // 다른 부모들 위치도 새로 가져오기
                 fetchNearbyParents();
             }
@@ -344,6 +459,92 @@ const MapSection = () => {
         setMarkers([]);
 
         const newMarkers: any[] = [];
+
+        // 🔥 내 위치 마커 생성 (최우선!)
+        if (currentUserLocation?.lat && currentUserLocation?.lng) {
+            console.log('🔥 내 위치 마커 생성 시작:', currentUserLocation);
+            console.log('🔥 지도 인스턴스:', mapInstanceRef.current);
+            console.log('🔥 네이버 지도 API:', window.naver?.maps);
+
+            // 🔥 기본 마커로도 테스트
+            const basicMarker = new window.naver.maps.Marker({
+                position: new window.naver.maps.LatLng(
+                    currentUserLocation.lat,
+                    currentUserLocation.lng
+                ),
+                map: mapInstanceRef.current,
+                title: '내 위치 (기본 마커)',
+            });
+
+            console.log('🔥 기본 마커도 생성:', basicMarker);
+            newMarkers.push(basicMarker);
+
+            const myLocationMarker = new window.naver.maps.Marker({
+                position: new window.naver.maps.LatLng(
+                    currentUserLocation.lat,
+                    currentUserLocation.lng
+                ),
+                map: mapInstanceRef.current,
+                title: '내 위치',
+                zIndex: 1000, // 다른 마커보다 위에 표시
+                icon: {
+                    content: `
+                        <div style="
+                            width: 20px;
+                            height: 20px;
+                            background: #ef4444;
+                            border: 3px solid white;
+                            border-radius: 50%;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                        "></div>
+                    `,
+                    size: new window.naver.maps.Size(20, 20),
+                    anchor: new window.naver.maps.Point(10, 10),
+                },
+            });
+
+            console.log('🔥 마커 생성됨:', myLocationMarker);
+
+            // 마커 위치로 지도 중심 이동
+            mapInstanceRef.current.setCenter(
+                new window.naver.maps.LatLng(
+                    currentUserLocation.lat,
+                    currentUserLocation.lng
+                )
+            );
+            mapInstanceRef.current.setZoom(15);
+
+            // 내 위치 정보창
+            const myInfoWindow = new window.naver.maps.InfoWindow({
+                content: `
+                    <div style="padding: 12px; max-width: 220px;">
+                        <h4 style="margin: 0 0 8px 0; color: #ef4444; font-weight: bold;">📍 내 현재 위치</h4>
+                        <p style="margin: 0; font-size: 13px; color: #666;">
+                            ${user?.name || '사용자'}님의 위치
+                        </p>
+                        ${
+                            currentUserLocation.address
+                                ? `
+                            <p style="margin: 8px 0 0 0; font-size: 12px; color: #888; line-height: 1.4;">
+                                📍 ${currentUserLocation.address}
+                            </p>
+                        `
+                                : ''
+                        }
+                    </div>
+                `,
+            });
+
+            window.naver.maps.Event.addListener(
+                myLocationMarker,
+                'click',
+                () => {
+                    myInfoWindow.open(mapInstanceRef.current, myLocationMarker);
+                }
+            );
+
+            newMarkers.push(myLocationMarker);
+        }
 
         // 자녀 마커 생성
         children
@@ -472,6 +673,89 @@ const MapSection = () => {
             newMarkers.push(marker);
         });
 
+        // 🔍 AI 검색 결과 장소 마커 생성
+        searchPlaces.forEach((place) => {
+            const marker = new window.naver.maps.Marker({
+                position: new window.naver.maps.LatLng(place.lat, place.lng),
+                map: mapInstanceRef.current,
+                title: place.name,
+                icon: {
+                    content: `
+                        <div style="
+                            background: #f59e0b;
+                            color: white;
+                            padding: 6px 10px;
+                            border-radius: 20px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            border: 2px solid white;
+                            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+                            white-space: nowrap;
+                        ">
+                            🔍 ${place.name}
+                        </div>
+                    `,
+                    size: new window.naver.maps.Size(22, 35),
+                    anchor: new window.naver.maps.Point(11, 35),
+                },
+            });
+
+            // 장소 정보창
+            const infoWindow = new window.naver.maps.InfoWindow({
+                content: `
+                    <div style="padding: 12px; max-width: 240px;">
+                        <h4 style="margin: 0 0 8px 0; color: #f59e0b; font-weight: bold;">🔍 ${
+                            place.name
+                        }</h4>
+                        <p style="margin: 0 0 6px 0; font-size: 13px; color: #333;">
+                            ${place.category || '장소'}
+                        </p>
+                        <p style="margin: 0 0 8px 0; font-size: 12px; color: #666; line-height: 1.4;">
+                            📍 ${place.address}
+                        </p>
+                        ${
+                            place.phone
+                                ? `
+                            <p style="margin: 0 0 8px 0; font-size: 12px; color: #666;">
+                                📞 ${place.phone}
+                            </p>
+                        `
+                                : ''
+                        }
+                        ${
+                            place.description
+                                ? `
+                            <p style="margin: 0 0 8px 0; font-size: 12px; color: #888; line-height: 1.3;">
+                                ${place.description}
+                            </p>
+                        `
+                                : ''
+                        }
+                        <div style="margin-top: 10px; display: flex; gap: 6px;">
+                            <button onclick="window.open('nmap://search?query=${encodeURIComponent(
+                                place.name
+                            )}&appname=com.example.myapp')" 
+                                style="background: #03C75A; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer;">
+                                네이버지도
+                            </button>
+                            <button onclick="navigator.clipboard?.writeText('${
+                                place.address
+                            }').then(() => alert('주소가 복사되었습니다!'))" 
+                                style="background: #6b7280; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer;">
+                                주소복사
+                            </button>
+                        </div>
+                    </div>
+                `,
+            });
+
+            window.naver.maps.Event.addListener(marker, 'click', () => {
+                infoWindow.open(mapInstanceRef.current, marker);
+            });
+
+            newMarkers.push(marker);
+        });
+
         setMarkers(newMarkers);
 
         // 지도 범위 조정
@@ -498,6 +782,13 @@ const MapSection = () => {
                 );
             });
 
+            // AI 검색 결과 장소들도 범위에 포함
+            searchPlaces.forEach((place) => {
+                bounds.extend(
+                    new window.naver.maps.LatLng(place.lat, place.lng)
+                );
+            });
+
             mapInstanceRef.current.fitBounds(bounds, {
                 top: 50,
                 right: 50,
@@ -505,7 +796,7 @@ const MapSection = () => {
                 left: 50,
             });
         }
-    }, [children, nearbyParents]);
+    }, [children, nearbyParents, searchPlaces]); // searchPlaces 의존성 추가
 
     // 로그인 필요
     if (!user) {
@@ -576,6 +867,27 @@ const MapSection = () => {
         >
             {/* 위치 추적 제어 버튼 */}
             <div className="absolute top-4 right-4 z-10 space-y-2">
+                {/* 🔥 의정부 테스트 버튼 */}
+                {process.env.NODE_ENV === 'development' && (
+                    <button
+                        onClick={() => {
+                            const testLocation = {
+                                lat: 37.7379,
+                                lng: 127.0477,
+                                address: '의정부 (테스트)',
+                            };
+                            setCurrentUserLocation(testLocation);
+                            console.log(
+                                '🧪 의정부 테스트 위치 설정:',
+                                testLocation
+                            );
+                        }}
+                        className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg font-medium text-xs shadow-lg transition-all block w-full"
+                    >
+                        🌳 의정부 테스트
+                    </button>
+                )}
+
                 {/* 위치 추적 토글 버튼 */}
                 <button
                     onClick={toggleLocationTracking}
@@ -595,6 +907,14 @@ const MapSection = () => {
                     `}
                 >
                     {isTrackingLocation ? '📍 추적 중지' : '📍 위치 추적'}
+                </button>
+
+                {/* 내 위치 즉시 표시 버튼 */}
+                <button
+                    onClick={getCurrentLocation}
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm shadow-lg transition-colors"
+                >
+                    📍 내 위치 표시
                 </button>
 
                 {/* 근처 부모 새로고침 버튼 */}
@@ -618,6 +938,12 @@ const MapSection = () => {
                 <h4 className="font-medium text-sm mb-2">범례</h4>
                 <div className="space-y-1 text-xs">
                     <div className="flex items-center">
+                        <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                        <span>
+                            📍 내 위치 {currentUserLocation ? '✅' : '❌'}
+                        </span>
+                    </div>
+                    <div className="flex items-center">
                         <div className="w-4 h-4 bg-blue-500 rounded mr-2"></div>
                         <span>👶 우리 아이</span>
                     </div>
@@ -625,10 +951,25 @@ const MapSection = () => {
                         <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
                         <span>👩‍👧‍👦 근처 부모</span>
                     </div>
+                    <div className="flex items-center">
+                        <div className="w-4 h-4 bg-orange-500 rounded mr-2"></div>
+                        <span>🔍 검색 장소</span>
+                    </div>
                 </div>
                 <div className="mt-2 pt-2 border-t text-xs text-gray-600">
                     총 {children.length}명의 아이, {nearbyParents.length}명의
                     부모
+                    {currentUserLocation && (
+                        <div className="text-green-600 mt-1">
+                            📍 위치: {currentUserLocation.lat.toFixed(4)},{' '}
+                            {currentUserLocation.lng.toFixed(4)}
+                        </div>
+                    )}
+                    {!currentUserLocation && (
+                        <div className="text-red-600 mt-1">
+                            📍 위치 추적 안됨 - 위치 추적 버튼을 눌러주세요
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAuth, signInWithCustomToken } from 'firebase/auth';
 
-export default function NaverCallbackPage() {
+function NaverCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const code = searchParams.get('code');
@@ -135,5 +135,19 @@ export default function NaverCallbackPage() {
         <div className="flex items-center justify-center min-h-screen">
             <p>네이버 로그인 처리 중...</p>
         </div>
+    );
+}
+
+export default function NaverCallbackPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                    <p>로딩 중...</p>
+                </div>
+            }
+        >
+            <NaverCallbackContent />
+        </Suspense>
     );
 }

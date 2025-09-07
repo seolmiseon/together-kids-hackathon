@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAuth, signInWithCustomToken } from 'firebase/auth';
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const code = searchParams.get('code'); // URL에서 인증 코드를 추출합니다.
@@ -51,5 +51,19 @@ export default function GoogleCallbackPage() {
         <div className="flex items-center justify-center min-h-screen">
             <p>구글 로그인 처리 중...</p>
         </div>
+    );
+}
+
+export default function GoogleCallbackPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                    <p>로딩 중...</p>
+                </div>
+            }
+        >
+            <GoogleCallbackContent />
+        </Suspense>
     );
 }

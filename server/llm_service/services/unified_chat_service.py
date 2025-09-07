@@ -110,6 +110,7 @@ class UnifiedChatService:
         print(f"🔍 DEBUG: 추출된 키워드={place_keywords}")
         
         real_places_info = ""
+        places_data = []  # 프론트엔드로 전달할 장소 데이터
         if place_keywords and intent == "place" and user_context.get("children"):
             print(f"🔍 DEBUG: 네이버 API 호출 시작...")
             # 사용자 위치 정보 추출
@@ -123,6 +124,7 @@ class UnifiedChatService:
                 print(f"🔍 DEBUG: 검색 결과={len(places) if places else 0}개")
                 
                 if places:
+                    places_data = places  # 프론트엔드로 전달할 데이터 저장
                     real_places_info = f"\n\n=== 주변 {search_keyword} 정보 ===\n"
                     for place in places:
                         real_places_info += f"• {place['name']}\n"
@@ -164,13 +166,20 @@ class UnifiedChatService:
         self.session_manager.save_conversation_history(user_id, new_history)
 
         # 8. 최종 결과를 메인 백엔드로 반환합니다.
-        return {
+        result = {
             "user_id": user_id,
             "response": ai_response_content,
             "intent": intent,
             "urgency": urgency,
             "timestamp": datetime.now().isoformat()
         }
+        
+        # 장소 검색 결과가 있으면 포함
+        if places_data:
+            result["places"] = places_data
+            print(f"🔍 DEBUG: 응답에 장소 정보 포함됨: {len(places_data)}개")
+        
+        return result
     
     def extract_user_location(self, user_context: Dict[str, Any]) -> tuple:
         """사용자 컨텍스트에서 위치 정보 추출"""

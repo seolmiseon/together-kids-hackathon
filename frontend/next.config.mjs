@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // 정적 export 설정
+    output: 'export',
+    distDir: 'out',
+    trailingSlash: true,
+
     // 외부 이미지 도메인 허용
     images: {
+        unoptimized: true, // 정적 export에서는 이미지 최적화 비활성화
         domains: [
             'ssl.pstatic.net', // 네이버 프로필 이미지
             'lh3.googleusercontent.com', // 구글 프로필 이미지

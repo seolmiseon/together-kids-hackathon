@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAuth, signInWithCustomToken } from 'firebase/auth';
 
-export default function KakaoCallbackPage() {
+function KakaoCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const code = searchParams.get('code');
@@ -50,5 +50,19 @@ export default function KakaoCallbackPage() {
         <div className="flex items-center justify-center min-h-screen">
             <p>카카오 로그인 처리 중...</p>
         </div>
+    );
+}
+
+export default function KakaoCallbackPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                    <p>로딩 중...</p>
+                </div>
+            }
+        >
+            <KakaoCallbackContent />
+        </Suspense>
     );
 }

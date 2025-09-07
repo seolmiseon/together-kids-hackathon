@@ -93,6 +93,41 @@ export default function ChatbotSidebar({
             };
             setMessages((prev) => [...prev, aiResponse]);
 
+            // 🔍 AI 응답에서 장소 정보가 포함되어 있는지 확인하고 지도에 표시
+            if (
+                aiData.places &&
+                Array.isArray(aiData.places) &&
+                aiData.places.length > 0
+            ) {
+                console.log('🔍 AI 응답에서 장소 정보 발견:', aiData.places);
+
+                // 장소 정보를 SearchPlace 형태로 변환
+                const searchPlaces = aiData.places.map(
+                    (place: any, index: number) => ({
+                        id: place.id || `place_${index}`,
+                        name: place.name || place.title || '알 수 없는 장소',
+                        address: place.address || place.roadAddress || '',
+                        lat:
+                            parseFloat(place.lat || place.mapx) /
+                            (place.mapx ? 10000000 : 1),
+                        lng:
+                            parseFloat(place.lng || place.mapy) /
+                            (place.mapy ? 10000000 : 1),
+                        category: place.category || place.category || '',
+                        phone: place.phone || place.telephone || '',
+                        description: place.description || '',
+                    })
+                );
+
+                // 지도에 장소 표시 (전역 함수 호출)
+                if (
+                    typeof window !== 'undefined' &&
+                    (window as any).displaySearchResults
+                ) {
+                    (window as any).displaySearchResults(searchPlaces);
+                }
+            }
+
             if (aiData.urgency) {
                 setUrgency(aiData.urgency);
             }
