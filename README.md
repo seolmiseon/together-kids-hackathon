@@ -19,57 +19,86 @@
 
 ```
 ┌─────────────────┬─────────────────┬─────────────────┐
-│   Frontend      │   LLM Service   │  Main Backend   │
-│   (Next.js)     │   (Port 8002)   │   (Port 8000)   │
+│  🤖 LLM Service │  Main Backend   │   Frontend      │
+│   (Port 8002)   │   (Port 8000)   │   (Next.js)     │
 ├─────────────────┼─────────────────┼─────────────────┤
-│ React UI        │ AI 채팅         │ 사용자 관리      │
-│ 네이버 지도      │ RAG 검색        │ 아이 프로필      │
-│ 모바일 최적화    │ 장소 검색       │ 일정 관리        │
-│ Firebase        │ 프롬프트 AI     │ 인증/권한        │
+│ OpenAI GPT-4o   │ 사용자 관리      │ React UI        │
+│ LangChain RAG   │ 아이 프로필      │ 네이버 지도      │
+│ ChromaDB 벡터   │ 일정 관리        │ 모바일 최적화    │
+│ 프롬프트 AI     │ 인증/권한        │ Firebase Auth   │
+│ 세션 관리       │ LLM 연동        │ 실시간 알림      │
 └─────────────────┴─────────────────┴─────────────────┘
                             ↓
-                    Firestore Database
+            Firestore Database + ChromaDB Vector Store
 ```
 
 ## 기술 스택
+
+### AI/LLM Core (핵심)
+
+-   **OpenAI GPT-4o-mini** - 대화형 AI 언어 모델
+-   **LangChain** - LLM 애플리케이션 프레임워크
+-   **RAG (Retrieval-Augmented Generation)** - 검색 증강 생성
+-   **ChromaDB** - 벡터 데이터베이스 (임베딩 저장)
+-   **OpenAI Embeddings** - 텍스트 벡터화
+-   **Unified Chat Service** - RAG + Community 통합 채팅
+-   **Dynamic Prompt Engineering** - 컨텍스트 기반 프롬프트 최적화
+
+### Backend Services
+
+-   **FastAPI** - 고성능 Python 웹 프레임워크
+-   **Firestore** - NoSQL 실시간 데이터베이스
+-   **Firebase Admin SDK** - 서버사이드 인증 (JWT 대신 사용)
+-   **Naver Search API** - 장소 검색 서비스
+-   **Session Management** - Firebase 기반 대화 이력 관리
 
 ### Frontend
 
 -   **Next.js 14** - React 기반 풀스택 프레임워크
 -   **TypeScript** - 타입 안전성
 -   **Tailwind CSS** - 유틸리티 기반 스타일링
--   **Firebase Auth** - 소셜 로그인 (Google, Kakao,Naver)
+-   **Firebase Auth** - 소셜 로그인 (Google, Kakao, Naver)
 -   **Naver Maps API** - 실시간 위치 서비스
-
-### Backend
-
--   **FastAPI** - 고성능 Python 웹 프레임워크
--   **SQLAlchemy** - ORM 데이터베이스 관리
--   **Firestore** - NoSQL 실시간 데이터베이스
--   **OpenAI GPT-4o-mini** - AI 언어 모델
--   **Naver Search API** - 장소 검색 서비스
 
 ### Infrastructure
 
--   **Docker** - 컨테이너화
+-   **Docker** - 마이크로서비스 컨테이너화
 -   **GCP Cloud Run** - 서버리스 배포
--   **Firestore** - NoSQL 실시간 데이터베이스 및 세션 관리
--   **Firebase Auth** - 사용자 인증 및 세션 관리
+-   **Firebase Hosting** - 프론트엔드 배포
+-   **Google Container Registry** - 컨테이너 이미지 저장
 
 ## 폴더 구조
 
 ```
 hackathon/
 ├── docs/              # 프로젝트 문서 (PPT HTML)
+├── server/            # 백엔드 서비스들 (AI/LLM 중심)
+│   ├── llm_service/   # 🤖 AI 채팅 서비스 (핵심)
+│   │   ├── main.py           # FastAPI LLM 서버
+│   │   ├── services/         # 핵심 AI 서비스들
+│   │   │   ├── unified_chat_service.py  # RAG+Community 통합
+│   │   │   ├── openai_service.py        # OpenAI API 연동
+│   │   │   ├── vector_service.py        # ChromaDB 벡터 검색
+│   │   │   ├── rag_service.py           # RAG 구현체
+│   │   │   └── session_manager.py       # 대화 세션 관리
+│   │   ├── prompts/          # 프롬프트 엔지니어링
+│   │   │   ├── base/         # 기본 프롬프트
+│   │   │   ├── community/    # 커뮤니티 검색 프롬프트
+│   │   │   ├── safety/       # 안전 필터 프롬프트
+│   │   │   └── schedule/     # 일정 관리 프롬프트
+│   │   ├── models/           # 데이터 모델
+│   │   ├── routers/          # API 라우터
+│   │   └── chroma_db/        # 벡터 데이터베이스
+│   ├── backend/       # FastAPI 메인 백엔드
+│   │   ├── main.py           # 메인 API 서버
+│   │   ├── routers/          # REST API 엔드포인트
+│   │   └── schemas/          # 데이터 스키마
+│   └── docker-compose.yml
 ├── frontend/          # Next.js 프론트엔드
 │   ├── src/app/       # Next.js 앱 라우터
 │   ├── src/components/# React 컴포넌트
 │   ├── src/store/     # 상태 관리 (Zustand)
 │   └── public/        # 정적 파일
-├── server/            # 백엔드 서비스들
-│   ├── backend/       # FastAPI 메인 백엔드
-│   ├── llm_service/   # AI 채팅 서비스
-│   └── docker-compose.yml
 └── README.md
 ```
 
@@ -86,7 +115,7 @@ hackathon/
     -   [x] 벡터 검색 RAG 구현
     -   [x] 네이버 장소 검색 API 연동
 -   [x] Main Backend API 구현
-    -   [x] JWT 인증 시스템
+    -   [x] Firebase Admin SDK 인증 시스템
     -   [x] 사용자 관리 (회원가입/로그인)
     -   [x] 아이 프로필 관리
     -   [x] 일정 관리 시스템
@@ -205,10 +234,10 @@ firebase deploy
 ### 5. 환경 변수 설정
 
 ```bash
-# 백엔드 환경 변수
+# 백엔드 환경 변수 (Firebase Admin SDK 사용)
 gcloud run services update together-kids-backend \
-  --set-env-vars="SECRET_KEY=your_jwt_secret" \
-  --set-env-vars="LLM_SERVICE_URL=https://together-kids-llm-xxx.run.app" \
+  --set-env-vars="FIREBASE_PROJECT_ID=your_firebase_project_id" \
+  --set-env-vars="LLM_SERVICE_URL=https://hackathon-llm-service-xxx.run.app" \
   --set-env-vars="FIREBASE_PROJECT_ID=your_firebase_project_id"
 
 # LLM 서비스 환경 변수
@@ -304,9 +333,15 @@ NAVER_CLIENT_SECRET=your_naver_client_secret
 ### Main Backend (.env)
 
 ```
-SECRET_KEY=your_jwt_secret
-LLM_SERVICE_URL=http://localhost:8002
+# Firebase Admin SDK 설정
+GOOGLE_APPLICATION_CREDENTIALS=serviceAccountKey.json
 FIREBASE_PROJECT_ID=your_firebase_project_id
+
+# LLM 서비스 연동
+LLM_SERVICE_URL=http://localhost:8002
+
+# 운영 환경에서는 실제 배포 URL 사용
+# LLM_SERVICE_URL=https://hackathon-llm-service-xxx.run.app
 ```
 
 ### Frontend (.env.local)
