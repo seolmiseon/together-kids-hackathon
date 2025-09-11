@@ -5,7 +5,7 @@ from fastapi.exceptions import HTTPException, RequestValidationError
 from dotenv import load_dotenv
 import logging
 
-from .routers import chat, schedule
+from .routers import chat, schedule, location_community, group_purchase
 
 # 환경 변수 로드
 load_dotenv()
@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 # FastAPI 앱 초기화
 app = FastAPI(
-    title="함께키즈 AI 챗봇 서비스",
-    version="1.0.0",
-    description="아파트 단지 내 맞벌이 부모들의 공동육아를 돕는 AI 챗봇"
+    title="함께키즈 GPS 기반 공동육아 플랫폼",
+    version="2.0.0",
+    description="GPS 위치추적과 네이버 지도 API 기반 실제 공동육아 커뮤니티 매칭 플랫폼"
 )
 
 
@@ -34,16 +34,18 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(chat.router)
 app.include_router(schedule.router)
+app.include_router(location_community.router)  # GPS 위치 기반 커뮤니티 API
+app.include_router(group_purchase.router)      # 공동구매 및 나눔 API
 
 
 @app.get("/")
 async def root():
-    return {"message": "함께키즈 AI 챗봇 서비스가 실행 중입니다!"}
+    return {"message": "함께키즈 GPS 기반 공동육아 플랫폼이 실행 중입니다!"}
 
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "함께키즈 AI"}
+    return {"status": "healthy", "service": "함께키즈 위치기반 커뮤니티"}
     
 # 전역 예외 처리
 @app.exception_handler(Exception)

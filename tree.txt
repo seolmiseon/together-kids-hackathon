@@ -61,9 +61,11 @@
 │   │   │   └── ui
 │   │   │       ├── BellIcon.tsx
 │   │   │       └── LoadingSkeleton.tsx
-│   │   └── store
-│   │       ├── notificationStore.ts
-│   │       └── userStore.ts
+│   │   ├── store
+│   │   │   ├── notificationStore.ts
+│   │   │   └── userStore.ts
+│   │   └── utils
+│   │       └── gpsUtils.ts
 │   ├── tailwind.config.ts
 │   ├── tsconfig.json
 │   └── tsconfig.tsbuildinfo
@@ -86,8 +88,10 @@
 │   │       └── spell_utils.py
 │   ├── llm_service
 │   │   ├── ai_coordinator.py
+│   │   ├── check_vector_db.py
 │   │   ├── database
 │   │   │   └── crud.py
+│   │   ├── init_community_system.py
 │   │   ├── init_embeddings.py
 │   │   ├── main.py
 │   │   ├── models
@@ -100,7 +104,10 @@
 │   │   │   │   ├── general_prompts.py
 │   │   │   │   └── system_prompts.py
 │   │   │   ├── community
-│   │   │   │   └── group_management.py
+│   │   │   │   ├── community_prompts.py
+│   │   │   │   ├── group_management.py
+│   │   │   │   ├── parenting_style_analysis.txt
+│   │   │   │   └── vectorization_prompt.txt
 │   │   │   ├── safety
 │   │   │   │   └── gps_alerts.py
 │   │   │   ├── schedule
@@ -110,13 +117,20 @@
 │   │   ├── routers
 │   │   │   ├── __init__.py
 │   │   │   ├── chat.py
+│   │   │   ├── group_purchase.py
+│   │   │   ├── location_community.py
 │   │   │   └── schedule.py
 │   │   ├── services
 │   │   │   ├── __init__.py
-│   │   │   ├── naver_place_service.py
+│   │   │   ├── community_matching_service.py
+│   │   │   ├── emotion_service.py
+│   │   │   ├── group_purchase_service.py
+│   │   │   ├── location_service.py
 │   │   │   ├── openai_service.py
 │   │   │   ├── prompt_service.py
 │   │   │   ├── rag_service.py
+│   │   │   ├── real_community_service.py
+│   │   │   ├── realtime_database_service.py
 │   │   │   ├── session_manager.py
 │   │   │   ├── unified_chat_service.py
 │   │   │   └── vector_service.py
@@ -127,4 +141,4 @@
 ├── tree.txt
 └── update_tree.sh
 
-42 directories, 85 files
+43 directories, 98 files
