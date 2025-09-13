@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+    # 메인 백엔드 서비스
+    backend:
+        build:
+            context: ./server
+            dockerfile: Dockerfile
+        ports:
+            - '8000:8000'
+        environment:
+            - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+            - LLM_SERVICE_URL=http://llm-service:8002
+        env_file:
+            - ./server/.env
+        volumes:
+            - ./server:/app
+        depends_on:
+            - llm-service
+        networks:
+            - together-kids-network
+        restart: unless-stopped
+
+    # LLM 서비스
+    llm-service:
+        build:
+            context: ./server
+            dockerfile: Dockerfile
+        ports:
+            - '8002:8002'
+        environment:
+            - OPENAI_API_KEY=${OPENAI_API_KEY}
+            - NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+            - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+            - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+        env_file:
+            - ./server/.env
+        volumes:
+            - ./server:/app
+            - ./server/llm_service/chroma_db:/app/llm_service/chroma_db
+        networks:
+            - together-kids-network
+        restart: unless-stopped
+        command: uvicorn llm_service.main:app --host 0.0.0.0 --port 8002 --reload
+
+    # 프론트엔드 (Next.js)
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        ports:
+            - '3000:3000'
+        environment:
+            - NEXT_PUBLIC_API_URL=http://localhost:8000
+            - NEXT_PUBLIC_NAVER_CLIENT_ID=${NEXT_PUBLIC_NAVER_CLIENT_ID}
+            - NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}
+            - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+            - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+        env_file:
+            - ./frontend/.env.local
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        depends_on:
+            - backend
+            - llm-service
+        networks:
+            - together-kids-network
+        restart: unless-stopped
+
+networks:
+    together-kids-network:
+        driver: bridge
+
+volumes:
+    chroma_data:
+        driver: local

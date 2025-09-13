@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+    # 개발용 메인 백엔드
+    backend-dev:
+        build:
+            context: ./server
+            dockerfile: Dockerfile.dev
+        ports:
+            - '8000:8000'
+        environment:
+            - ENV=development
+            - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+            - LLM_SERVICE_URL=http://llm-service-dev:8002
+        env_file:
+            - ./server/.env
+        volumes:
+            - ./server:/app
+            - /app/__pycache__
+        depends_on:
+            - llm-service-dev
+        networks:
+            - together-kids-dev-network
+        restart: unless-stopped
+        command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+
+    # 개발용 LLM 서비스
+    llm-service-dev:
+        build:
+            context: ./server
+            dockerfile: Dockerfile.dev
+        ports:
+            - '8002:8002'
+        environment:
+            - ENV=development
+            - OPENAI_API_KEY=${OPENAI_API_KEY}
+            - NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+            - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+            - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+        env_file:
+            - ./server/.env
+        volumes:
+            - ./server:/app
+            - ./server/llm_service/chroma_db:/app/llm_service/chroma_db
+            - /app/__pycache__
+        networks:
+            - together-kids-dev-network
+        restart: unless-stopped
+        command: uvicorn llm_service.main:app --host 0.0.0.0 --port 8002 --reload
+
+    # 개발용 프론트엔드
+    frontend-dev:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile.dev
+            target: development
+        ports:
+            - '3000:3000'
+        environment:
+            - NODE_ENV=development
+            - NEXT_PUBLIC_API_URL=http://localhost:8000
+            - NEXT_PUBLIC_NAVER_CLIENT_ID=${NEXT_PUBLIC_NAVER_CLIENT_ID}
+            - NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}
+            - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+            - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+        env_file:
+            - ./frontend/.env.local
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+            - /app/.next
+        depends_on:
+            - backend-dev
+            - llm-service-dev
+        networks:
+            - together-kids-dev-network
+        restart: unless-stopped
+
+networks:
+    together-kids-dev-network:
+        driver: bridge
+
+volumes:
+    chroma_dev_data:
+        driver: local
