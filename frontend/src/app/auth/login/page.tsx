@@ -1,12 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import {
-    getAuth,
-    signInWithRedirect,
-    GoogleAuthProvider,
-    OAuthProvider,
-} from 'firebase/auth';
 
 export default function LoginPage() {
     const handleSocialLogin = async (providerName: string) => {
@@ -19,20 +13,20 @@ export default function LoginPage() {
                     const googleClientId =
                         process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
                         '746400540092-eo7k6k953tfpftt9dideau65bt4cn38g.apps.googleusercontent.com';
-                    authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${baseUrl}/auth/callback/google&response_type=code&scope=openid%20profile%20email`;
+                    authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${baseUrl}/auth/callback/google/&response_type=code&scope=openid%20profile%20email`;
                     break;
                 case 'kakao':
                     const kakaoClientId =
                         process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
                         '7688b55c81dc5a35def8a4c3cf75311c';
-                    authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${baseUrl}/auth/callback/kakao&response_type=code`;
+                    authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${baseUrl}/auth/callback/kakao/&response_type=code`;
                     break;
                 case 'naver':
                     const naverClientId =
                         process.env.NEXT_PUBLIC_NAVER_CLIENT_ID ||
                         'Z7kxwu972HcdvMDJMQbB';
                     const state = Math.random().toString(36).substring(7);
-                    authUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${baseUrl}/auth/callback/naver&state=${state}`;
+                    authUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${baseUrl}/auth/callback/naver/&state=${state}`;
                     break;
                 default:
                     console.error('지원하지 않는 소셜 로그인입니다.');

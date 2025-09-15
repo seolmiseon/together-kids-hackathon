@@ -4,6 +4,7 @@ import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useUserStore } from '@/store/userStore';
 
 interface ChildInfo {
     id: number;
@@ -30,9 +31,11 @@ export default function ProfileSetupPage() {
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    
+    // 🚀 Zustand 함수 가져오기
+    const { handleProfileSetupComplete } = useUserStore();
 
     useEffect(() => {
-        // Firebase 초기화 상태 확인 후 Auth 사용
         const initAuth = async () => {
             try {
                 const auth = getAuth();
@@ -48,7 +51,6 @@ export default function ProfileSetupPage() {
                 return () => unsubscribe();
             } catch (error) {
                 console.error('Firebase Auth 초기화 오류:', error);
-                // Firebase가 초기화되지 않은 경우 잠시 대기 후 재시도
                 setTimeout(() => {
                     router.replace('/auth/login');
                 }, 1000);
@@ -58,20 +60,14 @@ export default function ProfileSetupPage() {
         initAuth();
     }, [router]);
 
-    const handleChildChange = (
-        index: number,
-        e: ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleChildChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         const newChildren = [...children];
         newChildren[index] = { ...newChildren[index], [name]: value };
         setChildren(newChildren);
     };
 
-    const handleImageChange = (
-        index: number,
-        e: ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleImageChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             const newChildren = [...children];
@@ -111,21 +107,17 @@ export default function ProfileSetupPage() {
                 auth = getAuth();
                 currentUser = auth.currentUser;
                 if (!currentUser) {
-                    throw new Error(
-                        '로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.'
-                    );
+                    throw new Error('로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.');
                 }
                 token = await currentUser.getIdToken();
             } catch (authError) {
                 console.error('Firebase Auth 오류:', authError);
-                throw new Error(
-                    '인증 상태를 확인할 수 없습니다. 다시 로그인해주세요.'
-                );
+                throw new Error('인증 상태를 확인할 수 없습니다. 다시 로그인해주세요.');
             }
 
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-            // 1. 보호자 정보 업데이트 (예: /users/me API 호출)
+            // 1. 보호자 정보 업데이트
             const userResponse = await fetch(`${apiUrl}/users/profile`, {
                 method: 'PUT',
                 headers: {
@@ -137,10 +129,9 @@ export default function ProfileSetupPage() {
                     apartment_complex: apartment,
                 }),
             });
-            if (!userResponse.ok)
-                throw new Error('보호자 정보 저장에 실패했습니다.');
+            if (!userResponse.ok) throw new Error('보호자 정보 저장에 실패했습니다.');
 
-            // 2. 각 자녀 정보를 순서대로 등록 (예: /children API 호출)
+            // 2. 각 자녀 정보 등록
             for (const child of children) {
                 const childFormData = new FormData();
                 childFormData.append('name', child.name);
@@ -155,12 +146,14 @@ export default function ProfileSetupPage() {
                     headers: { Authorization: `Bearer ${token}` },
                     body: childFormData,
                 });
-                if (!childResponse.ok)
-                    throw new Error(`${child.name} 정보 저장에 실패했습니다.`);
+                if (!childResponse.ok) throw new Error(`${child.name} 정보 저장에 실패했습니다.`);
             }
 
             alert('프로필이 성공적으로 저장되었습니다!');
-            router.push('/dashboard');
+            
+            // 🚀 Zustand 공통 처리
+            await handleProfileSetupComplete(router);
+            
         } catch (error) {
             console.error('프로필 저장 오류:', error);
             if (error instanceof Error) {
@@ -192,24 +185,16 @@ export default function ProfileSetupPage() {
                         height={50}
                         className="mx-auto mb-4"
                     />
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        프로필 설정
-                    </h1>
-                    <p className="text-gray-500">
-                        공동육아 시작을 위해 정보를 입력해주세요.
-                    </p>
+                    <h1 className="text-2xl font-bold text-gray-800">프로필 설정</h1>
+                    <p className="text-gray-500">공동육아 시작을 위해 정보를 입력해주세요.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* 부모 정보 섹션 */}
                     <div className="space-y-4 p-4 border rounded-lg">
-                        <h2 className="text-lg font-semibold text-gray-700">
-                            보호자 정보
-                        </h2>
+                        <h2 className="text-lg font-semibold text-gray-700">보호자 정보</h2>
                         <div>
-                            <label className="block text-sm font-medium text-gray-600">
-                                이름
-                            </label>
+                            <label className="block text-sm font-medium text-gray-600">이름</label>
                             <input
                                 type="text"
                                 value={parentName}
@@ -219,9 +204,7 @@ export default function ProfileSetupPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-600">
-                                아파트 단지
-                            </label>
+                            <label className="block text-sm font-medium text-gray-600">아파트 단지</label>
                             <input
                                 type="text"
                                 value={apartment}
@@ -234,14 +217,9 @@ export default function ProfileSetupPage() {
 
                     {/* 아이 정보 섹션 */}
                     <div className="space-y-4">
-                        <h2 className="text-lg font-semibold text-gray-700">
-                            자녀 정보
-                        </h2>
+                        <h2 className="text-lg font-semibold text-gray-700">자녀 정보</h2>
                         {children.map((child, index) => (
-                            <div
-                                key={child.id}
-                                className="p-4 border rounded-lg space-y-4 relative"
-                            >
+                            <div key={child.id} className="p-4 border rounded-lg space-y-4 relative">
                                 {children.length > 1 && (
                                     <button
                                         type="button"
@@ -262,67 +240,49 @@ export default function ProfileSetupPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <span className="text-gray-400 text-xs">
-                                                사진 등록
-                                            </span>
+                                            <span className="text-gray-400 text-xs">사진 등록</span>
                                         )}
                                     </div>
                                     <div className="flex-1">
-                                        <label className="block text-sm font-medium text-gray-600">
-                                            프로필 사진
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-600">프로필 사진</label>
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={(e) =>
-                                                handleImageChange(index, e)
-                                            }
+                                            onChange={(e) => handleImageChange(index, e)}
                                             className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-600">
-                                        이름
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-600">이름</label>
                                     <input
                                         type="text"
                                         name="name"
                                         value={child.name}
-                                        onChange={(e) =>
-                                            handleChildChange(index, e)
-                                        }
+                                        onChange={(e) => handleChildChange(index, e)}
                                         required
                                         className="mt-1 block w-full px-3 py-2 border rounded-md"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-600">
-                                            나이
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-600">나이</label>
                                         <input
                                             type="number"
                                             name="age"
                                             value={child.age}
-                                            onChange={(e) =>
-                                                handleChildChange(index, e)
-                                            }
+                                            onChange={(e) => handleChildChange(index, e)}
                                             required
                                             className="mt-1 block w-full px-3 py-2 border rounded-md"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-600">
-                                            어린이집/학교
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-600">어린이집/학교</label>
                                         <input
                                             type="text"
                                             name="school"
                                             value={child.school}
-                                            onChange={(e) =>
-                                                handleChildChange(index, e)
-                                            }
+                                            onChange={(e) => handleChildChange(index, e)}
                                             required
                                             className="mt-1 block w-full px-3 py-2 border rounded-md"
                                         />
@@ -345,9 +305,7 @@ export default function ProfileSetupPage() {
                             disabled={isSubmitting || !isAuthenticated}
                             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors disabled:bg-gray-400"
                         >
-                            {isSubmitting
-                                ? '저장하는 중...'
-                                : '저장하고 시작하기'}
+                            {isSubmitting ? '저장하는 중...' : '저장하고 시작하기'}
                         </button>
                     </div>
                 </form>
