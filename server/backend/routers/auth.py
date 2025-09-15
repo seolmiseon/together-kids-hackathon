@@ -60,24 +60,23 @@ async def social_firebase_login(provider: str, body: dict = Body(...)):
         "google": "https://oauth2.googleapis.com/token"
     }
     
-    # 클라이언트 정보 (환경변수에서 가져와야 함)
     client_configs = {
-        "kakao": {
-            "client_id": os.getenv("KAKAO_CLIENT_ID"),
-            "client_secret": os.getenv("KAKAO_CLIENT_SECRET"),
-            "redirect_uri": "http://localhost:3000/auth/callback/kakao"
-        },
-        "naver": {
-            "client_id": os.getenv("NAVER_CLIENT_ID"),
-            "client_secret": os.getenv("NAVER_CLIENT_SECRET"),
-            "redirect_uri": "http://localhost:3000/auth/callback/naver"
-        },
-        "google": {
-            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-            "redirect_uri": "http://localhost:3000/auth/callback/google"
-        }
+    "kakao": {
+        "client_id": os.getenv("KAKAO_CLIENT_ID"),
+        "client_secret": os.getenv("KAKAO_CLIENT_SECRET"),
+        "redirect_uri": os.getenv("KAKAO_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/kakao/")  # ✅
+    },
+    "naver": {
+        "client_id": os.getenv("NAVER_CLIENT_ID"),
+        "client_secret": os.getenv("NAVER_CLIENT_SECRET"),
+        "redirect_uri": os.getenv("NAVER_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/naver/")  # ✅
+    },
+    "google": {
+        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+        "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/google/")  # ✅
     }
+}
 
     if provider not in token_urls:
         raise HTTPException(status_code=404, detail="지원하지 않는 소셜 로그인입니다.")

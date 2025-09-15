@@ -1,8 +1,8 @@
 .
 ├── README.md
-├── docker-compose.dev.yaml
-├── docker-compose.prod.yaml
-├── dump.rdb
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
+├── docker-compose.yml
 ├── frontend
 │   ├── Dockerfile
 │   ├── Dockerfile.dev
@@ -67,8 +67,7 @@
 │   │   └── utils
 │   │       └── gpsUtils.ts
 │   ├── tailwind.config.ts
-│   ├── tsconfig.json
-│   └── tsconfig.tsbuildinfo
+│   └── tsconfig.json
 ├── server
 │   ├── Dockerfile
 │   ├── Dockerfile.dev
@@ -88,11 +87,8 @@
 │   │       └── spell_utils.py
 │   ├── llm_service
 │   │   ├── ai_coordinator.py
-│   │   ├── check_vector_db.py
 │   │   ├── database
 │   │   │   └── crud.py
-│   │   ├── init_community_system.py
-│   │   ├── init_embeddings.py
 │   │   ├── main.py
 │   │   ├── models
 │   │   │   ├── __init__.py
@@ -103,11 +99,18 @@
 │   │   │   ├── base
 │   │   │   │   ├── general_prompts.py
 │   │   │   │   └── system_prompts.py
+│   │   │   ├── classification
+│   │   │   │   └── intent_keywords.py
 │   │   │   ├── community
 │   │   │   │   ├── community_prompts.py
 │   │   │   │   ├── group_management.py
 │   │   │   │   ├── parenting_style_analysis.txt
 │   │   │   │   └── vectorization_prompt.txt
+│   │   │   ├── emotion
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── community_emotion.py
+│   │   │   │   ├── emotion_analysis.py
+│   │   │   │   └── parenting_emotion.txt
 │   │   │   ├── safety
 │   │   │   │   └── gps_alerts.py
 │   │   │   ├── schedule
@@ -141,4 +144,4 @@
 ├── tree.txt
 └── update_tree.sh
 
-43 directories, 98 files
+45 directories, 99 files

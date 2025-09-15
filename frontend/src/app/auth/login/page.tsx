@@ -18,13 +18,13 @@ export default function LoginPage() {
                 case 'google':
                     const googleClientId =
                         process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
-                        '529342898795-esd0it373dtapguhjavubptb4sqn8nl8.apps.googleusercontent.com';
+                        '746400540092-eo7k6k953tfpftt9dideau65bt4cn38g.apps.googleusercontent.com';
                     authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${baseUrl}/auth/callback/google&response_type=code&scope=openid%20profile%20email`;
                     break;
                 case 'kakao':
                     const kakaoClientId =
                         process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
-                        '37ec4c9829a34f4eabe4ae13a1e23482';
+                        '7688b55c81dc5a35def8a4c3cf75311c';
                     authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${baseUrl}/auth/callback/kakao&response_type=code`;
                     break;
                 case 'naver':

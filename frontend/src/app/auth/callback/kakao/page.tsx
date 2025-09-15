@@ -15,7 +15,7 @@ function KakaoCallbackContent() {
                 try {
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
                     const response = await fetch(
-                        `${apiUrl}/auth/firebase/kakao`,
+                        `${apiUrl}/auth/firebase/kakao/`,
                         {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },

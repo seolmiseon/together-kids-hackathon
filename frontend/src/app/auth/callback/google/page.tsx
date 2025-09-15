@@ -16,7 +16,7 @@ function GoogleCallbackContent() {
                     // 1. 백엔드에 인증 코드를 보내 Firebase 커스텀 토큰을 요청합니다.
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
                     const response = await fetch(
-                        `${apiUrl}/auth/firebase/google`,
+                        `${apiUrl}/auth/firebase/google/`,
                         {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
