@@ -18,7 +18,7 @@ db = firestore.client()
 router = APIRouter(prefix="/ai", tags=["ai-integration"])
 
 # LLM 서비스 설정
-LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "http://localhost:8002")
+LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "https://hackathon-llm-service-529342898795.asia-northeast3.run.app")
 LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY")
 
 def get_user_context(current_user: dict) -> dict:
@@ -82,6 +82,7 @@ async def chat_with_ai(
                 json={
                     "user_id": current_user.get("uid"),
                     "message": message,
+                    "conversation_context": {},  
                     "user_context": user_context
                 },
                 headers=headers,

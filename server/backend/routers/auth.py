@@ -37,6 +37,20 @@ def mark_code_as_processed(code: str):
     processed_codes[code] = time.time()
 
 
+@router.options("/firebase/{provider}")
+async def options_firebase_login(provider: str):
+    """
+    CORS preflight 요청을 처리합니다.
+    """
+    from fastapi import Response
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Max-Age"] = "3600"
+    return response
+
+
 @router.post("/firebase/{provider}")
 async def social_firebase_login(provider: str, body: dict = Body(...)):
     """
@@ -64,17 +78,17 @@ async def social_firebase_login(provider: str, body: dict = Body(...)):
     "kakao": {
         "client_id": os.getenv("KAKAO_CLIENT_ID"),
         "client_secret": os.getenv("KAKAO_CLIENT_SECRET"),
-        "redirect_uri": os.getenv("KAKAO_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/kakao/")  # ✅
+        "redirect_uri": os.getenv("KAKAO_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/kakao/")  # ✅ OAuth 표준에 따라 slash 포함
     },
     "naver": {
         "client_id": os.getenv("NAVER_CLIENT_ID"),
         "client_secret": os.getenv("NAVER_CLIENT_SECRET"),
-        "redirect_uri": os.getenv("NAVER_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/naver/")  # ✅
+        "redirect_uri": os.getenv("NAVER_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/naver/")  # ✅ OAuth 표준에 따라 slash 포함
     },
     "google": {
         "client_id": os.getenv("GOOGLE_CLIENT_ID"),
         "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/google/")  # ✅
+        "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI", "https://togatherkids.web.app/auth/callback/google/")  # ✅ OAuth 표준에 따라 slash 포함
     }
 }
 

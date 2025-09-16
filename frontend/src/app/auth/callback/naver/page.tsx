@@ -17,7 +17,7 @@ function NaverCallbackContent() {
             const processNaverLogin = async (authCode: string) => {
                 try {
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-                    const response = await fetch(`${apiUrl}/auth/firebase/naver/`, {
+                    const response = await fetch(`${apiUrl}/auth/firebase/naver`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

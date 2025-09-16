@@ -16,7 +16,7 @@ function GoogleCallbackContent() {
             const processGoogleLogin = async (authCode: string) => {
                 try {
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-                    const response = await fetch(`${apiUrl}/auth/firebase/google/`, {
+                    const response = await fetch(`${apiUrl}/auth/firebase/google`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ code: authCode }),

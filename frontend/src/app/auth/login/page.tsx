@@ -13,20 +13,23 @@ export default function LoginPage() {
                     const googleClientId =
                         process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
                         '746400540092-eo7k6k953tfpftt9dideau65bt4cn38g.apps.googleusercontent.com';
-                    authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${baseUrl}/auth/callback/google/&response_type=code&scope=openid%20profile%20email`;
+                    const googleRedirectUri = encodeURIComponent(`${baseUrl}/auth/callback/google/`); // OAuth 표준에 따라 slash 포함
+                    authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${googleRedirectUri}&response_type=code&scope=openid%20profile%20email`;
                     break;
                 case 'kakao':
                     const kakaoClientId =
                         process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
                         '7688b55c81dc5a35def8a4c3cf75311c';
-                    authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${baseUrl}/auth/callback/kakao/&response_type=code`;
+                    const kakaoRedirectUri = encodeURIComponent(`${baseUrl}/auth/callback/kakao/`); // OAuth 표준에 따라 slash 포함
+                    authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${kakaoRedirectUri}&response_type=code`;
                     break;
                 case 'naver':
                     const naverClientId =
                         process.env.NEXT_PUBLIC_NAVER_CLIENT_ID ||
                         'Z7kxwu972HcdvMDJMQbB';
                     const state = Math.random().toString(36).substring(7);
-                    authUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${baseUrl}/auth/callback/naver/&state=${state}`;
+                    const naverRedirectUri = encodeURIComponent(`${baseUrl}/auth/callback/naver/`); // OAuth 표준에 따라 slash 포함
+                    authUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${naverRedirectUri}&state=${state}`;
                     break;
                 default:
                     console.error('지원하지 않는 소셜 로그인입니다.');

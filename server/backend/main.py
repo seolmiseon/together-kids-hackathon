@@ -31,7 +31,7 @@ app = FastAPI(
     title="함께키즈 메인 백엔드 서비스",
     version="1.0.0",
     description="함께키즈 - 아파트 단지 내 맞벌이 부모들의 공동육아 플랫폼",
-    redirect_slashes=False  # trailing slash 자동 리다이렉트 비활성화
+    redirect_slashes=True  
 )
 
 # CORS 설정 (프론트엔드 연결용)
@@ -44,8 +44,10 @@ app.add_middleware(
         "https://togatherkids.firebaseapp.com"  
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,  # preflight 캐시 시간 (1시간)
 )
 
 # 라우터 등록
