@@ -3,6 +3,7 @@ import os
 from typing import List, Dict, Any
 from openai import OpenAI
 from dotenv import load_dotenv
+from .prompt_service import PromptService
 
 load_dotenv()
 client = OpenAI()
@@ -16,6 +17,7 @@ class OpenAIService:
     self.client = OpenAI(api_key=api_key)
     self.chat_model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
     self.embedding_model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+    self.prompt_service = PromptService()
     
     async def generate_chat_response(self, messages: List[Dict[str, str]]) -> str:
         """채팅 응답 생성"""
@@ -61,19 +63,9 @@ class OpenAIService:
     async def emergency_assessment(self, message: str) -> str:
         """응급 상황 1차 판단"""
         try:
-            emergency_prompt = f"""
-당신은 응급의학 전문가입니다. 다음 상황을 분석하고 응급도를 판단해주세요.
-
-상황: {message}
-
-다음 형식으로 답변해주세요:
-- 응급도: [즉시 응급실/병원 방문 권장/경과 관찰]
-- 이유: [판단 근거]
-- 즉시 조치: [응급처치 방법]
-- 주의사항: [보호자가 알아야 할 사항]
-
-※ 생명에 위험할 수 있는 상황이면 반드시 '즉시 119 신고' 를 포함해주세요.
-"""
+            # 동적 프롬프트 생성 (기존 시스템 활용)
+            emergency_prompt_template = self.prompt_service.manager.get_prompt('gps_alerts', 'EMERGENCY_ASSESSMENT_PROMPT')
+            emergency_prompt = emergency_prompt_template.format(situation=message)
             
             response = self.client.chat.completions.create(
                 model=self.chat_model,

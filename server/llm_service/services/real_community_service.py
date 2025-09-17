@@ -7,12 +7,35 @@ import json
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 import logging
-from openai import AsyncOpenAI
+from         try:
+            # 1. 동적 프롬프트 선택 (사용자 컨텍스트 기반)
+            user_context = {
+                "user_id": user_profile.get('user_id', 'anonymous'),
+                "usage_count": user_profile.get('usage_count', 0),
+                "location": location
+            }
+            
+            optimal_prompt_id = await self.prompt_selector.select_optimal_prompt(
+                prompt_type="community_name",
+                user_context=user_context
+            )
+            
+            # 2. 선택된 프롬프트로 템플릿 생성
+            prompt_template = self.prompt_service.manager.get_prompt('community', optimal_prompt_id)
+            prompt = prompt_template.format(
+                location_address=location['address'],
+                community_type=community_info['name'],
+                user_interests=user_profile.get('interests', []),
+                child_ages=user_profile.get('child_ages', [])
+            )port AsyncOpenAI
 import os
 import sys
 from dotenv import load_dotenv
 from .vector_service import VectorService
 from .location_service import location_service
+from .prompt_service import PromptService
+from .feedback_learning_service import FeedbackLearningService
+from .dynamic_prompt_selector import DynamicPromptSelector
 
 # 환경변수 로드
 load_dotenv()
@@ -21,17 +44,14 @@ logger = logging.getLogger(__name__)
 
 class RealCommunityMatchingService:
     def __init__(self):
-        openai_key = os.getenv("OPENAI_API_KEY")
-        if openai_key:
-            self.openai_client = AsyncOpenAI(api_key=openai_key)
-        else:
-            logger.warning("OPENAI_API_KEY not found, AI 분석 기능이 제한됩니다.")
-            self.openai_client = None
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
         
-        # Vector Service 초기화
-        self.vector_service = VectorService()
-        
-        # 위치 기반 커뮤니티 유형
+        self.openai_client = OpenAI(api_key=api_key)
+        self.prompt_service = PromptService()
+        self.feedback_service = FeedbackLearningService()
+        self.prompt_selector = DynamicPromptSelector()        # 위치 기반 커뮤니티 유형
         self.community_types = {
             "same_apartment": {
                 "name": "같은 아파트 품앗이",
@@ -137,20 +157,13 @@ class RealCommunityMatchingService:
             return f"{area_name} {community_info['name']}"
         
         try:
-            prompt = f"""
-사용자 위치: {location['address']}
-지역: {area_name}
-커뮤니티 유형: {community_info['name']}
-
-위 정보를 바탕으로 실제적이고 친근한 커뮤니티 이름을 생성해주세요.
-- 구체적인 동네명이나 아파트명은 제외
-- 지역의 특성을 반영
-- 부모들이 쉽게 이해할 수 있는 이름
-- 15자 이내로 간결하게
-
-예시: "도봉구 품앗이", "노원구 놀이터 모임", "의정부 워킹맘"
-
-커뮤니티 이름:"""
+            # 동적 프롬프트 생성 (기존 시스템 활용)
+            prompt_template = self.prompt_service.manager.get_prompt('community', 'COMMUNITY_NAME_GENERATION')
+            prompt = prompt_template.format(
+                location_address=location['address'],
+                area_name=area_name,
+                community_type=community_info['name']
+            )
 
             response = await self.openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -174,19 +187,26 @@ class RealCommunityMatchingService:
             return community_info['description']
         
         try:
-            prompt = f"""
-사용자 위치: {location['address']}
-커뮤니티 유형: {community_info['name']}
-사용자 관심사: {user_profile.get('interests', [])}
-자녀 연령: {user_profile.get('child_ages', [])}
-
-위 정보를 바탕으로 공동육아 플랫폼에 맞는 커뮤니티 설명을 작성해주세요.
-- 실제 지역 기반임을 강조
-- 공동육아의 구체적 활동 포함
-- 부모들이 참여하고 싶어할 만한 내용
-- 100자 이내로 간결하게
-
-커뮤니티 설명:"""
+            # 1. 동적 프롬프트 선택 (사용자 컨텍스트 기반)
+            user_context = {
+                "user_id": user_profile.get('user_id', 'anonymous'),
+                "usage_count": user_profile.get('usage_count', 0),
+                "location": location
+            }
+            
+            optimal_prompt_id = await self.prompt_selector.select_optimal_prompt(
+                prompt_type="community_description",
+                user_context=user_context
+            )
+            
+            # 2. 선택된 프롬프트로 템플릿 생성
+            prompt_template = self.prompt_service.manager.get_prompt('community', optimal_prompt_id)
+            prompt = prompt_template.format(
+                location_address=location['address'],
+                community_type=community_info['name'],
+                user_interests=user_profile.get('interests', []),
+                child_ages=user_profile.get('child_ages', [])
+            )
 
             response = await self.openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",

@@ -2,8 +2,139 @@
 커뮤니티 매칭 관련 프롬프트
 """
 
-USER_INTEREST_ANALYSIS = """
-당신은 육아 전문 상담사입니다. 사용자의 메시지를 분석하여 교육 관심사와 활동 선호도를 추출하세요.
+USER_INTEREST_ANALYSISCOMMUNITY_DESCRIPTION_GENERATION = """
+사용자 위치: {location_address}
+커뮤니티 유형: {community_type}
+사용자 관심사: {user_interests}
+자녀 연령: {child_ages}
+
+위 정보를 바탕으로 공동육아 플랫폼에 맞는 커뮤니티 설명을 작성해주세요.
+- 실제 지역 기반임을 강조
+- 공동육아의 구체적 활동 포함
+- 부모들이 참여하고 싶어할 만한 내용
+- 100자 이내로 간결하게
+
+커뮤니티 설명:"""
+
+# 동적 프롬프트 선택을 위한 추가 변형들
+COMMUNITY_NAME_FRIENDLY = """
+안녕하세요! 새로운 육아 친구들을 만나보세요 😊
+
+위치: {location_address}
+관심사: {user_interests}
+자녀 연령: {child_ages}
+
+위 정보로 따뜻하고 친근한 커뮤니티 이름을 지어주세요.
+- 엄마/아빠들이 부담없이 참여할 수 있는 분위기
+- 친근하고 따뜻한 느낌
+- 기억하기 쉬운 이름
+
+커뮤니티 이름:"""
+
+COMMUNITY_NAME_FORMAL = """
+{location_address} 지역의 체계적인 공동육아 그룹명을 제안해주세요.
+
+참고정보:
+- 관심분야: {user_interests}  
+- 자녀연령: {child_ages}
+
+요구사항:
+- 전문적이고 신뢰감 있는 톤
+- 지역명 포함 권장
+- 간결하고 명확한 표현
+
+그룹명:"""
+
+COMMUNITY_NAME_CREATIVE = """
+🎨 창의적인 커뮤니티 이름 생성기 🎨
+
+지역: {location_address}
+특성: {user_interests}
+연령대: {child_ages}
+
+독창적이고 기억에 남는 커뮤니티 이름을 만들어주세요!
+- 재미있고 창의적인 조합
+- 아이들도 기억하기 쉬운
+- 유니크하고 특별한 느낌
+
+✨ 커뮤니티 이름:"""
+
+COMMUNITY_NAME_RURAL = """
+{location_address} 농촌/지방 지역 특성을 반영한 공동육아 모임 이름을 지어주세요.
+
+지역 특성 고려사항:
+- 관심사: {user_interests}
+- 자녀 연령: {child_ages}
+- 농촌/소도시의 정겨운 분위기
+- 지역 공동체 문화 반영
+
+따뜻한 시골 정서가 담긴 모임 이름:"""
+
+COMMUNITY_NAME_QUICK = """
+빠른 커뮤니티명 제안:
+위치: {location_address}
+연령: {child_ages}
+
+간단하고 직관적인 이름 1개만:"""
+
+COMMUNITY_DESCRIPTION_DETAILED = """
+{location_address} 지역 공동육아 커뮤니티 상세 소개
+
+기본 정보:
+- 커뮤니티 유형: {community_type}
+- 주요 관심사: {user_interests} 
+- 대상 자녀 연령: {child_ages}
+
+다음 내용을 포함해서 자세한 커뮤니티 설명을 작성해주세요:
+1. 구체적인 활동 내용 (월 2-3회 정기모임, 체험활동 등)
+2. 지역 기반 장점 (근처 공원, 시설 활용)
+3. 참여 방법 및 운영 방식
+4. 기대효과 (아이들 사회성, 부모 네트워킹)
+5. 200자 내외로 상세하게
+
+커뮤니티 소개:"""
+
+COMMUNITY_DESCRIPTION_BRIEF = """
+{location_address} {community_type}
+관심사: {user_interests} | 연령: {child_ages}
+
+핵심만 간단히 (50자 이내):
+- 활동 내용
+- 모임 주기  
+- 참여 혜택
+
+간단 소개:"""
+
+COMMUNITY_DESCRIPTION_EMOTIONAL = """
+💕 마음이 따뜻해지는 우리 동네 육아 이야기 💕
+
+{location_address}에서 함께 키우는 소중한 아이들
+관심분야: {user_interests}
+우리 아이들 나이: {child_ages}
+
+감성적이고 따뜻한 커뮤니티 소개글을 써주세요:
+- 부모의 마음을 어루만지는 표현
+- 아이들의 행복한 성장 이야기
+- 함께하는 기쁨과 보람 강조  
+- 100자 내외로 감동적으로
+
+따뜻한 소개글:"""
+
+COMMUNITY_DESCRIPTION_PRACTICAL = """
+{location_address} 실용적 공동육아 정보
+
+유형: {community_type}
+관심사: {user_interests}
+연령대: {child_ages}
+
+실용적 정보 중심으로 작성:
+- 구체적 활동 일정 (주/월 몇 회)
+- 장소 및 시설 정보
+- 비용 및 준비물
+- 실질적 도움되는 내용
+- 80자 내외로 명확하게
+
+실용 정보:""" 전문 상담사입니다. 사용자의 메시지를 분석하여 교육 관심사와 활동 선호도를 추출하세요.
 
 분석할 메시지:
 {messages}
@@ -28,6 +159,37 @@ USER_INTEREST_ANALYSIS = """
 - 건강관리: 건강, 웰빙, 운동
 - 시간관리: 효율적, 계획적, 스케줄
 - 육아품앗이: 돌봄, 품앗이, 공동육아
+
+COMMUNITY_NAME_GENERATION = """
+사용자 위치: {location_address}
+지역: {area_name}
+커뮤니티 유형: {community_type}
+
+위 정보를 바탕으로 실제적이고 친근한 커뮤니티 이름을 생성해주세요.
+- 구체적인 동네명이나 아파트명은 제외
+- 지역의 특성을 반영
+- 부모들이 쉽게 이해할 수 있는 이름
+- 15자 이내로 간결하게
+
+예시: "도봉구 품앗이", "노원구 놀이터 모임", "의정부 워킹맘"
+
+커뮤니티 이름:
+"""
+
+COMMUNITY_DESCRIPTION_GENERATION = """
+사용자 위치: {location_address}
+커뮤니티 유형: {community_type}
+사용자 관심사: {user_interests}
+자녀 연령: {child_ages}
+
+위 정보를 바탕으로 공동육아 플랫폼에 맞는 커뮤니티 설명을 작성해주세요.
+- 실제 지역 기반임을 강조
+- 공동육아의 구체적 활동 포함
+- 부모들이 참여하고 싶어할 만한 내용
+- 100자 이내로 간결하게
+
+커뮤니티 설명:
+"""
 
 반드시 JSON 형식으로 응답하세요:
 ```json

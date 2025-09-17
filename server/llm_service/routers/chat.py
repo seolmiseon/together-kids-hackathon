@@ -17,11 +17,17 @@ async def unified_chat_endpoint(request: ChatRequest):
         print(f"=== 통합 채팅 요청: {request.user_id} ===")
         print(f"메시지: {request.message}")
         
-        # 간단한 테스트 응답
+        # 실제 AI 처리
+        result = await unified_chat_service.process_message(
+            user_id=request.user_id,
+            message=request.message,
+            user_context=request.user_context or {}
+        )
+        
         return {
-            "message": f"테스트 응답: {request.message}",
+            "message": result["response"],
             "user_id": request.user_id,
-            "timestamp": "2025-09-17T00:00:00Z"
+            "timestamp": result["timestamp"]
         }
         
     except Exception as e:
@@ -90,6 +96,31 @@ async def community_only_request(request: ChatRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"커뮤니티 요청 오류: {str(e)}")
+
+
+# Backend 호환을 위한 /history 엔드포인트 추가
+@router.get("/history")
+async def get_chat_history_for_backend(user_id: str, limit: int = 50):
+    """Backend에서 호출하는 채팅 히스토리 조회"""
+    try:
+        history = unified_chat_service.session_manager.get_conversation_history(user_id)
+        return {
+            "user_id": user_id,
+            "history": history[:limit],
+            "total_count": len(history)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"채팅 히스토리 조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.delete("/history")
+async def clear_chat_history_for_backend(user_id: str):
+    """Backend에서 호출하는 채팅 히스토리 삭제"""
+    try:
+        unified_chat_service.session_manager.clear_conversation_history(user_id)
+        return {"message": f"{user_id}의 채팅 히스토리가 삭제되었습니다."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"채팅 히스토리 삭제 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get("/conversation/{user_id}", response_model=ConversationHistoryResponse)
