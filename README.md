@@ -208,7 +208,7 @@ hackathon/
 ### AI 육아상담 API (`/chat`)
 
 ```
-POST   /chat/unified              # 통합 AI 채팅 (감정분석 + GPT)
+POST   /chat           # 통합 AI 채팅 (감정분석 + GPT)
 POST   /chat/ai-only              # AI 전용 모드
 POST   /chat/community            # 커뮤니티 검색 모드
 GET    /chat/history              # 대화 기록 조회

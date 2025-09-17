@@ -76,9 +76,9 @@ async def chat_with_ai(
            if LLM_SERVICE_API_KEY:
                headers["Authorization"] = f"Bearer {LLM_SERVICE_API_KEY}"
 
-           print(f"LLM 서비스 호출: {LLM_SERVICE_URL}/chat/unified")
+           print(f"LLM 서비스 호출: {LLM_SERVICE_URL}/chat")
            response = await client.post(
-                f"{LLM_SERVICE_URL}/chat/unified",
+                f"{LLM_SERVICE_URL}/chat",
                 json={
                     "user_id": current_user.get("uid"),
                     "message": message,
