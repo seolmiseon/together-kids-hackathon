@@ -10,25 +10,19 @@ unified_chat_service = UnifiedChatService()
 
 
 
-@router.post("/unified", response_model=ChatResponse)
+@router.post("/unified")
 async def unified_chat_endpoint(request: ChatRequest):
     """통합 채팅 엔드포인트 - 백엔드에서 호출"""
     try:
         print(f"=== 통합 채팅 요청: {request.user_id} ===")
         print(f"메시지: {request.message}")
         
-        # 통합 서비스로 메시지 처리
-        result = await unified_chat_service.process_message(
-            user_id=request.user_id,
-            message=request.message,
-            user_context=request.user_context or {}
-        )
-        
-        return ChatResponse(
-            message=result["response"],
-            user_id=request.user_id,
-            timestamp=result["timestamp"]
-        )
+        # 간단한 테스트 응답
+        return {
+            "message": f"테스트 응답: {request.message}",
+            "user_id": request.user_id,
+            "timestamp": "2025-09-17T00:00:00Z"
+        }
         
     except Exception as e:
         print(f"통합 채팅 처리 오류: {str(e)}")

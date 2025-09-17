@@ -69,9 +69,9 @@
 │   ├── tailwind.config.ts
 │   └── tsconfig.json
 ├── server
-│   ├── Dockerfile
 │   ├── Dockerfile.dev
 │   ├── backend
+│   │   ├── Dockerfile
 │   │   ├── dependencies.py
 │   │   ├── main.py
 │   │   ├── routers
@@ -86,6 +86,7 @@
 │   │   └── utils
 │   │       └── spell_utils.py
 │   ├── llm_service
+│   │   ├── Dockerfile
 │   │   ├── ai_coordinator.py
 │   │   ├── database
 │   │   │   └── crud.py
@@ -144,4 +145,4 @@
 ├── tree.txt
 └── update_tree.sh
 
-45 directories, 99 files
+45 directories, 100 files
