@@ -28,6 +28,29 @@ class UnifiedChatService:
         else:
             return {"intent": "general", "urgency": "low"}
 
+    def extract_place_keywords(self, message: str) -> List[str]:
+        """메시지에서 장소 관련 키워드 추출"""
+        place_keywords = []
+        
+        # 장소 관련 키워드 사전
+        place_words = [
+            "놀이터", "공원", "도서관", "병원", "마트", "카페", "식당", 
+            "학원", "키즈카페", "수영장", "체육관", "문화센터", "박물관",
+            "키즈존", "놀이방", "어린이집", "유치원", "초등학교"
+        ]
+        
+        # 메시지에서 장소 키워드 찾기
+        for word in place_words:
+            if word in message:
+                place_keywords.append(word)
+        
+        # 장소 추천 요청 키워드
+        if any(word in message for word in ["어디", "추천", "갈만한", "좋은곳"]):
+            if not place_keywords:
+                place_keywords.append("놀이터")  # 기본값
+        
+        return place_keywords
+
     async def process_message(
         self, user_id: str, message: str, user_context: Dict[str, Any]
     ) -> Dict[str, Any]:

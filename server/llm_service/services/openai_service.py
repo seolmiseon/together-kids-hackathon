@@ -9,15 +9,15 @@ load_dotenv()
 client = OpenAI()
 
 class OpenAIService:
-   def __init__(self):
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
-    
-    self.client = OpenAI(api_key=api_key)
-    self.chat_model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
-    self.embedding_model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-    self.prompt_service = PromptService()
+    def __init__(self):
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
+        
+        self.client = OpenAI(api_key=api_key)
+        self.chat_model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
+        self.embedding_model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+        self.prompt_service = PromptService()
     
     async def generate_chat_response(self, messages: List[Dict[str, str]]) -> str:
         """채팅 응답 생성"""
