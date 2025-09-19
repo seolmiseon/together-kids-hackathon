@@ -2,28 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
-import firebase_admin
-from firebase_admin import credentials
+
+# Firebase 초기화를 먼저 수행
+from . import firebase_config
 
 from .routers.auth import router as auth_router
 from .routers.users import router as users_router
 from .routers.children import router as children_router
 from .routers.ai import router as ai_router
 from .routers.alerts import router as alerts_router
-# from llm_service.routers.chat import router as chat_router
-# from llm_service.routers.schedule import router as schedule_router  
 
 # 환경 변수 로드
 load_dotenv()
-
-try:
-    cred_path = os.path.join(os.path.dirname(__file__), '..', 'serviceAccountKey.json')
-    cred = credentials.Certificate(cred_path)
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app(cred)
-    print("✅ Firebase Admin SDK 초기화 성공!")
-except Exception as e:
-    print(f"⚠️ Firebase Admin SDK 초기화 실패: {e}")
 
 
 # FastAPI 앱 초기화

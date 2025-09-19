@@ -1,19 +1,9 @@
 from fastapi import APIRouter, HTTPException, Body
 import httpx
 import os
-import firebase_admin
-from firebase_admin import credentials, auth
 import time
 from typing import Dict
-
-try:
-    cred_path = os.path.join(os.path.dirname(__file__), '..', '..', 'serviceAccountKey.json')
-    cred = credentials.Certificate(cred_path)
-    
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app(cred)
-except Exception as e:
-    print(f"⚠️ Firebase Admin SDK 초기화 실패: {e}")
+from ..firebase_config import get_firebase_auth
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -173,7 +163,8 @@ async def social_firebase_login(provider: str, body: dict = Body(...)):
 
         print(f"🔍 추출된 정보 - UID: {uid}, Name: {name}")
         
-        custom_token = auth.create_custom_token(uid, {"displayName": name})
+        firebase_auth = get_firebase_auth()
+        custom_token = firebase_auth.create_custom_token(uid, {"displayName": name})
         print(f"✅ Firebase Custom Token 생성 성공!")
         
         # bytes를 문자열로 변환

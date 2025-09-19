@@ -3,17 +3,19 @@ from typing import Optional, List
 import httpx
 import os
 import json
-import firebase_admin
-from firebase_admin import firestore
+from ..firebase_config import get_firestore_db
 
 from ..schemas import User
 from ..dependencies import get_current_user
 
-if not firebase_admin._apps:
-    from ..main import cred
-    firebase_admin.initialize_app(cred)
-    
-db = firestore.client()
+# Firestore DB 인스턴스 가져오기
+def get_db():
+    try:
+        return get_firestore_db()
+    except Exception:
+        return None
+
+db = get_db()
 
 router = APIRouter(prefix="/ai", tags=["ai-integration"])
 

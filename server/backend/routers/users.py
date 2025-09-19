@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
-import firebase_admin
-from firebase_admin import firestore
 from datetime import datetime
 from pydantic import BaseModel
-
+from ..firebase_config import get_firestore_db
 
 from ..schemas import User, UserUpdate
 from ..dependencies import get_current_user
@@ -15,11 +13,15 @@ class LocationUpdate(BaseModel):
     lng: float
     address: Optional[str] = None
 
-if not firebase_admin._apps:
-    from ..main import cred
-    firebase_admin.initialize_app(cred)
+# Firestore DB 인스턴스 가져오기
+def get_db():
+    try:
+        return get_firestore_db()
+    except Exception:
+        # Firebase가 초기화되지 않은 경우 None 반환
+        return None
 
-db = firestore.client()
+db = get_db()
 
 router = APIRouter(prefix="/users", tags=["users"])
 

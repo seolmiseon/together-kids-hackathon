@@ -1,17 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, Form, File, UploadFile
 from typing import List, Optional
 from datetime import datetime, date, timedelta
-from firebase_admin import firestore
-import firebase_admin
+from ..firebase_config import get_firestore_db
 
 from ..schemas import Child, ChildCreate, ChildUpdate, Schedule, ScheduleCreate, ScheduleUpdate, MessageResponse
 from ..dependencies import get_current_user
 
-if not firebase_admin._apps:
-    from ..main import cred
-    firebase_admin.initialize_app(cred)
+# Firestore DB 인스턴스 가져오기
+def get_db():
+    try:
+        return get_firestore_db()
+    except Exception:
+        return None
 
-db = firestore.client()
+db = get_db()
 
 router = APIRouter(prefix="/children", tags=["children"])
 

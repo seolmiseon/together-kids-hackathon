@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from typing import List, Dict, Any
-import firebase_admin
-from firebase_admin import firestore
-
+from ..firebase_config import get_firestore_db
 
 from ..dependencies import get_current_user
 from ..utils.spell_utils import (
@@ -11,11 +9,14 @@ from ..utils.spell_utils import (
     check_geofence_exit
 )
 
-if not firebase_admin._apps:
-    from ..main import cred
-    firebase_admin.initialize_app(cred)
+# Firestore DB 인스턴스 가져오기
+def get_db():
+    try:
+        return get_firestore_db()
+    except Exception:
+        return None
 
-db = firestore.client()
+db = get_db()
 
 router = APIRouter(prefix="/alerts", tags=["simple-alerts"])
 

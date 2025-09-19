@@ -44,6 +44,7 @@ ENV/
 *.sqlite3
 together_kids.db
 
+
 # 로그 파일들
 *.log
 logs/
@@ -77,6 +78,7 @@ static/media/
 node_modules/
 .next/
 out/
+docs/
 .npm
 .yarn/
 yarn-error.log
