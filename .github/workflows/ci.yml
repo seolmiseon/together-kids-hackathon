@@ -25,6 +25,13 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install -r server/requirements.txt
 
+            - name: Test Integrated Service Structure
+              run: |
+                  cd server
+                  python -c "import main; print('✅ Integrated service imports successfully')"
+                  python -c "from backend import main as backend_main; print('✅ Backend module imports successfully')"
+                  python -c "from llm_service import main as llm_main; print('✅ LLM service module imports successfully')"
+
             - name: Lint with flake8
               run: |
                   # flake8 server --count --select=E9,F63,F7,F82 --show-source --statistics

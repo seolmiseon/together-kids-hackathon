@@ -17,8 +17,8 @@ db = firestore.client()
 
 router = APIRouter(prefix="/ai", tags=["ai-integration"])
 
-# LLM 서비스 설정
-LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "https://hackathon-llm-service-529342898795.asia-northeast3.run.app")
+# 통합 서비스 URL (Backend + LLM Service 통합)
+LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL", "https://hackathon-integrated-service-529342898795.asia-northeast3.run.app")
 LLM_SERVICE_API_KEY = os.getenv("LLM_SERVICE_API_KEY")
 
 def get_user_context(current_user: dict) -> dict:

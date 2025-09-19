@@ -13,8 +13,8 @@ import os
 # 프로젝트 루트를 경로에 추가
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from services.real_community_service import real_community_service
-from services.location_service import location_service
+from ..services.real_community_service import real_community_service
+from ..services.location_service import location_service
 
 logger = logging.getLogger(__name__)
 

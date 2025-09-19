@@ -7,27 +7,7 @@ import json
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 import logging
-from         try:
-            # 1. 동적 프롬프트 선택 (사용자 컨텍스트 기반)
-            user_context = {
-                "user_id": user_profile.get('user_id', 'anonymous'),
-                "usage_count": user_profile.get('usage_count', 0),
-                "location": location
-            }
-            
-            optimal_prompt_id = await self.prompt_selector.select_optimal_prompt(
-                prompt_type="community_name",
-                user_context=user_context
-            )
-            
-            # 2. 선택된 프롬프트로 템플릿 생성
-            prompt_template = self.prompt_service.manager.get_prompt('community', optimal_prompt_id)
-            prompt = prompt_template.format(
-                location_address=location['address'],
-                community_type=community_info['name'],
-                user_interests=user_profile.get('interests', []),
-                child_ages=user_profile.get('child_ages', [])
-            )port AsyncOpenAI
+from openai import OpenAI
 import os
 import sys
 from dotenv import load_dotenv
@@ -51,7 +31,9 @@ class RealCommunityMatchingService:
         self.openai_client = OpenAI(api_key=api_key)
         self.prompt_service = PromptService()
         self.feedback_service = FeedbackLearningService()
-        self.prompt_selector = DynamicPromptSelector()        # 위치 기반 커뮤니티 유형
+        self.prompt_selector = DynamicPromptSelector()
+        
+        # 위치 기반 커뮤니티 유형
         self.community_types = {
             "same_apartment": {
                 "name": "같은 아파트 품앗이",
@@ -187,20 +169,8 @@ class RealCommunityMatchingService:
             return community_info['description']
         
         try:
-            # 1. 동적 프롬프트 선택 (사용자 컨텍스트 기반)
-            user_context = {
-                "user_id": user_profile.get('user_id', 'anonymous'),
-                "usage_count": user_profile.get('usage_count', 0),
-                "location": location
-            }
-            
-            optimal_prompt_id = await self.prompt_selector.select_optimal_prompt(
-                prompt_type="community_description",
-                user_context=user_context
-            )
-            
-            # 2. 선택된 프롬프트로 템플릿 생성
-            prompt_template = self.prompt_service.manager.get_prompt('community', optimal_prompt_id)
+            # 동적 프롬프트 생성 (기존 시스템 활용)
+            prompt_template = self.prompt_service.manager.get_prompt('community', 'COMMUNITY_DESCRIPTION_GENERATION')
             prompt = prompt_template.format(
                 location_address=location['address'],
                 community_type=community_info['name'],

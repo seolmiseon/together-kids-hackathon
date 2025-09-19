@@ -24,7 +24,7 @@ jobs:
 
             - name: Create .env.local file
               run: |
-                  echo "NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}" >> frontend/.env.local
+                  echo "NEXT_PUBLIC_API_URL=https://hackathon-integrated-service-529342898795.asia-northeast3.run.app" >> frontend/.env.local
                   echo "NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" >> frontend/.env.local
                   echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}" >> frontend/.env.local
                   echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}" >> frontend/.env.local
