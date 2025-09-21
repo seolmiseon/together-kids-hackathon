@@ -40,6 +40,61 @@ export default function ChatbotSidebar({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // 장소 정보 추출 함수
+    const extractPlaces = (message: string) => {
+        const places: Array<{name: string, address: string}> = [];
+        
+        // "• 장소명\n  주소: 주소내용" 패턴 추출
+        const placeRegex = /•\s*([^\n]+)\n\s*주소:\s*([^\n]+)/g;
+        let match;
+        
+        while ((match = placeRegex.exec(message)) !== null) {
+            places.push({
+                name: match[1].trim(),
+                address: match[2].trim()
+            });
+        }
+        
+        return places;
+    };
+
+    // 네비게이션 버튼 렌더링 함수
+    const renderLocationButtons = (message: string) => {
+        const places = extractPlaces(message);
+        
+        if (places.length === 0) return null;
+        
+        return (
+            <div className="mt-2 space-y-2">
+                {places.map((place, index) => (
+                    <div key={index} className="border-t pt-2 mt-2">
+                        <p className="text-xs font-semibold text-gray-600 mb-1">📍 {place.name}</p>
+                        <div className="flex gap-1 flex-wrap">
+                            <button
+                                onClick={() => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(place.name + ' ' + place.address)}`, '_blank')}
+                                className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors"
+                            >
+                                구글맵
+                            </button>
+                            <button
+                                onClick={() => window.open(`https://map.kakao.com/link/search/${encodeURIComponent(place.name + ' ' + place.address)}`, '_blank')}
+                                className="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 transition-colors"
+                            >
+                                카카오맵
+                            </button>
+                            <button
+                                onClick={() => window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place.name + ' ' + place.address)}`, '_blank')}
+                                className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                            >
+                                네이버맵
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     const sendMessage = async () => {
         if (!inputMessage.trim() || isAiResponding) return;
 
@@ -238,7 +293,9 @@ export default function ChatbotSidebar({
                                         : 'bg-gray-200 text-gray-800 rounded-bl-none'
                                 }`}
                             >
-                                <p className="text-sm">{message.content}</p>
+                                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                {/* 장소 정보 네비게이션 버튼 */}
+                                {message.type === 'ai' && renderLocationButtons(message.content)}
                             </div>
                         </div>
                     ))}

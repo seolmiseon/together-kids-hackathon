@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
+from google.cloud import firestore
 from ..firebase_config import get_firestore_db
 
 from ..schemas import User, UserUpdate
@@ -42,14 +43,29 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
                 "created_at": firestore.SERVER_TIMESTAMP,
             }
             user_ref.set(user_data)
-            return user_data
+           # 문서를 다시 읽어와서 실제 타임스탬프 값을 가져옴
+            created_doc = user_ref.get()
+            return sanitize_firestore_data(created_doc.to_dict(), uid)
         
         user_data = user_doc.to_dict()
-        # uid 필드 추가 (문서 ID와 동일)
-        user_data["uid"] = uid
-        return user_data
+        return sanitize_firestore_data(user_data, uid)
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"프로필 조회 중 오류 발생: {e}")
+                raise HTTPException(status_code=500, detail=f"프로필 조회 중 오류 발생: {e}")
+    
+    def sanitize_firestore_data(data: dict, uid: str) -> dict:
+        """Firestore 데이터를 JSON 직렬화 가능한 형태로 변환"""
+        sanitized = {"uid": uid}
+    
+        for key, value in data.items():
+            if hasattr(value, "isoformat"):  # Timestamp 객체
+                sanitized[key] = value.isoformat()
+            elif hasattr(value, "to_dict"):  # 다른 Firestore 객체
+                sanitized[key] = value.to_dict()
+            else:
+                sanitized[key] = value
+    
+        return sanitized
 
 @router.put("/profile")
 async def update_profile(
