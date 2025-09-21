@@ -159,48 +159,132 @@ export default function ChatPage() {
         }
     };
 
-    // 메시지에서 장소명을 찾아 클릭 가능하게 만들기
+    // 메시지에서 장소명을 찾아 클릭 가능하게 만들기 (대폭 개선)
     const renderMessageWithNavigation = (text: string) => {
-        // 간단한 장소명 패턴 매칭
-        const placePattern =
-            /(카페|스타벅스|병원|놀이터|수영장|극장|공원|마트)/g;
-        const parts = text.split(placePattern);
+        // 다양한 장소명 및 주소 패턴 매칭
+        const patterns = [
+            // 상호명 + 업종
+            /([가-힣\w\s]+(?:카페|커피|스타벅스|이디야|빽다방|할리스))/g,
+            /([가-힣\w\s]+(?:병원|의원|클리닉|약국))/g,
+            /([가-힣\w\s]+(?:놀이터|키즈카페|어린이집|유치원))/g,
+            /([가-힣\w\s]+(?:수영장|헬스장|체육관|골프장))/g,
+            /([가-힣\w\s]+(?:극장|영화관|공연장|뮤지컬|연극))/g,
+            /([가-힣\w\s]+(?:공원|산|해변|호수))/g,
+            /([가-힣\w\s]+(?:마트|편의점|쇼핑몰|백화점|아울렛))/g,
+            /([가-힣\w\s]+(?:학교|도서관|미술관|박물관))/g,
+            /([가-힣\w\s]+(?:레스토랑|음식점|식당|맛집|치킨|피자))/g,
+            
+            // 주소 패턴
+            /([가-힣]+(?:시|구|군)\s+[가-힣]+(?:동|로|길)\s*\d*-?\d*)/g,
+            /([가-힣]+(?:시|도)\s+[가-힣]+(?:시|구|군)\s+[가-힣]+(?:동|면|읍))/g,
+            
+            // 유명 장소명
+            /([가-힣]+(?:타워|센터|플라자|빌딩|몰|파크|랜드))/g,
+        ];
 
-        return parts.map((part, index) => {
-            if (placePattern.test(part)) {
-                return (
-                    <span
-                        key={index}
-                        className="text-blue-600 underline cursor-pointer hover:text-blue-800 font-medium"
-                        onClick={() => openNavigation(part.trim())}
-                        title="클릭하면 네이버 네비로 이동합니다"
-                    >
-                        {part}
+        let processedText = text;
+        const clickableSpans: { text: string; start: number; end: number }[] = [];
+
+        // 모든 패턴을 찾아서 저장
+        patterns.forEach(pattern => {
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                const matchText = match[1] || match[0];
+                if (matchText.trim().length > 1) { // 너무 짧은 매치 제외
+                    clickableSpans.push({
+                        text: matchText.trim(),
+                        start: match.index,
+                        end: match.index + matchText.length
+                    });
+                }
+            }
+        });
+
+        // 겹치는 영역 제거 및 정렬
+        const uniqueSpans = clickableSpans
+            .filter((span, index, arr) => 
+                !arr.some((other, otherIndex) => 
+                    otherIndex !== index && 
+                    other.start <= span.start && 
+                    other.end >= span.end
+                )
+            )
+            .sort((a, b) => a.start - b.start);
+
+        if (uniqueSpans.length === 0) {
+            return <span>{text}</span>;
+        }
+
+        // 텍스트를 분할하여 렌더링
+        const parts = [];
+        let lastEnd = 0;
+
+        uniqueSpans.forEach((span, index) => {
+            // 클릭 가능한 부분 이전의 일반 텍스트
+            if (span.start > lastEnd) {
+                parts.push(
+                    <span key={`text-${index}`}>
+                        {text.substring(lastEnd, span.start)}
                     </span>
                 );
             }
-            return <span key={index}>{part}</span>;
+
+            // 클릭 가능한 부분
+            parts.push(
+                <span
+                    key={`link-${index}`}
+                    className="text-blue-600 underline cursor-pointer hover:text-blue-800 font-medium bg-blue-50 px-1 rounded"
+                    onClick={() => openNavigation(span.text)}
+                    title={`"${span.text}" 네이버 지도에서 검색`}
+                >
+                    {span.text}
+                </span>
+            );
+
+            lastEnd = span.end;
         });
+
+        // 마지막 남은 텍스트
+        if (lastEnd < text.length) {
+            parts.push(
+                <span key="text-end">
+                    {text.substring(lastEnd)}
+                </span>
+            );
+        }
+
+        return <>{parts}</>;
     };
 
     return (
         <div className="flex flex-col h-[600px] bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
             {/* 헤더 */}
-            <div className="bg-blue-600 text-white p-6 rounded-t-lg">
-                <h3 className="font-bold text-lg">함께키즈 AI 어시스턴트</h3>
-                <p className="text-sm opacity-80 flex items-center mt-1">
-                    {isConnected ? (
-                        <>
-                            <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                            연결됨
-                        </>
-                    ) : (
-                        <>
-                            <span className="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
-                            연결 중...
-                        </>
-                    )}
-                </p>
+            <div className="bg-blue-600 text-white p-6 rounded-t-lg flex justify-between items-start">
+                <div>
+                    <h3 className="font-bold text-lg">함께키즈 AI 어시스턴트</h3>
+                    <p className="text-sm opacity-80 flex items-center mt-1">
+                        {isConnected ? (
+                            <>
+                                <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                                연결됨
+                            </>
+                        ) : (
+                            <>
+                                <span className="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
+                                연결 중...
+                            </>
+                        )}
+                    </p>
+                </div>
+                <button
+                    onClick={() => window.history.back()}
+                    className="text-white hover:text-gray-200 transition-colors p-1"
+                    title="닫기"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
             {/* 메시지 영역 */}
