@@ -73,34 +73,27 @@ async def chat_with_ai(
        user_context = get_user_context(current_user)
        print(f"사용자 컨텍스트: {user_context}")
 
-       async with httpx.AsyncClient() as client:
-           headers = {}
-           if LLM_SERVICE_API_KEY:
-               headers["Authorization"] = f"Bearer {LLM_SERVICE_API_KEY}"
-
-           print(f"LLM 서비스 호출: {LLM_SERVICE_URL}/chat/unified")
-           response = await client.post(
-                f"{LLM_SERVICE_URL}/chat/unified",
-                json={
-                    "user_id": current_user.get("uid"),
-                    "message": message,
-                    "conversation_context": {},  
-                    "user_context": user_context
-                },
-                headers=headers,
-                timeout=30.0
-            )
+       # 통합 서비스에서는 직접 LLM 라우터 함수 호출
+       from llm_service.routers.chat import unified_chat_endpoint
+       from llm_service.models.chat_models import ChatRequest
+       
+       # ChatRequest 객체 생성
+       chat_request = ChatRequest(
+           user_id=current_user.get("uid"),
+           message=message,
+           conversation_context={},
+           user_context=user_context
+       )
+       
+       print(f"LLM 라우터 직접 호출")
+       result = await unified_chat_endpoint(chat_request)
+       
+       print(f"LLM 처리 완료")
+       return result
             
-           print(f"LLM 응답 상태: {response.status_code}")
-           response.raise_for_status() 
-           return response.json()
-            
-   except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=f"LLM 서비스 오류: {e.response.text}")
-   except httpx.RequestError as e:
-        raise HTTPException(status_code=503, detail=f"AI 서비스 연결 오류: {str(e)}")
    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)}")
+       print(f"AI 채팅 오류: {str(e)}")
+       raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)}")
 
 @router.post("/chat/ai-only")
 async def chat_ai_only(
