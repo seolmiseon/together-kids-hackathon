@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 소스 코드 복사
 COPY . /app
 
-# 포트 노출 (Cloud Run에서는 동적 포트 사용)
-EXPOSE 8002
+# 포트 노출 (Cloud Run에서는 동적 포트 사용)  
+EXPOSE $PORT
 
 # 컨테이너 시작 시 실행할 명령어 (통합 서비스 실행)
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8002} --workers 1 --loop uvloop --log-level info"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1 --log-level info"]
