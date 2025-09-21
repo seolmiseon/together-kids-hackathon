@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+import json
 import firebase_admin
 from firebase_admin import credentials
 
@@ -23,14 +24,34 @@ from llm_service.routers.feedback import router as feedback_router
 load_dotenv()
 
 # Firebase 초기화
+cred = None
 try:
+    # 1순위: 환경변수에서 Firebase Service Account Key 읽기 (Cloud Run용)
+    firebase_key = os.getenv('FIREBASE_SERVICE_ACCOUNT_KEY')
+    if firebase_key:
+        try:
+            service_account_info = json.loads(firebase_key)
+            cred = credentials.Certificate(service_account_info)
+            print("✅ Firebase 환경변수에서 인증정보 로드 성공")
+        except json.JSONDecodeError as e:
+            print(f"⚠️ Firebase 환경변수 JSON 파싱 실패: {e}")
+
+if not cred:
     cred_path = os.path.join(os.path.dirname(__file__), 'serviceAccountKey.json')
-    cred = credentials.Certificate(cred_path)
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app(cred)
+    if os.path.exists(cred_path):
+        cred = credentials.Certificate(cred_path)
+        print("✅ Firebase 로컬 파일에서 인증정보 로드 성공")
+    else:
+        print(f"⚠️ Firebase Service Account 키 파일을 찾을 수 없습니다: {cred_path}")
+
+if cred and not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
     print("✅ Firebase Admin SDK 초기화 성공!")
+elif not cred:
+    print("⚠️ Firebase 인증정보가 없어 Firebase 기능이 비활성화됩니다.")
+
 except Exception as e:
-    print(f"⚠️ Firebase Admin SDK 초기화 실패: {e}")
+    print(f"⚠️ Firebase Admin SDK 초기화 실패: {e}") 
 
 # FastAPI 앱 초기화 (통합)
 app = FastAPI(
@@ -71,7 +92,12 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "함께키즈 통합 플랫폼"}
+    firebase_status = "connected" if firebase_admin._apps else "disconnected"
+    return {
+        "status": "healthy", 
+        "service": "함께키즈 통합 플랫폼",
+        "firebase": firebase_status
+    }
 
 if __name__ == "__main__":
     import uvicorn

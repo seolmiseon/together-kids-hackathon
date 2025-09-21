@@ -1,4 +1,4 @@
-name: Deploy Integrated Service to GCP Run
+name: Deploy Integrated Service to GCP Run (Secure)
 
 on:
     push:
@@ -29,10 +29,14 @@ jobs:
             - name: 'Set up Cloud SDK'
               uses: 'google-github-actions/setup-gcloud@v2'
 
+            - name: 'Configure Docker for Artifact Registry'
+              run: |-
+                  gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
+
             - name: 'Build and Push Docker image'
               run: |-
-                  gcloud auth configure-docker asia-northeast3-docker.pkg.dev
-                  docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/hamkkekids/integrated-service:latest -f server/Dockerfile ./server
+                  cd server
+                  docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/hamkkekids/integrated-service:latest -f Dockerfile .
                   docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/hamkkekids/integrated-service:latest
 
             - name: 'Deploy to Cloud Run'
@@ -42,9 +46,33 @@ jobs:
                     --region asia-northeast3 \
                     --platform managed \
                     --allow-unauthenticated \
-                    --port 8002 \
                     --memory 2Gi \
                     --cpu 1 \
-                    --timeout 300 \
-                    --concurrency 100 \
-                    --set-env-vars="SECRET_KEY=${{ secrets.SECRET_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}"
+                    --timeout 900 \
+                    --concurrency 80 \
+                    --max-instances 10 \
+                    --min-instances 0 \
+                    --set-env-vars="SECRET_KEY=${{ secrets.SECRET_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
+                    --project=${{ secrets.GCP_PROJECT_ID }}
+
+            - name: 'Verify deployment'
+              run: |-
+                  echo "Waiting for service to be ready..."
+                  sleep 30
+                  SERVICE_URL=$(gcloud run services describe hackathon-integrated-service --region=asia-northeast3 --format='value(status.url)' --project=${{ secrets.GCP_PROJECT_ID }})
+                  echo "Service deployed at: $SERVICE_URL"
+                  
+                  # Health check with retry
+                  for i in {1..5}; do
+                    if curl -f -s "$SERVICE_URL/health"; then
+                      echo "✅ Health check passed"
+                      break
+                    else
+                      echo "⚠️ Health check attempt $i failed, retrying in 10s..."
+                      if [ $i -eq 3 ]; then
+                        echo "Checking Cloud Run logs..."
+                        gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=hackathon-integrated-service" --limit=20 --project=${{ secrets.GCP_PROJECT_ID }} || echo "Could not fetch logs"
+                      fi
+                      sleep 10
+                    fi
+                  done
