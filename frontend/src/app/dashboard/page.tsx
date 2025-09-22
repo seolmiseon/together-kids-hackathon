@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import MapSection from '@/components/main/MapSection';
-import ChatbotSlidebar from '@/components/main/ChatbotSlidebar';
+import ChatSidebar from '@/components/chat/ChatSidebar';
 import MainHeader from '@/components/main/MainHeader';
 
 export default function DashboardPage() {
@@ -22,7 +22,7 @@ export default function DashboardPage() {
             <main className="relative">
                 <MainHeader />
                 <MapSection />
-                <ChatbotSlidebar
+                <ChatSidebar
                     isOpen={isChatbotOpen}
                     setIsOpen={setIsChatbotOpen}
                 />

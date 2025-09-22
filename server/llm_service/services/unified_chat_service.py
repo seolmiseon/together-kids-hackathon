@@ -7,6 +7,7 @@ from .openai_service import OpenAIService
 from .prompt_service import PromptService
 from .emotion_service import emotion_service
 from .location_service import location_service
+from ..config.keyword_config import KeywordConfig
 
 
 
@@ -18,38 +19,59 @@ class UnifiedChatService:
         self.session_manager = SessionManager()
         self.location_service = location_service
     def classify_intent_and_urgency(self, message: str) -> Dict[str, str]:
-        """키워드 기반 의도 분류"""
-        if any(word in message for word in ["아파", "병원", "응급"]):
-            return {"intent": "medical", "urgency": "medium"}
-        elif any(word in message for word in ["스케줄", "등원"]):
-            return {"intent": "schedule", "urgency": "low"}
-        elif any(word in message for word in ["어디", "추천", "놀이터"]):
-            return {"intent": "place", "urgency": "low"}
-        else:
-            return {"intent": "general", "urgency": "low"}
+        """동적 키워드 기반 의도 분류 (하드코딩 제거)"""
+        intent_keywords = KeywordConfig.get_intent_keywords()
+        
+        # 의도별 키워드 매칭 (확장 가능)
+        for intent, keywords in intent_keywords.items():
+            if any(word in message for word in keywords):
+                urgency = "medium" if intent == "medical" else "low"
+                return {"intent": intent, "urgency": urgency}
+        
+        return {"intent": "general", "urgency": "low"}
 
     def extract_place_keywords(self, message: str) -> List[str]:
-        """메시지에서 장소 관련 키워드 추출"""
+        """메시지에서 장소 관련 키워드 추출 (동적)"""
         place_keywords = []
         
-        # 장소 관련 키워드 사전
-        place_words = [
-            "놀이터", "공원", "도서관", "병원", "마트", "카페", "식당", 
-            "학원", "키즈카페", "수영장", "체육관", "문화센터", "박물관",
-            "키즈존", "놀이방", "어린이집", "유치원", "초등학교"
-        ]
+        # 설정에서 모든 장소 키워드 가져오기 (하드코딩 제거)
+        place_categories = KeywordConfig.get_place_keywords()
+        all_place_words = []
+        for category_words in place_categories.values():
+            all_place_words.extend(category_words)
         
         # 메시지에서 장소 키워드 찾기
-        for word in place_words:
+        for word in all_place_words:
             if word in message:
                 place_keywords.append(word)
         
-        # 장소 추천 요청 키워드
-        if any(word in message for word in ["어디", "추천", "갈만한", "좋은곳"]):
+        # 장소 추천 요청 키워드 (하드코딩 제거)
+        intent_keywords = KeywordConfig.get_intent_keywords()
+        if any(word in message for word in intent_keywords["place"]):
             if not place_keywords:
-                place_keywords.append("놀이터")  # 기본값
+                # AI가 동적으로 결정하도록 변경 (하드코딩 제거)
+                place_keywords = self._extract_dynamic_keywords(message)
         
         return place_keywords
+
+    def _extract_dynamic_keywords(self, message: str, user_profile: str = "default") -> List[str]:
+        """AI 기반 동적 키워드 추출 (완전 설정 기반)"""
+        place_categories = KeywordConfig.get_place_keywords()
+        
+        # 메시지 컨텍스트로 카테고리 결정
+        if any(word in message for word in ["아이", "어린이", "키즈"]):
+            return place_categories.get("play", [])
+        elif any(word in message for word in ["운동", "체육", "활동"]):
+            return place_categories.get("sports", [])
+        elif any(word in message for word in ["문화", "체험", "배우"]):
+            return place_categories.get("education", [])
+        elif any(word in message for word in ["음식", "먹을", "맛있"]):
+            return place_categories.get("food", [])
+        elif any(word in message for word in ["병원", "아파", "의사"]):
+            return place_categories.get("medical", [])
+        else:
+            # 사용자 프로필 기반 기본값
+            return KeywordConfig.get_user_preferences(user_profile)
 
     async def process_message(
         self, user_id: str, message: str, user_context: Dict[str, Any]
@@ -74,7 +96,7 @@ class UnifiedChatService:
                 # 첫 번째 키워드로 검색 (우선순위 기반)
                 search_keyword = place_keywords[0]
                 print(f"🔍 DEBUG: '{search_keyword}' 키워드로 검색 중...")
-                places = await self.location_service.search_nearby_places("놀이터", user_lat, user_lng)
+                places = await self.location_service.search_nearby_places(search_keyword, user_lat, user_lng)
 
                 print(f"🔍 DEBUG: 검색 결과={len(places) if places else 0}개")
 

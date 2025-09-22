@@ -74,26 +74,40 @@ async def chat_with_ai(
        print(f"사용자 컨텍스트: {user_context}")
 
        # 통합 서비스에서는 직접 LLM 라우터 함수 호출
-       from llm_service.routers.chat import unified_chat_endpoint
-       from llm_service.models.chat_models import ChatRequest
+       try:
+           from llm_service.routers.chat import unified_chat_endpoint
+           from llm_service.models.chat_models import ChatRequest
+           print("✅ LLM 모듈 import 성공")
+       except ImportError as import_err:
+           print(f"❌ LLM 모듈 import 실패: {import_err}")
+           raise
        
        # ChatRequest 객체 생성
-       chat_request = ChatRequest(
-           user_id=current_user.get("uid"),
-           message=message,
-           conversation_context={},
-           user_context=user_context
-       )
+       try:
+           chat_request = ChatRequest(
+               user_id=current_user.get("uid"),
+               message=message,
+               conversation_context={},
+               user_context=user_context
+           )
+           print("✅ ChatRequest 객체 생성 성공")
+       except Exception as req_err:
+           print(f"❌ ChatRequest 생성 실패: {req_err}")
+           raise
        
-       print(f"LLM 라우터 직접 호출")
+       print(f"🔄 LLM 라우터 직접 호출 시작...")
        result = await unified_chat_endpoint(chat_request)
+       print(f"✅ LLM 라우터 호출 성공")
        
        print(f"LLM 처리 완료")
        return result
             
    except Exception as e:
+       import traceback
+       error_details = traceback.format_exc()
        print(f"AI 채팅 오류: {str(e)}")
-       raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)}")
+       print(f"상세 오류: {error_details}")
+       raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)} | 상세: {error_details[:200]}")
 
 @router.post("/chat/ai-only")
 async def chat_ai_only(

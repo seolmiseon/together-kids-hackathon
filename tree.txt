@@ -1,4 +1,6 @@
 .
+├── DEPLOYMENT_GUIDE.md
+├── PORTFOLIO_SUMMARY.md
 ├── README.md
 ├── docker-compose.dev.yml
 ├── docker-compose.prod.yml
@@ -32,13 +34,13 @@
 │   │   │   │   │   └── page.tsx
 │   │   │   │   └── profile
 │   │   │   │       └── page.tsx
+│   │   │   ├── chat
+│   │   │   │   └── page.tsx
 │   │   │   ├── dashboard
 │   │   │   │   └── page.tsx
 │   │   │   ├── globals.css
 │   │   │   ├── layout.tsx
 │   │   │   ├── main
-│   │   │   │   ├── chat
-│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── community
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── layout.tsx
@@ -48,6 +50,11 @@
 │   │   │   └── providers
 │   │   │       └── Providers.tsx
 │   │   ├── components
+│   │   │   ├── chat
+│   │   │   │   ├── ChatInput.tsx
+│   │   │   │   ├── ChatMessage.tsx
+│   │   │   │   ├── ChatSidebar.tsx
+│   │   │   │   └── LocationButtons.tsx
 │   │   │   ├── dashboard
 │   │   │   │   ├── RecentActivityFeed.tsx
 │   │   │   │   └── TodayScheduleCard.tsx
@@ -55,11 +62,11 @@
 │   │   │   │   ├── Header.tsx
 │   │   │   │   └── Notification.tsx
 │   │   │   ├── main
-│   │   │   │   ├── ChatbotSlidebar.tsx
 │   │   │   │   ├── MainHeader.tsx
 │   │   │   │   └── MapSection.tsx
 │   │   │   └── ui
 │   │   │       ├── BellIcon.tsx
+│   │   │       ├── CloseButton.tsx
 │   │   │       └── LoadingSkeleton.tsx
 │   │   ├── store
 │   │   │   ├── notificationStore.ts
@@ -69,10 +76,11 @@
 │   ├── tailwind.config.ts
 │   └── tsconfig.json
 ├── server
+│   ├── Dockerfile
 │   ├── Dockerfile.dev
 │   ├── backend
-│   │   ├── Dockerfile
 │   │   ├── dependencies.py
+│   │   ├── firebase_config.py
 │   │   ├── main.py
 │   │   ├── routers
 │   │   │   ├── __init__.py
@@ -86,7 +94,6 @@
 │   │   └── utils
 │   │       └── spell_utils.py
 │   ├── llm_service
-│   │   ├── Dockerfile
 │   │   ├── ai_coordinator.py
 │   │   ├── database
 │   │   │   └── crud.py
@@ -121,13 +128,15 @@
 │   │   ├── routers
 │   │   │   ├── __init__.py
 │   │   │   ├── chat.py
+│   │   │   ├── feedback.py
 │   │   │   ├── group_purchase.py
 │   │   │   ├── location_community.py
 │   │   │   └── schedule.py
 │   │   ├── services
 │   │   │   ├── __init__.py
-│   │   │   ├── community_matching_service.py
+│   │   │   ├── dynamic_prompt_selector.py
 │   │   │   ├── emotion_service.py
+│   │   │   ├── feedback_learning_service.py
 │   │   │   ├── group_purchase_service.py
 │   │   │   ├── location_service.py
 │   │   │   ├── openai_service.py
@@ -140,9 +149,10 @@
 │   │   │   └── vector_service.py
 │   │   └── utils
 │   │       └── chunk_utils.py
+│   ├── main.py
 │   ├── requirements.txt
 │   └── serviceAccountKey.json
 ├── tree.txt
 └── update_tree.sh
 
-45 directories, 100 files
+46 directories, 109 files

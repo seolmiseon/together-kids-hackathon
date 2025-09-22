@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { useUserStore } from '@/store/userStore';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 
 // 자녀 데이터 타입 정의
 interface Child {
@@ -837,26 +838,9 @@ const MapSection = () => {
         );
     }
 
-    // 로딩 상태
+    // 로딩 상태 - LoadingSkeleton 사용
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-full bg-gray-50">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                    <p className="text-gray-600">지도를 로드하는 중...</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                        API Key:{' '}
-                        {process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID
-                            ? '설정됨'
-                            : '미설정'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                        Naver Maps:{' '}
-                        {window.naver?.maps ? '로드됨' : '로딩 중...'}
-                    </p>
-                </div>
-            </div>
-        );
+        return <LoadingSkeleton />;
     }
 
     // 메인 렌더링 - 현업 스타일: ref 사용
