@@ -229,6 +229,76 @@ class LocationService:
         except Exception as e:
             logger.error(f"Reverse Geocoding 오류: {str(e)}")
             return None
+    async def search_nearby_places(self, keyword: str, latitude: float, longitude: float, radius: int = 1000) -> List[Dict]:
+        """
+        주변 장소 검색 (네이버 지역검색 API)
+        
+        Args:
+            keyword: 검색 키워드 (예: "놀이터", "키즈카페")
+            latitude: 위도
+            longitude: 경도
+            radius: 검색 반경 (미터, 기본 1km)
+            
+        Returns:
+            장소 리스트 [{"name": str, "address": str, "telephone": str, "description": str}, ...]
+        """
+        if not self.naver_client_id or not self.naver_client_secret:
+            logger.error("네이버 지도 API 키가 설정되지 않았습니다")
+            return []
+            
+        try:
+            # 네이버 지역검색 API
+            url = "https://openapi.naver.com/v1/search/local.json"
+            headers = {
+                "X-Naver-Client-Id": self.naver_client_id,
+                "X-Naver-Client-Secret": self.naver_client_secret
+            }
+            
+            # 좌표 기반 검색을 위한 쿼리 구성
+            search_query = f"{keyword}"
+            params = {
+                "query": search_query,
+                "display": 10,  # 최대 10개 결과
+                "start": 1,
+                "sort": "random"  # 거리순 정렬은 좌표 없이는 어려움
+            }
+            
+            response = requests.get(url, headers=headers, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                places = []
+                
+                for item in data.get("items", []):
+                    # HTML 태그 제거
+                    name = item.get("title", "").replace("<b>", "").replace("</b>", "")
+                    address = item.get("address", "")
+                    telephone = item.get("telephone", "")
+                    description = item.get("description", "")
+                    
+                    # 기본 정보가 있는 경우만 추가
+                    if name and address:
+                        place_info = {
+                            "name": name,
+                            "address": address,
+                            "telephone": telephone,
+                            "description": description,
+                            "naver_map_url": f"https://map.naver.com/v5/search/{address}",
+                            "naver_app_url": f"nmap://search?query={address}",  
+                            "google_maps_url": f"https://maps.google.com/maps?q={address}",
+                            "kakao_map_url": f"https://map.kakao.com/link/search/{address}"
+                        }
+                        places.append(place_info)
+                
+                logger.info(f"'{keyword}' 검색 결과: {len(places)}개")
+                return places
+            else:
+                logger.error(f"장소 검색 실패: {response.status_code} - {response.text}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"장소 검색 오류: {str(e)}")
+            return []    
     
     def find_nearby_locations(self, user_lat: float, user_lon: float, locations: List[Dict], max_distance_minutes: int = 15) -> List[Dict]:
         """

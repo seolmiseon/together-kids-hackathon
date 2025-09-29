@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import logging
 
 from .vector_service import VectorService
 from .session_manager import SessionManager
@@ -9,7 +10,7 @@ from .emotion_service import emotion_service
 from .location_service import location_service
 from ..config.keyword_config import KeywordConfig
 
-
+logger = logging.getLogger(__name__)
 
 class UnifiedChatService:
     def __init__(self):
@@ -18,6 +19,7 @@ class UnifiedChatService:
         self.prompt_service = PromptService()
         self.session_manager = SessionManager()
         self.location_service = location_service
+        
     def classify_intent_and_urgency(self, message: str) -> Dict[str, str]:
         """동적 키워드 기반 의도 분류 (하드코딩 제거)"""
         intent_keywords = KeywordConfig.get_intent_keywords()
@@ -87,6 +89,8 @@ class UnifiedChatService:
 
         real_places_info = ""
         places_data = []  # 프론트엔드로 전달할 장소 데이터
+
+        
         if place_keywords and intent == "place" and user_context.get("children"):
             print(f"🔍 DEBUG: 네이버 API 호출 시작...")
             # 사용자 위치 정보 추출
@@ -96,8 +100,8 @@ class UnifiedChatService:
                 # 첫 번째 키워드로 검색 (우선순위 기반)
                 search_keyword = place_keywords[0]
                 print(f"🔍 DEBUG: '{search_keyword}' 키워드로 검색 중...")
+                
                 places = await self.location_service.search_nearby_places(search_keyword, user_lat, user_lng)
-
                 print(f"🔍 DEBUG: 검색 결과={len(places) if places else 0}개")
 
                 if places:

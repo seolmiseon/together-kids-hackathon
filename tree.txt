@@ -95,6 +95,9 @@
 │   │       └── spell_utils.py
 │   ├── llm_service
 │   │   ├── ai_coordinator.py
+│   │   ├── config
+│   │   │   ├── emotion_config.py
+│   │   │   └── keyword_config.py
 │   │   ├── database
 │   │   │   └── crud.py
 │   │   ├── main.py
@@ -155,4 +158,4 @@
 ├── tree.txt
 └── update_tree.sh
 
-46 directories, 109 files
+47 directories, 111 files

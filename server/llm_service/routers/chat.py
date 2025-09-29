@@ -144,3 +144,7 @@ async def clear_conversation_history(user_id: str):
         return {"message": f"{user_id}의 대화 기록이 삭제되었습니다."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"대화 기록 삭제 중 오류가 발생했습니다: {str(e)}")
+
+
+
+
