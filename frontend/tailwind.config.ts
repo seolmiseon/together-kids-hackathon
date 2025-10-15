@@ -95,19 +95,15 @@ const config: Config = {
             },
         },
     },
-    // ✅ 프로덕션에서 사용하지 않는 스타일 제거
+    // ✅ 프로덕션에서 사용하지 않는 스타일 제거 (Tailwind v3 방식)
     ...(process.env.NODE_ENV === 'production' && {
-        purge: {
-            enabled: true,
-            // 항상 유지할 클래스들
-            safelist: [
-                'animate-pulse',
-                'animate-bounce', 
-                'animate-fade-in',
-                'animate-slide-up',
-                'animate-scale-in',
-            ],
-        },
+        safelist: [
+            'animate-pulse',
+            'animate-bounce', 
+            'animate-fade-in',
+            'animate-slide-up',
+            'animate-scale-in',
+        ],
     }),
     plugins: [],
 };

@@ -6,7 +6,7 @@ import CloseButton from '@/components/ui/CloseButton';
 import { ChatMessage } from './ChatMessage';
 import type { Message } from './ChatMessage';
 import { ChatInput } from './ChatInput';
-import { chatService } from '@/lib/chatService';
+import chatService from '@/lib/chatService';
 // --- 타입 정의 ---
 
 interface ChatSidebarProps {
@@ -56,20 +56,20 @@ export default function ChatSidebar({
             const aiResponse: Message = {
                 id: Date.now() + 1,
                 type: 'ai',
-                content: processedResponse.content,
+                content: processedResponse,
                 timestamp: new Date(),
             };
             
             setMessages((prev) => [...prev, aiResponse]);
 
-            // 장소 정보가 있으면 지도에 표시
-            if (processedResponse.places) {
-                chatService.handleMapDisplay(processedResponse.places);
+            // 장소 정보가 있으면 지도에 표시 (aiData에서 직접 참조)
+            if ((aiData as any).places) {
+                chatService.handleMapDisplay((aiData as any).places);
             }
 
-            // 긴급도 설정
-            if (processedResponse.urgency) {
-                setUrgency(processedResponse.urgency);
+            // 긴급도 설정 (aiData에서 직접 참조)
+            if ((aiData as any).urgency) {
+                setUrgency((aiData as any).urgency);
             }
         } catch (error) {
             const errorMessage = chatService.createErrorMessage(error as Error);
