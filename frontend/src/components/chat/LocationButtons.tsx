@@ -8,57 +8,111 @@ interface LocationButtonsProps {
 }
 
 export function LocationButtons({ message }: LocationButtonsProps) {
-    // 네이버 지도용 텍스트 정제 함수
+    // 네이버 지도용 강화된 텍스트 정제 함수
     const cleanSearchQuery = (text: string): string => {
         let cleanName = text.trim();
         
-        // 패턴 1: "OO 놀이공원 에서는..." → "OO 놀이공원"
+        console.log('🔍 정제 전 텍스트:', cleanName);
+        
+        // 패턴 0: "OO 어린이 공원" 패턴 직접 처리
+        if (cleanName.startsWith('OO ')) {
+            // OO를 실제 지역명으로 대체하려고 시도
+            const placeMatch = cleanName.match(/OO\s*(.+?)(?:\s+이곳은|\s+여기는|$)/);
+            if (placeMatch) {
+                cleanName = '서울' + placeMatch[1]; // 기본적으로 서울로 설정
+            }
+        }
+        
+        // 패턴 1: "어린이 공원 이곳은..." → "어린이 공원"
+        if (cleanName.includes(' 이곳은')) {
+            cleanName = cleanName.split(' 이곳은')[0];
+        }
+        
+        // 패턴 2: "놀이공원 에서는..." → "놀이공원"
         if (cleanName.includes(' 에서는') || cleanName.includes(' 에서')) {
             cleanName = cleanName.split(/ 에서[는]?/)[0];
         }
         
-        // 패턴 2: "OO 어린이공원은 넓은..." → "OO 어린이공원"
-        if (cleanName.includes(' 은 ') || cleanName.includes(' 는 ')) {
-            cleanName = cleanName.split(/ [은는] /)[0];
+        // 패턴 3: "어린이공원은 넓은..." → "어린이공원"
+        if (cleanName.includes('은 ') || cleanName.includes('는 ')) {
+            cleanName = cleanName.split(/[은는] /)[0];
         }
         
-        // 패턴 3: "이곳은 넓은 잔디밭과..." 같은 시작 제거
+        // 패턴 4: "이곳은 다양한..." → 키워드 추출
         if (cleanName.startsWith('이곳은 ')) {
-            // "이곳은"으로 시작하면 전체 텍스트에서 장소명 추출 시도
-            const placeMatch = cleanName.match(/([가-힣\w\s]+(?:공원|놀이터|키즈카페|수영장|체육관|도서관|박물관|마트|병원))/);
+            const placeMatch = cleanName.match(/([가-힣\w\s]*(?:공원|놀이터|키즈카페|수영장|체육관|도서관|박물관|마트|병원|센터))/);
             if (placeMatch) {
                 cleanName = placeMatch[1];
             }
         }
         
-        // 패턴 4: 긴 설명문에서 핵심 키워드만 추출
-        const keywordMatch = cleanName.match(/([가-힣\w\s]{2,15}(?:공원|놀이터|키즈카페|어린이|수영장|체육관|도서관|박물관|마트|병원|센터|카페|식당))/);
-        if (keywordMatch && keywordMatch[1].length < cleanName.length) {
+        // 패턴 5: 긴 설명문에서 첫 번째 장소명만 추출
+        const keywordMatch = cleanName.match(/^([가-힣\w\s]{2,20}(?:공원|놀이터|키즈카페|어린이|수영장|체육관|도서관|박물관|마트|병원|센터|카페|식당))/);
+        if (keywordMatch) {
             cleanName = keywordMatch[1];
         }
         
         // 최종 정제: 특수문자 제거 및 공백 정리
         cleanName = cleanName.replace(/[^\w가-힣\s]/g, '').replace(/\s+/g, ' ').trim();
         
-        return cleanName || text; // 정제 실패 시 원본 반환
+        console.log('🔍 정제 후 텍스트:', cleanName);
+        
+        return cleanName || '공원'; // 정제 실패 시 기본값 반환
     };
 
-    // 메시지에서 장소 정보 추출하는 함수
+    // 메시지에서 장소 정보 추출하는 함수 - 강화된 버전
     const extractPlaces = (message: string): Place[] => {
+        console.log('🔍 AI 메시지 원본:', message);
+        
         const places: Place[] = [];
         
-        // 정규식 패턴: 장소명과 주소를 추출
-        // 예: "서울시 강남구 역삼동의 카페 A"나 "부산 해운대구의 레스토랑 B" 등
-        const placeRegex = /([가-힣\w\s]+(?:카페|레스토랑|식당|병원|학교|공원|마트|상가|센터|빌딩|타워|플라자|몰|점|관))\s*(?:[@\-\s]*([가-힣\w\s]+(?:구|동|로|길|번길|대로)\s*[\d\-가-힣\w\s]*)|.*?([가-힣\w\s]+(?:시|구|동|읍|면)\s*[가-힣\w\s]*))(?=[.,\s]|$)/g;
+        // 1단계: 간단한 장소 키워드 추출 (더 관대한 패턴)
+        const simpleKeywords = ['공원', '놀이터', '키즈카페', '어린이', '수영장', '체육관', '도서관', '박물관', '마트', '병원', '센터', '카페', '식당'];
         
-        let match;
-        
-        while ((match = placeRegex.exec(message)) !== null) {
-            places.push({
-                name: match[1].trim(),
-                address: match[2] || match[3] || ''
-            });
+        for (const keyword of simpleKeywords) {
+            if (message.includes(keyword)) {
+                // 해당 키워드 주변 텍스트 추출
+                const keywordRegex = new RegExp(`([가-힣\\w\\s]{0,10}${keyword}[가-힣\\w\\s]{0,10})`, 'g');
+                let match;
+                
+                while ((match = keywordRegex.exec(message)) !== null) {
+                    const extracted = match[1].trim();
+                    // 너무 긴 텍스트는 제외
+                    if (extracted.length <= 30) {
+                        places.push({
+                            name: extracted,
+                            address: ''
+                        });
+                        console.log('🔍 키워드로 추출된 장소:', extracted);
+                    }
+                }
+            }
         }
+        
+        // 2단계: 기존 정규식도 시도 (백업)
+        if (places.length === 0) {
+            const placeRegex = /([가-힣\w\s]+(?:카페|레스토랑|식당|병원|학교|공원|마트|상가|센터|빌딩|타워|플라자|몰|점|관))\s*(?:[@\-\s]*([가-힣\w\s]+(?:구|동|로|길|번길|대로)\s*[\d\-가-힣\w\s]*)|.*?([가-힣\w\s]+(?:시|구|동|읍|면)\s*[가-힣\w\s]*))(?=[.,\s]|$)/g;
+            
+            let match;
+            
+            while ((match = placeRegex.exec(message)) !== null) {
+                places.push({
+                    name: match[1].trim(),
+                    address: match[2] || match[3] || ''
+                });
+            }
+        }
+        
+        // 3단계: 아무것도 찾지 못했으면 전체 메시지를 하나의 장소로 처리 (마지막 수단)
+        if (places.length === 0) {
+            places.push({
+                name: message.trim(),
+                address: ''
+            });
+            console.log('🔍 전체 메시지를 장소로 처리:', message.trim());
+        }
+        
+        console.log('🔍 최종 추출된 장소들:', places);
         
         return places;
     };
