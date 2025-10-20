@@ -1,7 +1,8 @@
 
 from fastapi import APIRouter, HTTPException
-from llm_service.models.chat_models import ChatRequest, ChatResponse, ConversationHistoryResponse
+from llm_service.models.chat_models import ChatRequest, ChatResponse, ConversationHistoryResponse, EmotionAnalysisRequest, EmotionAnalysisResponse
 from llm_service.services.unified_chat_service import UnifiedChatService
+from llm_service.services.emotion_service import emotion_service
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -144,6 +145,34 @@ async def clear_conversation_history(user_id: str):
         return {"message": f"{user_id}의 대화 기록이 삭제되었습니다."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"대화 기록 삭제 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.post("/emotion-analysis", response_model=EmotionAnalysisResponse)
+async def analyze_emotion_endpoint(request: EmotionAnalysisRequest):
+    """텍스트 감정 분석 엔드포인트 - 기존 emotion_service 활용"""
+    try:
+        print(f"=== 감정 분석 요청 ===")
+        print(f"텍스트: {request.text}")
+        
+        # 기존 sophisticated emotion service 활용 - 빠른 분석 사용
+        emotion_result = await emotion_service.analyze_emotion_quick(request.text)
+        
+        print(f"감정 분석 결과: {emotion_result}")
+        
+        # 결과를 response 모델에 맞게 변환
+        return EmotionAnalysisResponse(
+            emotion=emotion_result.get("emotion", "neutral"),
+            korean=emotion_result.get("korean", "중립"),
+            confidence=emotion_result.get("confidence", 0.5),
+            stress_level=emotion_result.get("stress_level", 3),
+            analysis_details=emotion_result
+        )
+        
+    except Exception as e:
+        print(f"감정 분석 처리 오류: {str(e)}")
+        import traceback
+        print(f"상세 오류: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"감정 분석 중 오류가 발생했습니다: {str(e)}")
 
 
 
