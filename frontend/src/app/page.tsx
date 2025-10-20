@@ -2,8 +2,20 @@
 
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import MainHeader from '@/components/main/MainHeader';
-import MapSection from '@/components/main/MapSection';
+
+// ✅ 지도 컴포넌트 동적 로딩으로 초기 번들 크기 최적화
+const MapSection = dynamic(() => import('@/components/main/MapSection'), {
+    loading: () => (
+        <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 animate-pulse flex items-center justify-center">
+            <div className="text-blue-500 text-sm">
+                실시간 지도를 불러오는 중...
+            </div>
+        </div>
+    ),
+    ssr: false, // 지도 API는 클라이언트에서만 실행
+});
 
 export default function LandingPage() {
     const router = useRouter();

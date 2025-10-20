@@ -45,7 +45,8 @@ export default function SafetyPage() {
                     (hour >= 7 && hour <= 9) || (hour >= 15 && hour <= 18);
 
                 if (isPickupTime) {
-                    socket.emit('location_update', {
+                    const socketInstance = socket.get();
+                    socketInstance.emit('location_update', {
                         groupId,
                         parent: currentParent,
                         location: newLocation,
@@ -56,7 +57,8 @@ export default function SafetyPage() {
             { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
         );
 
-        socket.on(
+        const socketInstance = socket.get();
+        socketInstance.on(
             'location_update',
             (data: {
                 parent: string;
@@ -77,7 +79,7 @@ export default function SafetyPage() {
             }
         );
 
-        socket.on(
+        socketInstance.on(
             'safety_alert',
             (data: { parent: string; message: string }) => {
                 if (data.parent !== currentParent) {
@@ -88,8 +90,8 @@ export default function SafetyPage() {
 
         return () => {
             navigator.geolocation.clearWatch(watchId);
-            socket.off('location_update');
-            socket.off('safety_alert');
+            socketInstance.off('location_update');
+            socketInstance.off('safety_alert');
         };
     }, [trackingEnabled, groupId, currentParent]);
 
