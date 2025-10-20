@@ -69,12 +69,18 @@ export default function ChatPage() {
                 mode: 'auto',
             });
             
-            const response = await fetch(`${apiUrl}/chat?${params.toString()}`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const response = await fetch(`${apiUrl}/chat`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    user_id: currentUser.uid,
+    message: userMessage,
+    user_context: {}
+  })
+});
 
             if (!response.ok) throw new Error('AI 응답 실패');
 
