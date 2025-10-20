@@ -29,8 +29,8 @@ export function LocationButtons({ message }: LocationButtonsProps) {
         }
         
         // 패턴 2: "놀이공원 에서는..." → "놀이공원"
-        if (cleanName.includes(' 에서는') || cleanName.includes(' 에서')) {
-            cleanName = cleanName.split(/ 에서[는]?/)[0];
+        if (cleanName.includes(' 에서는') || cleanName.includes(' 에서') || cleanName.includes(' 에 가')) {
+            cleanName = cleanName.split(/ (?:에서[는]?|에 가)/)[0];
         }
         
         // 패턴 3: "어린이공원은 넓은..." → "어린이공원"
@@ -46,8 +46,16 @@ export function LocationButtons({ message }: LocationButtonsProps) {
             }
         }
         
-        // 패턴 5: 긴 설명문에서 첫 번째 장소명만 추출
-        const keywordMatch = cleanName.match(/^([가-힣\w\s]{2,20}(?:공원|놀이터|키즈카페|어린이|수영장|체육관|도서관|박물관|마트|병원|센터|카페|식당))/);
+        // 패턴 5: "체험관 에 가보시는" → "체험관"
+        if (cleanName.includes(' 에 가보시는') || cleanName.includes(' 가보시는')) {
+            cleanName = cleanName.split(/ (?:에 )?가보시는/)[0];
+        }
+        
+        // 패턴 6: "추천드려요" "어떠세요" 같은 끝 제거
+        cleanName = cleanName.replace(/ (?:추천드려요|어떠세요|좋을 것 같아요|괜찮을 것 같아요).*$/g, '');
+        
+        // 패턴 7: 긴 설명문에서 첫 번째 장소명만 추출
+        const keywordMatch = cleanName.match(/^([가-힣\w\s]{2,20}(?:공원|놀이터|키즈카페|어린이|수영장|체육관|도서관|박물관|마트|병원|센터|카페|식당|체험관))/);
         if (keywordMatch) {
             cleanName = keywordMatch[1];
         }
