@@ -799,6 +799,111 @@ const MapSection = () => {
         }
     }, [children, nearbyParents, searchPlaces]); // searchPlaces 의존성 추가
 
+    // 🔥 지도 클릭 이벤트 추가 - UX 개선
+    useEffect(() => {
+        if (!mapInstanceRef.current || !window.naver?.maps) return;
+
+        // 지도 클릭 이벤트 리스너
+        const mapClickListener = window.naver.maps.Event.addListener(
+            mapInstanceRef.current,
+            'click',
+            (e: any) => {
+                const clickedLatLng = e.coord || e.latlng;
+                if (!clickedLatLng) return;
+
+                const lat = clickedLatLng.lat();
+                const lng = clickedLatLng.lng();
+                
+                console.log('🗺️ 지도 클릭됨:', { lat, lng });
+
+                // 역지오코딩으로 주소 가져오기
+                if (window.naver?.maps?.Service) {
+                    window.naver.maps.Service.reverseGeocode(
+                        {
+                            coords: new window.naver.maps.LatLng(lat, lng),
+                        },
+                        (status: any, response: any) => {
+                            let address = '';
+                            if (status === window.naver.maps.Service.Status.OK) {
+                                const result = response.v2;
+                                if (result.address) {
+                                    address = result.address.jibunAddress || 
+                                             result.address.roadAddress || 
+                                             `위도: ${lat.toFixed(4)}, 경도: ${lng.toFixed(4)}`;
+                                }
+                            } else {
+                                address = `위도: ${lat.toFixed(4)}, 경도: ${lng.toFixed(4)}`;
+                            }
+
+                            // 클릭 위치에 임시 마커 표시
+                            const clickMarker = new window.naver.maps.Marker({
+                                position: new window.naver.maps.LatLng(lat, lng),
+                                map: mapInstanceRef.current,
+                                title: '클릭한 위치',
+                                icon: {
+                                    content: `
+                                        <div style="
+                                            width: 12px;
+                                            height: 12px;
+                                            background: #ef4444;
+                                            border: 2px solid white;
+                                            border-radius: 50%;
+                                            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                            animation: pulse 2s infinite;
+                                        "></div>
+                                        <style>
+                                            @keyframes pulse {
+                                                0% { transform: scale(1); opacity: 1; }
+                                                50% { transform: scale(1.2); opacity: 0.7; }
+                                                100% { transform: scale(1); opacity: 1; }
+                                            }
+                                        </style>
+                                    `,
+                                    size: new window.naver.maps.Size(12, 12),
+                                    anchor: new window.naver.maps.Point(6, 6),
+                                },
+                            });
+
+                            // 클릭 정보를 채팅으로 전달
+                            const clickInfo = {
+                                type: 'map_click',
+                                lat,
+                                lng,
+                                address,
+                                timestamp: new Date().toISOString(),
+                            };
+
+                            // 전역 이벤트로 채팅 컴포넌트에 전달
+                            if (typeof window !== 'undefined') {
+                                (window as any).lastMapClick = clickInfo;
+                                
+                                // 커스텀 이벤트 발송
+                                const mapClickEvent = new CustomEvent('mapClick', {
+                                    detail: clickInfo
+                                });
+                                window.dispatchEvent(mapClickEvent);
+                            }
+
+                            console.log('🎯 지도 클릭 정보 전달:', clickInfo);
+
+                            // 3초 후 임시 마커 제거
+                            setTimeout(() => {
+                                clickMarker.setMap(null);
+                            }, 3000);
+                        }
+                    );
+                }
+            }
+        );
+
+        // 컴포넌트 언마운트 시 이벤트 리스너 제거
+        return () => {
+            if (mapClickListener) {
+                window.naver.maps.Event.removeListener(mapClickListener);
+            }
+        };
+    }, [mapInstanceRef.current]);
+
     // 로그인 필요
     if (!user) {
         return (

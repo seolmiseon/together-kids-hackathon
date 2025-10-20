@@ -30,6 +30,43 @@ export default function ChatSidebar({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // 🗺️ 지도 클릭 이벤트 리스너 추가 - UX 개선
+    useEffect(() => {
+        const handleMapClick = (event: CustomEvent) => {
+            const clickInfo = event.detail;
+            console.log('🎯 채팅에서 지도 클릭 받음:', clickInfo);
+
+            // 지도 클릭 정보를 자동으로 채팅에 추가
+            const mapClickMessage: Message = {
+                id: Date.now(),
+                type: 'ai',
+                content: `📍 지도에서 선택한 위치입니다.
+                
+🗺️ **주소**: ${clickInfo.address}
+📍 **좌표**: ${clickInfo.lat.toFixed(4)}, ${clickInfo.lng.toFixed(4)}
+
+이 위치에 대해 궁금한 점이 있으시면 언제든 물어보세요! 
+예: "이 근처 놀이터 찾아줘", "여기서 가까운 병원 알려줘" 등`,
+                timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, mapClickMessage]);
+            
+            // 채팅이 닫혀있으면 자동으로 열기
+            if (!isOpen) {
+                setIsOpen(true);
+            }
+        };
+
+        // 이벤트 리스너 등록
+        window.addEventListener('mapClick', handleMapClick as EventListener);
+
+        // 컴포넌트 언마운트 시 리스너 제거
+        return () => {
+            window.removeEventListener('mapClick', handleMapClick as EventListener);
+        };
+    }, [isOpen, setIsOpen]);
+
 
 
     const sendMessage = async () => {
