@@ -69,7 +69,7 @@ export default function ChatPage() {
                 mode: 'auto',
             });
             
-            const response = await fetch(`${apiUrl}/ai/chat?${params.toString()}`, {
+            const response = await fetch(`${apiUrl}/chat?${params.toString()}`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
