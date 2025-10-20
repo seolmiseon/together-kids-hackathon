@@ -51,8 +51,8 @@ class PromptManager:
                 place_module = importlib.import_module('llm_service.prompts.place.place_prompts')
                 self.prompts['place'] = {
                     'system': getattr(place_module, 'PLACE_RECOMMENDATION_SYSTEM', ''),
-                    'naming': getattr(place_module, 'PLACE_NAMING_RULES', ''),
-                    'enhancement': getattr(place_module, 'RESPONSE_ENHANCEMENT', '')
+                    'naming': getattr(place_module, 'PLACE_NAMING_STRICT_RULES', ''),
+                    'enhancement': ''
                 }
                 logger.info("✅ place 프롬프트 로드 완료")
             except ImportError as e:
