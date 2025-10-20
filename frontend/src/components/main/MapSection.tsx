@@ -734,10 +734,30 @@ const MapSection = () => {
                         }
                         <div style="margin-top: 10px; display: flex; gap: 6px;">
                             <button onclick="
-                                // 장소명에서 실제 검색어만 추출 (첫 번째 단어나 키워드)
-                                const searchTerm = '${place.name}'.split(' ')[0] || '${place.name}';
-                                const cleanTerm = searchTerm.replace(/[^가-힣a-zA-Z0-9\\s]/g, '');
-                                window.open('https://map.naver.com/p/search/' + encodeURIComponent(cleanTerm));
+                                // 🔧 강력한 장소명 정제 로직
+                                let searchTerm = '${place.name}';
+                                console.log('🔍 네이버지도 검색 원본:', searchTerm);
+                                
+                                // 패턴 매칭으로 실제 장소명만 추출
+                                if (searchTerm.includes(' 에서는') || searchTerm.includes(' 에서')) {
+                                    searchTerm = searchTerm.split(/ 에서[는]?/)[0];
+                                }
+                                if (searchTerm.includes('는 ') || searchTerm.includes('은 ')) {
+                                    searchTerm = searchTerm.split(/[는은] /)[0];
+                                }
+                                if (searchTerm.includes('이 ') || searchTerm.includes('가 ')) {
+                                    searchTerm = searchTerm.split(/[이가] /)[0];
+                                }
+                                
+                                // 특수문자 제거 및 길이 제한
+                                searchTerm = searchTerm.replace(/[^가-힣a-zA-Z0-9\\s]/g, '').trim();
+                                const words = searchTerm.split(' ').filter(w => w.length > 0);
+                                if (words.length > 2) {
+                                    searchTerm = words.slice(0, 2).join(' '); // 최대 2단어
+                                }
+                                
+                                console.log('✅ 네이버지도 검색 정제됨:', searchTerm);
+                                window.open('https://map.naver.com/p/search/' + encodeURIComponent(searchTerm));
                             " 
                                 style="background: #03C75A; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer;">
                                 네이버지도
