@@ -6,7 +6,7 @@ import CloseButton from '@/components/ui/CloseButton';
 import { ChatMessage } from './ChatMessage';
 import type { Message } from './ChatMessage';
 import { ChatInput } from './ChatInput';
-import chatService from '@/lib/chatService';
+import { chatService } from '@/lib/chatService';
 // --- 타입 정의 ---
 
 interface ChatSidebarProps {
