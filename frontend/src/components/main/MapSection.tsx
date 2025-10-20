@@ -733,9 +733,12 @@ const MapSection = () => {
                                 : ''
                         }
                         <div style="margin-top: 10px; display: flex; gap: 6px;">
-                            <button onclick="window.open('nmap://search?query=${encodeURIComponent(
-                                place.name
-                            )}&appname=com.example.myapp')" 
+                            <button onclick="
+                                // 장소명에서 실제 검색어만 추출 (첫 번째 단어나 키워드)
+                                const searchTerm = '${place.name}'.split(' ')[0] || '${place.name}';
+                                const cleanTerm = searchTerm.replace(/[^가-힣a-zA-Z0-9\\s]/g, '');
+                                window.open('https://map.naver.com/p/search/' + encodeURIComponent(cleanTerm));
+                            " 
                                 style="background: #03C75A; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer;">
                                 네이버지도
                             </button>
