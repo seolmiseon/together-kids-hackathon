@@ -93,7 +93,7 @@ export default function ChatSidebar({
             const aiResponse: Message = {
                 id: Date.now() + 1,
                 type: 'ai',
-                content: processedResponse,
+                content: processedResponse.content,
                 timestamp: new Date(),
             };
             
