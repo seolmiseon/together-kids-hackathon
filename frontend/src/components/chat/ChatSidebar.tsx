@@ -24,6 +24,8 @@ export default function ChatSidebar({
     const [urgency, setUrgency] = useState<'low' | 'medium' | 'high'>('low');
 
     const { user, isLoggedIn } = useUserStore();
+    // 테스트용 로그인 상태 강제 활성화
+    const testIsLoggedIn = true;
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -200,7 +202,7 @@ export default function ChatSidebar({
                     setInputMessage={setInputMessage}
                     onSendMessage={sendMessage}
                     isAiResponding={isAiResponding}
-                    isLoggedIn={isLoggedIn}
+                    isLoggedIn={testIsLoggedIn} // 테스트용
                 />
             </div>
         </>
