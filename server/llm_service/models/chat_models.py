@@ -33,3 +33,15 @@ class ConversationHistoryResponse(BaseModel):
     user_id: str
     conversation_history: List[ChatMessage]
     total_messages: int
+
+
+class EmotionAnalysisRequest(BaseModel):
+    text: str
+
+
+class EmotionAnalysisResponse(BaseModel):
+    emotion: str
+    korean: str
+    confidence: float
+    stress_level: int
+    analysis_details: Optional[Dict[str, Any]] = None

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getAuth } from 'firebase/auth';
+import { sessionManager } from '@/lib/sessionManager';
 
 // --- 타입 정의 ---
 interface User {
@@ -32,9 +33,15 @@ export const useUserStore = create<UserState>((set, get) => ({
             user: userData,
             isLoggedIn: true,
         });
+        
+        // 🔒 로그인 시 세션 타이머 시작
+        sessionManager.startSessionTimer();
     },
 
-    logout: () => {
+    logout: async () => {
+        // 🔒 세션 매니저를 통한 로그아웃
+        await sessionManager.logout();
+        
         set({
             user: null,
             isLoggedIn: false,
@@ -97,6 +104,10 @@ export const useUserStore = create<UserState>((set, get) => ({
                         if (childrenData.children && childrenData.children.length > 0) {
                             // ✅ 완전한 프로필 → 대시보드로
                             console.log('✅ 완전한 프로필 확인 → 대시보드로 이동');
+                            
+                            // 🔒 로그인 성공 시 세션 타이머 시작
+                            sessionManager.startSessionTimer();
+                            
                             router.replace('/dashboard');
                         } else {
                             // ⚠️ 자녀 정보 없음 → 프로필 설정으로

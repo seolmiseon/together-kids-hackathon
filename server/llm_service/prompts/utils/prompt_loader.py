@@ -46,6 +46,23 @@ class PromptManager:
                 'mediation': getattr(community_module, 'CONFLICT_MEDIATION_PROMPT', '')
             }
 
+            # place 모듈 로드
+            try:
+                place_module = importlib.import_module('llm_service.prompts.place.place_prompts')
+                self.prompts['place'] = {
+                    'system': getattr(place_module, 'PLACE_RECOMMENDATION_SYSTEM', ''),
+                    'naming': getattr(place_module, 'PLACE_NAMING_STRICT_RULES', ''),
+                    'enhancement': ''
+                }
+                logger.info("✅ place 프롬프트 로드 완료")
+            except ImportError as e:
+                logger.warning(f"⚠️ place 프롬프트 로드 실패: {e}")
+                self.prompts['place'] = {
+                    'system': '장소 추천 시 구체적인 실제 장소명을 사용하고, 자리표시자(○○, XX)는 절대 사용하지 마세요.',
+                    'naming': '네이버 지도에서 검색 가능한 정확한 장소명으로만 추천해주세요.',
+                    'enhancement': '실제 검색 결과 데이터를 최우선으로 활용하여 정확한 정보를 제공해주세요.'
+                }
+
             # emotion 모듈 로드
             try:
                 emotion_module = importlib.import_module('llm_service.prompts.emotion.emotion_analysis')
