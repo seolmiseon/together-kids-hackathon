@@ -30,7 +30,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
                     console.log('☁️ Firebase Auth 백그라운드 초기화 완료');
 
-                    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+                    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
                         if (!isMounted) return;
 
                         if (firebaseUser) {
@@ -44,7 +44,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                             console.log('✅ Zustand 로그인 상태 동기화 완료');
                         } else {
                             // 🚀 Zustand 로그아웃 상태 동기화
-                            logout();
+                            await logout();
                             console.log('🚪 Zustand 로그아웃 상태 동기화 완료');
                         }
                     });
