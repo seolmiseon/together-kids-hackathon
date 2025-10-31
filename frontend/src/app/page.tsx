@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import MainHeader from '@/components/main/MainHeader';
 
 // ✅ 지도 컴포넌트 동적 로딩으로 초기 번들 크기 최적화
@@ -17,8 +18,15 @@ const MapSection = dynamic(() => import('@/components/main/MapSection'), {
     ssr: false, // 지도 API는 클라이언트에서만 실행
 });
 
+// ✅ 챗봇 컴포넌트 동적 로딩
+const ChatSidebar = dynamic(() => import('@/components/chat/ChatSidebar'), {
+    loading: () => null,
+    ssr: false,
+});
+
 export default function LandingPage() {
     const router = useRouter();
+    const [isChatOpen, setIsChatOpen] = useState(false); // 테스트용 챗봇 상태
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden">
@@ -56,21 +64,8 @@ export default function LandingPage() {
                 </main>
             </div>
 
-            {/* 4. 챗봇 열기 버튼은 그대로 유지하되, 클릭 시 로그인 페이지로 이동합니다. */}
-            <button
-                onClick={() => router.push('/auth/login')}
-                className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-colors z-40 animate-bounce"
-                aria-label="AI 도우미와 대화하려면 로그인하세요"
-                title="AI 도우미와 대화하려면 로그인하세요"
-            >
-                <Image
-                    src="/images/logo/logosymbol.png"
-                    alt="함께키즈 AI"
-                    width={32}
-                    height={32}
-                    className="w-8 h-8"
-                />
-            </button>
+            {/* 테스트용 챗봇 컴포넌트 */}
+            <ChatSidebar isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
         </div>
     );
 }
