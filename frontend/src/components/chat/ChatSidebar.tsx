@@ -6,7 +6,7 @@ import CloseButton from '@/components/ui/CloseButton';
 import { ChatMessage } from './ChatMessage';
 import type { Message } from './ChatMessage';
 import { ChatInput } from './ChatInput';
-import chatService from '@/lib/chatService';
+import { chatService } from '@/lib/chatService';
 // --- 타입 정의 ---
 
 interface ChatSidebarProps {
@@ -95,7 +95,7 @@ export default function ChatSidebar({
             const aiResponse: Message = {
                 id: Date.now() + 1,
                 type: 'ai',
-                content: processedResponse,
+                content: processedResponse.content,
                 timestamp: new Date(),
             };
             

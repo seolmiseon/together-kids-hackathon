@@ -108,6 +108,10 @@ class PromptManager:
         elif context == "emotion":
             emotion_prompt = self.get_prompt('emotion', 'basic')
             system_prompt += f"\n\n{emotion_prompt}"
+        elif context == "place":
+            place_prompt = self.get_prompt('place', 'system')
+            naming_prompt = self.get_prompt('place', 'naming')
+            system_prompt += f"\n\n{place_prompt}\n\n{naming_prompt}"
         elif context == "community_emotion":
             community_prompt = self.get_prompt('community', 'welcome')
             emotion_prompt = self.get_prompt('emotion', 'community_matching')
