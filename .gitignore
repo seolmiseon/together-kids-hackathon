@@ -93,3 +93,7 @@ temp/
 *.tmp
 *.temp
 PORTFOLIO_SUMMARY.md
+CLAUDE.md
+
+
+.github/workflows/설미선_자소서(딥오토MCP).html
