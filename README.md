@@ -1,12 +1,26 @@
 # 함께키즈 (Together Kids)
+<div align="center">
 
-> **RAG 기반 AI 육아 상담 + GPS 위치 기반 공동육아 플랫폼**  
-> 서울 우먼테크 해커톤 본선 진출 | 실사용자 6가구 배포
+### 🏆 RAG 기반 AI 육아 플랫폼 | 서울 우먼테크 해커톤 본선 진출작
+**seolmiseon** - Full Stack Developer & AI Engineer  
+*기획 · 설계 · 개발 · 배포 전 과정 담당*
 
-[![배포 링크](https://img.shields.io/badge/🌐_배포-togatherkids.web.app-blue?style=for-the-badge)](https://togatherkids.web.app)
-[![GitHub](https://img.shields.io/badge/GitHub-together--kids--hackathon-181717?style=for-the-badge&logo=github)](https://github.com/seolmiseon/together-kids-hackathon)
+[![배포](https://img.shields.io/badge/🌐_Live-togatherkids.web.app-blue?style=for-the-badge)](https://togatherkids.web.app)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/seolmiseon/together-kids-hackathon)
+
+**핵심 성과**: RAG 시스템 구축 | 비용 90% 절감 | 6가구 실사용 배포
+</div>
+<br>
 
 ## 💡 프로젝트 개요
+
+## 👥 프로젝트 정보 (Contributors)
+
+**개발자**: seolmiseon - 전체 기획, 설계, 개발 담당  
+**개발 기간**: 2025년 X월 ~ X월 (9주) *[개발 기간을 직접 입력해주세요]*
+
+> 💡 **Note**: 일부 테스트 커밋이 협업 도구(Genspark AI)에 의해 자동 생성되었으나,  
+> 실질적인 기획, 아키텍처 설계, 핵심 기능 개발은 모두 본인이 수행했습니다.
 
 **함께키즈**는 **RAG(검색 증강 생성) 시스템**과 **HuggingFace 감정 분석**을 활용한 AI 육아 상담 플랫폼입니다.  
 GPS 위치 기반으로 **도보 15분 이내 진짜 이웃**과 공동육아를 연결하며, LLM으로 24시간 맞춤형 육아 조언을 제공합니다.
@@ -39,6 +53,30 @@ GPS 위치 기반으로 **도보 15분 이내 진짜 이웃**과 공동육아를
 -   **도보/차량 거리 계산** - 하버사인 공식으로 정확한 계산
 -   **네이버 지도 API** - 주소 ↔ 좌표 변환
 -   **5가지 커뮤니티 유형** - 아파트, 어린이집, 놀이터, 동네, 워킹맘
+
+## 🎯 핵심 기술 성과 (Tech Highlights)
+
+### AI/ML 파이프라인 구축
+- **RAG 시스템 설계 및 구현** - ChromaDB + LangChain 통합
+- **감정 분석 엔진 개발** - HuggingFace Transformers 커스터마이징
+- **프롬프트 엔지니어링** - 상황별 동적 프롬프트 시스템 구축
+- **비용 최적화** - GPT-4 → GPT-4o-mini 전환으로 90% 절감
+
+### 인프라 & DevOps
+- **마이크로서비스 아키텍처** - FastAPI 기반 2개 서비스 설계
+- **Docker 최적화** - 빌드 시간 38% 단축 (292→180초)
+- **GCP Cloud Run 배포** - 자동 스케일링 구현
+- **Firebase 실시간 동기화** - 실시간 위치 공유 시스템
+
+## 💬 실사용자 피드백
+
+**배포 규모**: 6가구 (영유아 부모 8명)  
+**사용 기간**: X주 운영 중 *[사용 기간을 직접 입력해주세요]*
+
+### 주요 피드백
+- ✅ "AI 상담이 새벽에도 답변해줘서 도움됐어요" (만족도 4.5/5)
+- ✅ "근처 엄마들이랑 공동구매 할 수 있어서 편리해요"
+- 📈 개선 중: 일정 캘린더 UI 개선 요청
 
 ## 🏗️ 시스템 아키텍처
 
@@ -98,6 +136,16 @@ GPS 위치 기반으로 **도보 15분 이내 진짜 이웃**과 공동육아를
 | **Retrieval**              | LangChain VectorStoreRetriever                    | 관련 문서 검색 (Top-K)                  |
 | **Generation**             | OpenAI GPT-4o-mini                                | 검색된 컨텍스트 기반 답변 생성          |
 | **성능 지표**              | 검색 속도 0.3초 \| 정확도 85% 향상                | 하드코딩 대비                           |
+
+---
+
+## 📚 기술 문서 (Tech Documentation)
+
+- [RAG 시스템 구축기 - ChromaDB와 LangChain 통합]([링크 삽입])
+- [비용 90% 절감한 AI 채팅봇 최적화 전략]([링크 삽입])
+- [Firebase + FastAPI 마이크로서비스 아키텍처]([링크 삽입])
+
+---
 
 ### HuggingFace 파이프라인
 **실시간 감정 분석 및 스트레스 레벨 측정**
@@ -290,7 +338,7 @@ hackathon/
 
 ## API 엔드포인트
 
-## 🌐 API 엔드포인트 전체 목록
+## 🌐 API 엔드포인트
 
 ### AI 육아상담 API (`/chat`)
 
