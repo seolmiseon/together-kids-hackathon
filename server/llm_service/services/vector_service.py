@@ -7,7 +7,7 @@ import os
 
 
 class VectorService:
-    def __init__(self, persist_directory: str = "/server/chroma_db"):
+    def __init__(self, persist_directory: str = "./chroma_db"):
         self.embeddings = OpenAIEmbeddings()
         self.persist_directory = persist_directory
         self.vector_store = Chroma(

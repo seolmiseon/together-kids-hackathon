@@ -3,14 +3,45 @@ from fastapi import APIRouter, HTTPException
 from llm_service.models.chat_models import ChatRequest, ChatResponse, ConversationHistoryResponse, EmotionAnalysisRequest, EmotionAnalysisResponse
 from llm_service.services.unified_chat_service import UnifiedChatService
 from llm_service.services.emotion_service import emotion_service
+from llm_service.services.cache_service import CacheService
+from llm_service.services.openai_service import OpenAIService
 
 router = APIRouter(prefix="/chat", tags=["chat"])
-
-# 통합 서비스 인스턴스 (내부에 SessionManager 포함됨)
 unified_chat_service = UnifiedChatService()
+cache_service = CacheService()
+openai_service = OpenAIService()
 
 
-
+@router.post("/chat")
+async def chat(request: ChatRequest):
+    query = request.message
+    
+    # 1. 캐시 확인
+    cached = cache_service.search_similar_cache(query, threshold=0.90)
+    
+    if cached:
+        # 캐시 히트! 바로 리턴 (비용 $0)
+        return {
+            "answer": cached["answer"],
+            "cached": True,
+            "similarity": cached["similarity"],
+            "original_query": cached["original_query"]
+        }
+    
+    # 2. 캐시 미스 → LLM 호출
+    answer = await openai_service.chat(
+        messages=[{"role": "user", "content": query}]
+    )
+    
+    # 3. 새 답변을 캐시에 저장
+    cache_service.save_cache(query, answer)
+    
+    return {
+        "answer": answer,
+        "cached": False
+    }
+    
+    
 @router.post("/unified")
 async def unified_chat_endpoint(request: ChatRequest):
     """통합 채팅 엔드포인트 - 백엔드에서 호출"""

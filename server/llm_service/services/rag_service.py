@@ -5,7 +5,7 @@ from langchain_openai import OpenAIEmbeddings
 
 
 class RAGService:
-    def __init__(self, persist_directory: str = "/server/chroma_db"):
+    def __init__(self, persist_directory: str = "./chroma_db"):
         self.embeddings = OpenAIEmbeddings()
         self.vector_store = Chroma(
             persist_directory=persist_directory, embedding_function=self.embeddings

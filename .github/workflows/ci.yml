@@ -26,11 +26,14 @@ jobs:
                   pip install -r server/requirements.txt
 
             - name: Test Integrated Service Structure
+            
               env:
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  PYTHONPATH: ${{ github.workspace }}/server
                   
               run: |
-                  cd server
+                  # CI/CD 환경에서 PYTHONPATH에 프로젝트 루트를 추가하여
+                  
                   python -c "import main; print('✅ Integrated service imports successfully')"
                   python -c "from backend import main as backend_main; print('✅ Backend module imports successfully')"
                   python -c "from llm_service import main as llm_main; print('✅ LLM service module imports successfully')"
