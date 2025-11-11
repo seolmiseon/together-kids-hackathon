@@ -54,5 +54,12 @@ jobs:
             - name: Install Frontend dependencies
               run: npm ci --prefix frontend
 
+            - name: Create ESLint Config (Bypass Prompt)
+              run: |
+                  # frontend 폴더로 이동합니다.
+                  cd frontend
+                  # 최소한의 .eslintrc.json 파일을 생성하여 Next.js 설정 프롬프트를 방지합니다.
+                  echo '{ "extends": "next" }' > .eslintrc.json
+
             - name: Lint Frontend
-              run: CI=true npm run lint --prefix frontend
+              run: npm run lint --prefix frontend
