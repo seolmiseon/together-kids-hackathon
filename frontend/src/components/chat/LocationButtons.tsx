@@ -11,9 +11,12 @@ export function LocationButtons({ message }: LocationButtonsProps) {
     // 네이버 지도용 강화된 텍스트 정제 함수
     const cleanSearchQuery = (text: string): string => {
         let cleanName = text.trim();
-        
+
         console.log('🔍 정제 전 텍스트:', cleanName);
-        
+
+        // 패턴 -1: 따옴표 제거 (가장 먼저)
+        cleanName = cleanName.replace(/["'""'']/g, '');
+
         // 패턴 0: "OO 어린이 공원" 패턴 직접 처리
         if (cleanName.startsWith('OO ')) {
             // OO를 실제 지역명으로 대체하려고 시도
@@ -59,7 +62,10 @@ export function LocationButtons({ message }: LocationButtonsProps) {
         if (keywordMatch) {
             cleanName = keywordMatch[1];
         }
-        
+
+        // 패턴 8: "엄마랑 함께", "아이랑 같이" 같은 일반 수식어 제거
+        cleanName = cleanName.replace(/^(엄마랑|아이랑|아빠랑|애들이랑|우리|함께|같이|다같이)\s+/g, '');
+
         // 최종 정제: 특수문자 제거 및 공백 정리
         cleanName = cleanName.replace(/[^\w가-힣\s]/g, '').replace(/\s+/g, ' ').trim();
         
