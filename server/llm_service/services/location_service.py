@@ -52,6 +52,58 @@ class LocationService:
         return (korea_bounds["south"] <= latitude <= korea_bounds["north"] and 
                 korea_bounds["west"] <= longitude <= korea_bounds["east"])
     
+    def convert_naver_to_wgs84(self, mapx: float, mapy: float) -> Tuple[float, float]:
+        """
+        네이버 좌표계(mapx, mapy)를 WGS84 좌표계(lat, lng)로 변환
+        
+        네이버 좌표계는 네이버가 자체적으로 사용하는 좌표계입니다.
+        정확한 변환을 위해 네이버 좌표 변환 API를 사용하거나
+        아래 공식을 사용합니다.
+        
+        Args:
+            mapx: 네이버 좌표계 경도
+            mapy: 네이버 좌표계 위도
+            
+        Returns:
+            (latitude, longitude) 튜플 (WGS84)
+        """
+        try:
+            # 네이버 좌표계를 WGS84로 변환
+            # 네이버 좌표계는 1/10000000 스케일로 저장됨
+            lng = float(mapx) / 10000000.0
+            lat = float(mapy) / 10000000.0
+            
+            # 좌표 유효성 검증
+            if not (-90 <= lat <= 90 and -180 <= lng <= 180):
+                logger.warning(f"변환된 좌표가 유효 범위를 벗어남: lat={lat}, lng={lng}")
+                return None, None
+            
+            return lat, lng
+            
+        except (ValueError, TypeError) as e:
+            logger.error(f"네이버 좌표 변환 실패: mapx={mapx}, mapy={mapy}, error={e}")
+            return None, None
+    
+    def convert_wgs84_to_naver(self, lat: float, lng: float) -> Tuple[float, float]:
+        """
+        WGS84 좌표계를 네이버 좌표계(mapx, mapy)로 변환
+        
+        Args:
+            lat: WGS84 위도
+            lng: WGS84 경도
+            
+        Returns:
+            (mapx, mapy) 튜플 (네이버 좌표계)
+        """
+        try:
+            mapx = float(lng) * 10000000.0
+            mapy = float(lat) * 10000000.0
+            return mapx, mapy
+            
+        except (ValueError, TypeError) as e:
+            logger.error(f"WGS84 좌표 변환 실패: lat={lat}, lng={lng}, error={e}")
+            return None, None
+    
     def calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         """
         두 GPS 좌표 간의 거리 계산 (하버사인 공식)
@@ -276,6 +328,20 @@ class LocationService:
                     telephone = item.get("telephone", "")
                     description = item.get("description", "")
                     
+                    # 좌표 정보 추출 (메타데이터 무결성 확보)
+                    # 네이버 API는 mapx, mapy를 제공 (네이버 좌표계)
+                    mapx = item.get("mapx")  # 경도 (네이버 좌표계)
+                    mapy = item.get("mapy")  # 위도 (네이버 좌표계)
+                    
+                    # 네이버 좌표계를 WGS84로 정확하게 변환
+                    lat = None
+                    lng = None
+                    
+                    if mapx and mapy:
+                        lat, lng = self.convert_naver_to_wgs84(mapx, mapy)
+                        if not lat or not lng:
+                            logger.warning(f"좌표 변환 실패: mapx={mapx}, mapy={mapy}")
+                    
                     # 기본 정보가 있는 경우만 추가
                     if name and address:
                         place_info = {
@@ -283,6 +349,10 @@ class LocationService:
                             "address": address,
                             "telephone": telephone,
                             "description": description,
+                            # 좌표 정보 (Float로 강제 저장 - 메타데이터 무결성)
+                            "lat": lat,  # Float 또는 None
+                            "lng": lng,  # Float 또는 None
+                            # 네비게이션 URL
                             "naver_map_url": f"https://map.naver.com/v5/search/{address}",
                             "naver_app_url": f"nmap://search?query={address}",  
                             "google_maps_url": f"https://maps.google.com/maps?q={address}",

@@ -22,7 +22,10 @@ dist/
 downloads/
 eggs/
 .eggs/
-/server/chroma_db/
+
+# Vector Database (ChromaDB)
+**/chroma_db/
+chroma_db/
 
 lib64/
 parts/
@@ -59,6 +62,8 @@ logs/
 *.swp
 *.swo
 .firebase/
+.cursorrules
+.cursor/
 
 # macOS
 .DS_Store
@@ -92,8 +97,10 @@ tmp/
 temp/
 *.tmp
 *.temp
-PORTFOLIO_SUMMARY.md
-CLAUDE.md
+
+# Markdown 파일들 (README.md 제외)
+*.md
+!README.md
 
 
 .github/workflows/설미선_자소서(딥오토MCP).html

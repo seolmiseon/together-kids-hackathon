@@ -14,6 +14,11 @@ class LocationUpdate(BaseModel):
     lng: float
     address: Optional[str] = None
 
+# FCM 토큰 스키마
+class FCMTokenRequest(BaseModel):
+    fcm_token: str
+    device_id: Optional[str] = None  # 기기 식별자 (선택사항)
+
 # Firestore DB 인스턴스 가져오기
 def get_db():
     try:
@@ -203,5 +208,176 @@ async def get_nearby_parents(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"근처 부모 검색 중 오류 발생: {e}")
+
+
+@router.post("/fcm-token")
+async def register_fcm_token(
+    token_request: FCMTokenRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    FCM 토큰 등록/업데이트
+    
+    - fcm_token: Firebase Cloud Messaging 토큰
+    - device_id: 기기 식별자 (선택사항, 여러 기기 지원용)
+    """
+    uid = current_user.get("uid")
+    
+    if not token_request.fcm_token:
+        raise HTTPException(status_code=400, detail="FCM 토큰이 필요합니다.")
+    
+    try:
+        user_ref = db.collection("users").document(uid)
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        
+        user_data = user_doc.to_dict()
+        fcm_tokens = user_data.get("fcm_tokens", [])
+        
+        # 기존 토큰 목록에 새 토큰 추가 (중복 제거)
+        if token_request.fcm_token not in fcm_tokens:
+            fcm_tokens.append(token_request.fcm_token)
+            # 최대 10개 기기까지만 저장 (너무 많으면 오래된 것 제거)
+            if len(fcm_tokens) > 10:
+                fcm_tokens = fcm_tokens[-10:]
+        
+        # Firestore 업데이트
+        update_data = {
+            "fcm_tokens": fcm_tokens,
+            "fcm_token_updated_at": datetime.now().isoformat()
+        }
+        
+        # device_id가 있으면 기기 정보도 저장
+        if token_request.device_id:
+            device_info = user_data.get("devices", {})
+            device_info[token_request.device_id] = {
+                "fcm_token": token_request.fcm_token,
+                "updated_at": datetime.now().isoformat()
+            }
+            update_data["devices"] = device_info
+        
+        user_ref.update(update_data)
+        
+        return {
+            "success": True,
+            "message": "FCM 토큰이 등록되었습니다.",
+            "token_count": len(fcm_tokens)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FCM 토큰 등록 중 오류 발생: {e}")
+
+
+@router.get("/fcm-token")
+async def get_fcm_tokens(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    사용자의 FCM 토큰 목록 조회
+    """
+    uid = current_user.get("uid")
+    
+    try:
+        user_ref = db.collection("users").document(uid)
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        
+        user_data = user_doc.to_dict()
+        fcm_tokens = user_data.get("fcm_tokens", [])
+        
+        return {
+            "fcm_tokens": fcm_tokens,
+            "token_count": len(fcm_tokens),
+            "updated_at": user_data.get("fcm_token_updated_at")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FCM 토큰 조회 중 오류 발생: {e}")
+
+
+@router.delete("/fcm-token")
+async def delete_fcm_token(
+    fcm_token: str = Query(..., description="삭제할 FCM 토큰"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    특정 FCM 토큰 삭제 (기기 로그아웃 등)
+    """
+    uid = current_user.get("uid")
+    
+    try:
+        user_ref = db.collection("users").document(uid)
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        
+        user_data = user_doc.to_dict()
+        fcm_tokens = user_data.get("fcm_tokens", [])
+        
+        # 토큰 제거
+        if fcm_token in fcm_tokens:
+            fcm_tokens.remove(fcm_token)
+            user_ref.update({
+                "fcm_tokens": fcm_tokens,
+                "fcm_token_updated_at": datetime.now().isoformat()
+            })
+            
+            return {
+                "success": True,
+                "message": "FCM 토큰이 삭제되었습니다.",
+                "remaining_token_count": len(fcm_tokens)
+            }
+        else:
+            return {
+                "success": False,
+                "message": "해당 FCM 토큰을 찾을 수 없습니다."
+            }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FCM 토큰 삭제 중 오류 발생: {e}")
+
+
+@router.delete("/fcm-token/all")
+async def delete_all_fcm_tokens(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    사용자의 모든 FCM 토큰 삭제 (전체 기기 로그아웃)
+    """
+    uid = current_user.get("uid")
+    
+    try:
+        user_ref = db.collection("users").document(uid)
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        
+        user_ref.update({
+            "fcm_tokens": [],
+            "devices": {},
+            "fcm_token_updated_at": datetime.now().isoformat()
+        })
+        
+        return {
+            "success": True,
+            "message": "모든 FCM 토큰이 삭제되었습니다."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FCM 토큰 삭제 중 오류 발생: {e}")
 
 
