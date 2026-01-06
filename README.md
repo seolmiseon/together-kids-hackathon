@@ -24,8 +24,8 @@ GPS 위치 기반으로 **도보 15분 이내** 이웃과 공동육아를 연결
 ```
 🥇 서울 우먼테크 해커톤 본선 진출 (38개팀 중 선발)
 👥 6가구 실사용 배포 및 운영
-⚡ 검색 속도 0.3초 (ChromaDB Vector Search)
-📈 AI 응답 정확도 85% 향상 (RAG vs 하드코딩)
+⚡ 검색 속도 0.3초 (Hybrid Search: Vector + BM25 + RRF)
+📈 AI 응답 정확도 향상 (RAG vs 하드코딩)
 💰 API 비용 90% 절감 (GPT-4 → GPT-4o-mini)
 🚀 빌드 시간 38% 단축 (292→180초)
 🎯 감정 분석 정확도 87% (HuggingFace Transformers)
@@ -69,7 +69,7 @@ GPS 위치 기반으로 **도보 15분 이내** 이웃과 공동육아를 연결
         │   (Port 8000)         │      │    (Port 8002)             │
         ├───────────────────────┤      ├────────────────────────────┤
         │ • 사용자 인증          │      │ • Hybrid RAG 시스템         │
-        │ • 프로필 관리          │      │   - Vector Search         │
+        │ • 프로필 관리          │      │   - Hybrid Search         │
         │ • 아이 프로필          │      │   - BM25 Keyword          │
         │ • 위치 업데이트        │      │   - RRF 통합              │
         │ • FCM 토큰 관리        │      │ • 감정 분석 (HuggingFace)  │
@@ -167,7 +167,7 @@ GPS 위치 기반으로 **도보 15분 이내** 이웃과 공동육아를 연결
 ┌────────────────────┐                            ┌────────────────────┐
 │ 3. Hybrid Search   │                            │ 2. 일정 자동 등록   │
 │ (RRF 통합)         │                            │    - Firestore 저장  │
-│ → Vector Search    │                            │    - schedule_id 생성│
+│ → Hybrid Search    │                            │    - schedule_id 생성│
 │ → BM25 Keyword     │                            └─────────┬──────────┘
 │ → RRF 랭킹         │                                      │
 └─────────┬──────────┘                                      │
@@ -218,10 +218,10 @@ GPS 위치 기반으로 **도보 15분 이내** 이웃과 공동육아를 연결
 2️⃣ Query Transformer (자연어 전처리)
    → 핵심 키워드 추출: "잠", "밤"
      ↓
-3️⃣ Hybrid Search (Vector + Keyword + RRF)
-   → ChromaDB Vector Search: 의미 유사도 기반 검색
-   → BM25 Keyword Search: 정확한 키워드 매칭
-   → RRF (Reciprocal Rank Fusion): 두 결과 통합 랭킹
+3️⃣ Hybrid Search (Vector + Keyword + RRF) [리팩토링 후]
+   → ChromaDB Vector Search: 의미 유사도 기반 검색 (리팩토링 전 방식 포함)
+   → BM25 Keyword Search: 정확한 키워드 매칭 (리팩토링 후 추가)
+   → RRF (Reciprocal Rank Fusion): 두 결과 통합 랭킹 (리팩토링 후 추가)
    → 최종 Top-5 문서 추출 (0.3초)
      ↓
 4️⃣ LangChain 프롬프트 조합
@@ -338,7 +338,7 @@ GPS 위치 기반으로 **도보 15분 이내** 이웃과 공동육아를 연결
 
 1. **RRF Hybrid Search**
    - Vector Search + BM25 Keyword Search + RRF 통합
-   - 검색 정확도 85% 향상 (단일 Vector Search 대비)
+   - 구현 완료 (성과 수치는 실험 중)
 
 2. **AI 기반 일정 파싱**
    - 자연어에서 시간/장소/활동 자동 추출
@@ -364,17 +364,22 @@ GPS 위치 기반으로 **도보 15분 이내** 이웃과 공동육아를 연결
 
 ## 💡 핵심 기술 구현
 
-### 1. RAG 시스템
+### 1. RAG 시스템 (Hybrid Search)
+
+**리팩토링 전:** Vector Search만 사용 (의미 유사도 기반)  
+**리팩토링 후:** Hybrid Search (Vector + BM25 + RRF 통합) ← **현재 사용 중**
 
 ```python
-# UnifiedChatService 핵심 로직
+# UnifiedChatService 핵심 로직 (리팩토링 후)
 async def process_message(self, message: str, user_id: str):
     # 1단계: 감정 분석 (HuggingFace)
     emotion = await self.emotion_service.analyze(message)
     # → {'label': 'anxiety', 'score': 0.87, 'stress_level': 4}
     
-    # 2단계: RAG 검색 (ChromaDB)
-    context = await self.rag_service.search(message, top_k=5)
+    # 2단계: Hybrid RAG 검색 (ChromaDB + BM25 + RRF)
+    context = await self.vector_service.search_similar_documents(
+        message, top_k=5, use_hybrid=True  # Hybrid Search 사용
+    )
     # → 유사 육아 정보 5개 (0.3초)
     
     # 3단계: 동적 프롬프트 선택 + GPT 생성
@@ -384,33 +389,29 @@ async def process_message(self, message: str, user_id: str):
     return response
 ```
 
-**성능 지표:**
-- 검색 속도: **0.3초**
-- AI 응답 속도: **1.2초**
-- 정확도: **85% 향상** (하드코딩 대비)
-- 캐시 히트율: **90%**
-
-### 2. Hybrid RAG 시스템 (RRF)
+**Hybrid Search 구현 상세:**
 
 ```python
-# RRF Hybrid Search 구현
-async def search_similar_documents(query_text: str, top_k: int = 5):
-    # 1. Vector Search (의미 기반)
+# RRF Hybrid Search 내부 동작
+async def hybrid_search(query_text: str, top_k: int = 5):
+    # 1. Vector Search (의미 기반) - 리팩토링 전 방식
     vector_results = await vector_store.similarity_search(query_text, k=top_k)
     
-    # 2. BM25 Keyword Search (키워드 기반)
+    # 2. BM25 Keyword Search (키워드 기반) - 리팩토링 후 추가
     keyword_results = bm25_index.get_top_n(query_text, n=top_k)
     
-    # 3. RRF 통합 랭킹
+    # 3. RRF 통합 랭킹 - 리팩토링 후 추가
     rrf_scores = calculate_rrf_scores(vector_results, keyword_results)
     final_results = merge_and_rank(rrf_scores)
     
     return final_results
 ```
 
-**성능:**
-- 검색 정확도: **85% 향상** (단일 Vector Search 대비)
-- 검색 속도: **0.3초 이내**
+**성능 지표:**
+- 검색 속도: **0.3초** (Hybrid Search)
+- AI 응답 속도: **1.2초**
+- 캐시 히트율: **90%**
+- 검색 정확도: **향상** (단일 Vector Search 대비, 정량 측정 예정)
 - 키워드 매칭 정확도 향상
 
 ### 3. 감정 분석 엔진
@@ -742,7 +743,7 @@ COPY . .
 
 ### 2. RAG 정확도 개선
 **문제**: 일반적인 답변만 제공  
-**해결**: 감정 분석 + 동적 프롬프트 → 정확도 **85% 향상**
+**해결**: 감정 분석 + 동적 프롬프트 → 정확도 향상 (정량 측정 예정)
 
 ### 3. 감정 상태 기반 개인화
 **문제**: 모든 사용자에게 동일한 톤으로 응답  

@@ -101,6 +101,21 @@ class UnifiedChatService:
                 # 일정 정보가 추출되면 Firestore에 저장하고 그룹 멤버에게 알림 보내기
                 if schedule_info.get("has_time") or schedule_info.get("has_location"):
                     try:
+                        # 일정을 ChromaDB에 저장 (RAG 검색을 위해)
+                        try:
+                            # 일정 정보를 텍스트로 변환하여 ChromaDB에 저장
+                            schedule_text = self._format_schedule_text(schedule_info, message)
+                            if schedule_text and len(schedule_text) >= 20:  # 최소 길이 체크
+                                await self.vector_service.add_schedule_info(
+                                    user_id=user_id,
+                                    schedule_text=schedule_text,
+                                    intent="schedule",
+                                    urgency=schedule_info.get("urgency", "low")
+                                )
+                                logger.info(f"📅 일정 정보를 ChromaDB에 저장 완료")
+                        except Exception as e:
+                            logger.warning(f"ChromaDB 저장 실패 (계속 진행): {e}")
+                        
                         # 일정을 Firestore에 저장 (RSVP가 필요한 경우)
                         schedule_id = None
                         if schedule_info.get("rsvp_required"):
@@ -264,6 +279,43 @@ class UnifiedChatService:
                 if lat and lng:
                     return lat, lng
         return None, None
+
+    def _format_schedule_text(self, schedule_info: Dict[str, Any], original_message: str) -> str:
+        """일정 정보를 ChromaDB 저장용 텍스트로 포맷팅"""
+        parts = []
+        
+        # 원본 메시지 포함 (컨텍스트 유지)
+        if original_message:
+            parts.append(original_message)
+        
+        # 시간 정보
+        if schedule_info.get("has_time"):
+            time_str = schedule_info.get("time", "")
+            if time_str:
+                parts.append(f"시간: {time_str}")
+        
+        # 장소 정보
+        if schedule_info.get("has_location"):
+            location = schedule_info.get("location", "")
+            if location:
+                parts.append(f"장소: {location}")
+        
+        # 활동 정보
+        activity = schedule_info.get("activity", "")
+        if activity:
+            parts.append(f"활동: {activity}")
+        
+        # RSVP 정보
+        if schedule_info.get("rsvp_required"):
+            parts.append("참석 여부 확인 필요")
+        
+        formatted_text = " ".join(parts)
+        
+        # 길이 제한 (300자)
+        if len(formatted_text) > 300:
+            formatted_text = formatted_text[:297] + "..."
+        
+        return formatted_text
 
     async def process_unified_chat(self, message: str, user_id: str) -> str:
         # 1. 감정 분석 추가

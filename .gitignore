@@ -38,8 +38,8 @@ wheels/
 MANIFEST
 
 # Virtual Environment
-venv/
-env/
+**/venv/
+**/env/
 ENV/
 .env.*
 /.continue
@@ -64,6 +64,9 @@ logs/
 .firebase/
 .cursorrules
 .cursor/
+
+# HTML 파일들
+*.html
 
 # macOS
 .DS_Store
@@ -98,9 +101,16 @@ temp/
 *.tmp
 *.temp
 
-# Markdown 파일들 (README.md 제외)
+# 측정 결과 파일들 (임시)
+search_accuracy_*.json
+ground_truth_final_result.txt
+ground_truth_measurement_result.txt
+measurement_result.txt
+
+# Markdown 파일들 (README.md, EXPERIMENT_RESULTS.md 제외)
 *.md
 !README.md
+!EXPERIMENT_RESULTS.md
 
 
 .github/workflows/설미선_자소서(딥오토MCP).html
